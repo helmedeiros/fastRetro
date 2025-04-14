@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('setup stage — add and remove participants', async ({ page }) => {
+test('setup stage — participants persist across reloads', async ({ page }) => {
   await page.goto('/');
   await expect(
     page.getByRole('heading', { name: /fastRetro/i }),
@@ -18,8 +18,21 @@ test('setup stage — add and remove participants', async ({ page }) => {
   await expect(list.getByText('Alice')).toBeVisible();
   await expect(list.getByText('Bob')).toBeVisible();
 
-  await page.getByRole('button', { name: /remove alice/i }).click();
+  await page.reload();
 
-  await expect(list.getByText('Alice')).toHaveCount(0);
-  await expect(list.getByText('Bob')).toBeVisible();
+  const listAfterReload = page.getByRole('list', { name: /participants/i });
+  await expect(listAfterReload.getByText('Alice')).toBeVisible();
+  await expect(listAfterReload.getByText('Bob')).toBeVisible();
+
+  await page.getByRole('button', { name: /remove alice/i }).click();
+  await expect(listAfterReload.getByText('Alice')).toHaveCount(0);
+  await expect(listAfterReload.getByText('Bob')).toBeVisible();
+
+  await page.reload();
+
+  const listAfterSecondReload = page.getByRole('list', {
+    name: /participants/i,
+  });
+  await expect(listAfterSecondReload.getByText('Alice')).toHaveCount(0);
+  await expect(listAfterSecondReload.getByText('Bob')).toBeVisible();
 });

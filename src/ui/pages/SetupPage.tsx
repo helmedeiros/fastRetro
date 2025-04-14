@@ -1,8 +1,14 @@
 import { FormEvent, useState } from 'react';
+import type { RetroRepository } from '../../domain/ports/RetroRepository';
 import { useRetro } from '../hooks/useRetro';
 
-export function SetupPage(): JSX.Element {
-  const { participants, addParticipant, removeParticipant } = useRetro();
+export interface SetupPageProps {
+  repository: RetroRepository;
+}
+
+export function SetupPage({ repository }: SetupPageProps): JSX.Element {
+  const { participants, addParticipant, removeParticipant } =
+    useRetro(repository);
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
 

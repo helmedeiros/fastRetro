@@ -1,6 +1,7 @@
 import { render, screen, within, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { SetupPage } from '../../src/ui/pages/SetupPage';
+import { InMemoryRetroRepository } from '../../src/adapters/storage/InMemoryRetroRepository';
 
 function addParticipant(name: string): void {
   const input = screen.getByLabelText(/participant name/i) as HTMLInputElement;
@@ -10,7 +11,7 @@ function addParticipant(name: string): void {
 
 describe('SetupPage', () => {
   it('adds and removes participants', () => {
-    render(<SetupPage />);
+    render(<SetupPage repository={new InMemoryRetroRepository()} />);
 
     addParticipant('Alice');
     addParticipant('Bob');
@@ -26,7 +27,7 @@ describe('SetupPage', () => {
   });
 
   it('shows an error on duplicate names and does not add', () => {
-    render(<SetupPage />);
+    render(<SetupPage repository={new InMemoryRetroRepository()} />);
 
     addParticipant('Alice');
     addParticipant('Alice');

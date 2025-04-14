@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
-import { InMemoryRetroRepository } from '../../adapters/storage/InMemoryRetroRepository';
 import { CryptoIdGenerator } from '../../adapters/id/CryptoIdGenerator';
 import { AddParticipant } from '../../application/usecases/AddParticipant';
 import { RemoveParticipant } from '../../application/usecases/RemoveParticipant';
+import type { RetroRepository } from '../../domain/ports/RetroRepository';
 import type { Participant } from '../../domain/retro/Participant';
 
 export interface UseRetro {
@@ -11,16 +11,15 @@ export interface UseRetro {
   removeParticipant: (id: string) => void;
 }
 
-export function useRetro(): UseRetro {
+export function useRetro(repository: RetroRepository): UseRetro {
   const services = useMemo(() => {
-    const repo = new InMemoryRetroRepository();
     const ids = new CryptoIdGenerator();
     return {
-      repo,
-      add: new AddParticipant(repo, ids),
-      remove: new RemoveParticipant(repo),
+      repo: repository,
+      add: new AddParticipant(repository, ids),
+      remove: new RemoveParticipant(repository),
     };
-  }, []);
+  }, [repository]);
 
   const [participants, setParticipants] = useState<readonly Participant[]>(
     () => services.repo.load().participants,
