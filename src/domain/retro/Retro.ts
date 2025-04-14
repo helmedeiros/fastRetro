@@ -1,11 +1,26 @@
 import { Participant, createParticipant } from './Participant';
+import {
+  Timer,
+  createTimer,
+  startTimer as startTimerState,
+  pauseTimer as pauseTimerState,
+  resumeTimer as resumeTimerState,
+  tickTimer as tickTimerState,
+  resetTimer as resetTimerState,
+} from './Timer';
+
+export type RetroStage = 'setup' | 'running';
+
+export const DEFAULT_TIMER_DURATION_MS = 10 * 60 * 1000;
 
 export interface RetroState {
+  readonly stage: RetroStage;
   readonly participants: readonly Participant[];
+  readonly timer: Timer | null;
 }
 
 export function createRetro(): RetroState {
-  return { participants: [] };
+  return { stage: 'setup', participants: [], timer: null };
 }
 
 export function addParticipant(
@@ -32,4 +47,46 @@ export function removeParticipant(
     throw new Error(`Participant with id "${id}" not found`);
   }
   return { ...state, participants: next };
+}
+
+export function startRetro(state: RetroState): RetroState {
+  if (state.stage !== 'setup') {
+    throw new Error('Retro has already started');
+  }
+  if (state.participants.length < 1) {
+    throw new Error('At least one participant is required to start the retro');
+  }
+  return {
+    ...state,
+    stage: 'running',
+    timer: createTimer(DEFAULT_TIMER_DURATION_MS),
+  };
+}
+
+function requireTimer(state: RetroState): Timer {
+  if (state.timer === null) {
+    throw new Error('Retro has no active timer');
+  }
+  return state.timer;
+}
+
+export function startRetroTimer(state: RetroState): RetroState {
+  return { ...state, timer: startTimerState(requireTimer(state)) };
+}
+
+export function pauseRetroTimer(state: RetroState): RetroState {
+  return { ...state, timer: pauseTimerState(requireTimer(state)) };
+}
+
+export function resumeRetroTimer(state: RetroState): RetroState {
+  return { ...state, timer: resumeTimerState(requireTimer(state)) };
+}
+
+export function tickRetroTimer(state: RetroState, deltaMs: number): RetroState {
+  if (state.timer === null) return state;
+  return { ...state, timer: tickTimerState(state.timer, deltaMs) };
+}
+
+export function resetRetroTimer(state: RetroState): RetroState {
+  return { ...state, timer: resetTimerState(requireTimer(state)) };
 }

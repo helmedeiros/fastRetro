@@ -3,7 +3,14 @@ import {
   LocalStorageRetroRepository,
   STORAGE_KEY,
 } from '../../src/adapters/storage/LocalStorageRetroRepository';
-import { addParticipant, createRetro } from '../../src/domain/retro/Retro';
+import {
+  addParticipant,
+  createRetro,
+  startRetro,
+  startRetroTimer,
+  tickRetroTimer,
+  pauseRetroTimer,
+} from '../../src/domain/retro/Retro';
 
 class MemoryStorage implements Storage {
   private store = new Map<string, string>();
@@ -86,6 +93,23 @@ describe('LocalStorageRetroRepository', () => {
     const raw = storage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
     const parsed = JSON.parse(raw as string) as { version: number };
-    expect(parsed.version).toBe(1);
+    expect(parsed.version).toBe(2);
+  });
+
+  it('round-trips stage and timer state', () => {
+    const repo = new LocalStorageRetroRepository(storage);
+    let state = createRetro();
+    state = addParticipant(state, 'id-1', 'Alice');
+    state = startRetro(state);
+    state = startRetroTimer(state);
+    state = tickRetroTimer(state, 2500);
+    state = pauseRetroTimer(state);
+    repo.save(state);
+
+    const loaded = new LocalStorageRetroRepository(storage).load();
+    expect(loaded).toEqual(state);
+    expect(loaded.stage).toBe('running');
+    expect(loaded.timer?.status).toBe('paused');
+    expect(loaded.timer?.elapsedMs).toBe(2500);
   });
 });

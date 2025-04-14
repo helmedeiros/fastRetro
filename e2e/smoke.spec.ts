@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('setup stage — participants persist across reloads', async ({ page }) => {
+test('setup, persist, start retro, and run the present timer', async ({
+  page,
+}) => {
   await page.goto('/');
   await expect(
     page.getByRole('heading', { name: /fastRetro/i }),
@@ -20,19 +22,50 @@ test('setup stage — participants persist across reloads', async ({ page }) => 
 
   await page.reload();
 
-  const listAfterReload = page.getByRole('list', { name: /participants/i });
-  await expect(listAfterReload.getByText('Alice')).toBeVisible();
-  await expect(listAfterReload.getByText('Bob')).toBeVisible();
+  await expect(
+    page.getByRole('list', { name: /participants/i }).getByText('Alice'),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('list', { name: /participants/i }).getByText('Bob'),
+  ).toBeVisible();
 
   await page.getByRole('button', { name: /remove alice/i }).click();
-  await expect(listAfterReload.getByText('Alice')).toHaveCount(0);
-  await expect(listAfterReload.getByText('Bob')).toBeVisible();
+  await expect(
+    page.getByRole('list', { name: /participants/i }).getByText('Alice'),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('list', { name: /participants/i }).getByText('Bob'),
+  ).toBeVisible();
 
   await page.reload();
 
-  const listAfterSecondReload = page.getByRole('list', {
-    name: /participants/i,
-  });
-  await expect(listAfterSecondReload.getByText('Alice')).toHaveCount(0);
-  await expect(listAfterSecondReload.getByText('Bob')).toBeVisible();
+  await expect(
+    page.getByRole('list', { name: /participants/i }).getByText('Alice'),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('list', { name: /participants/i }).getByText('Bob'),
+  ).toBeVisible();
+
+  // Start the retro and verify the present timer.
+  await page.getByRole('button', { name: /start retro/i }).click();
+  await expect(
+    page.getByRole('heading', { name: /retro in progress/i }),
+  ).toBeVisible();
+
+  const remaining = page.getByTestId('time-remaining');
+  await expect(remaining).toHaveText('10:00');
+
+  await page.getByRole('button', { name: /^start$/i }).click();
+  await expect(remaining).not.toHaveText('10:00', { timeout: 3000 });
+
+  await page.getByRole('button', { name: /^pause$/i }).click();
+  const pausedText = await remaining.textContent();
+
+  await page.reload();
+
+  await expect(
+    page.getByRole('heading', { name: /retro in progress/i }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: /^resume$/i })).toBeVisible();
+  await expect(remaining).toHaveText(pausedText ?? '');
 });

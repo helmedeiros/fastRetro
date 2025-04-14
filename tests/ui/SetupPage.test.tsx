@@ -1,6 +1,6 @@
 import { render, screen, within, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { SetupPage } from '../../src/ui/pages/SetupPage';
+import { App } from '../../src/ui/App';
 import { InMemoryRetroRepository } from '../../src/adapters/storage/InMemoryRetroRepository';
 
 function addParticipant(name: string): void {
@@ -9,9 +9,9 @@ function addParticipant(name: string): void {
   fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
 }
 
-describe('SetupPage', () => {
+describe('SetupPage (via App)', () => {
   it('adds and removes participants', () => {
-    render(<SetupPage repository={new InMemoryRetroRepository()} />);
+    render(<App repository={new InMemoryRetroRepository()} />);
 
     addParticipant('Alice');
     addParticipant('Bob');
@@ -27,7 +27,7 @@ describe('SetupPage', () => {
   });
 
   it('shows an error on duplicate names and does not add', () => {
-    render(<SetupPage repository={new InMemoryRetroRepository()} />);
+    render(<App repository={new InMemoryRetroRepository()} />);
 
     addParticipant('Alice');
     addParticipant('Alice');

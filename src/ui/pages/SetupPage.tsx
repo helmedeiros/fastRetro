@@ -1,27 +1,34 @@
 import { FormEvent, useState } from 'react';
-import type { RetroRepository } from '../../domain/ports/RetroRepository';
-import { useRetro } from '../hooks/useRetro';
+import type { Participant } from '../../domain/retro/Participant';
 
 export interface SetupPageProps {
-  repository: RetroRepository;
+  participants: readonly Participant[];
+  onAddParticipant: (name: string) => void;
+  onRemoveParticipant: (id: string) => void;
+  onStartRetro: () => void;
 }
 
-export function SetupPage({ repository }: SetupPageProps): JSX.Element {
-  const { participants, addParticipant, removeParticipant } =
-    useRetro(repository);
+export function SetupPage({
+  participants,
+  onAddParticipant,
+  onRemoveParticipant,
+  onStartRetro,
+}: SetupPageProps): JSX.Element {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     try {
-      addParticipant(name);
+      onAddParticipant(name);
       setName('');
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
   };
+
+  const canStart = participants.length >= 1;
 
   return (
     <section>
@@ -44,13 +51,16 @@ export function SetupPage({ repository }: SetupPageProps): JSX.Element {
             <button
               type="button"
               aria-label={`Remove ${p.name}`}
-              onClick={() => removeParticipant(p.id)}
+              onClick={() => onRemoveParticipant(p.id)}
             >
               Remove
             </button>
           </li>
         ))}
       </ul>
+      <button type="button" onClick={onStartRetro} disabled={!canStart}>
+        Start retro
+      </button>
     </section>
   );
 }
