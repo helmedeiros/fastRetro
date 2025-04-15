@@ -5,12 +5,18 @@ import {
 } from '../../src/adapters/storage/LocalStorageRetroRepository';
 import {
   addParticipant,
+  advanceIcebreakerParticipant,
   createRetro,
-  startRetro,
+  startIcebreaker,
   startRetroTimer,
   tickRetroTimer,
   pauseRetroTimer,
 } from '../../src/domain/retro/Retro';
+import type { Picker } from '../../src/domain/ports/Picker';
+
+const firstPicker: Picker<string> = {
+  pick: <T,>(items: readonly T[]): T => items[0] as T,
+};
 
 class MemoryStorage implements Storage {
   private store = new Map<string, string>();
@@ -81,7 +87,7 @@ describe('LocalStorageRetroRepository', () => {
   it('returns a fresh empty Retro when payload shape is invalid', () => {
     storage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ version: 1, retro: { participants: 'nope' } }),
+      JSON.stringify({ version: 3, retro: { participants: 'nope' } }),
     );
     const repo = new LocalStorageRetroRepository(storage);
     expect(repo.load()).toEqual(createRetro());
@@ -92,24 +98,29 @@ describe('LocalStorageRetroRepository', () => {
     repo.save(addParticipant(createRetro(), 'id-1', 'Alice'));
     const raw = storage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
+    expect(STORAGE_KEY).toBe('fastretro:state:v3');
     const parsed = JSON.parse(raw as string) as { version: number };
-    expect(parsed.version).toBe(2);
+    expect(parsed.version).toBe(3);
   });
 
-  it('round-trips stage and timer state', () => {
+  it('round-trips stage, timer, and icebreaker state', () => {
     const repo = new LocalStorageRetroRepository(storage);
     let state = createRetro();
     state = addParticipant(state, 'id-1', 'Alice');
-    state = startRetro(state);
+    state = addParticipant(state, 'id-2', 'Bob');
+    state = startIcebreaker(state, firstPicker);
     state = startRetroTimer(state);
     state = tickRetroTimer(state, 2500);
     state = pauseRetroTimer(state);
+    state = advanceIcebreakerParticipant(state);
     repo.save(state);
 
     const loaded = new LocalStorageRetroRepository(storage).load();
     expect(loaded).toEqual(state);
-    expect(loaded.stage).toBe('running');
+    expect(loaded.stage).toBe('icebreaker');
     expect(loaded.timer?.status).toBe('paused');
     expect(loaded.timer?.elapsedMs).toBe(2500);
+    expect(loaded.icebreaker?.currentIndex).toBe(1);
+    expect(loaded.icebreaker?.question).toBeTruthy();
   });
 });

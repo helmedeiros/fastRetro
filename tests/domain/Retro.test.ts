@@ -3,7 +3,8 @@ import {
   createRetro,
   addParticipant,
   removeParticipant,
-  startRetro,
+  startIcebreaker,
+  advanceIcebreakerParticipant,
   startRetroTimer,
   pauseRetroTimer,
   resumeRetroTimer,
@@ -11,6 +12,11 @@ import {
   resetRetroTimer,
   DEFAULT_TIMER_DURATION_MS,
 } from '../../src/domain/retro/Retro';
+import type { Picker } from '../../src/domain/ports/Picker';
+
+const firstPicker: Picker<string> = {
+  pick: <T,>(items: readonly T[]): T => items[0] as T,
+};
 
 describe('Retro.addParticipant', () => {
   it('starts with no participants', () => {
@@ -56,31 +62,62 @@ describe('Retro.removeParticipant', () => {
 });
 
 describe('Retro stage + timer', () => {
-  it('createRetro starts in setup stage with no timer', () => {
+  it('createRetro starts in setup stage with no timer or icebreaker', () => {
     const s = createRetro();
     expect(s.stage).toBe('setup');
     expect(s.timer).toBeNull();
+    expect(s.icebreaker).toBeNull();
   });
 
-  it('startRetro requires at least one participant', () => {
-    expect(() => startRetro(createRetro())).toThrow(/participant/i);
+  it('startIcebreaker requires at least one participant', () => {
+    expect(() => startIcebreaker(createRetro(), firstPicker)).toThrow(
+      /participant/i,
+    );
   });
 
-  it('startRetro transitions to running with a default timer', () => {
-    const s = startRetro(addParticipant(createRetro(), 'id-1', 'Alice'));
-    expect(s.stage).toBe('running');
+  it('startIcebreaker transitions to icebreaker with timer and icebreaker state', () => {
+    const s = startIcebreaker(
+      addParticipant(createRetro(), 'id-1', 'Alice'),
+      firstPicker,
+    );
+    expect(s.stage).toBe('icebreaker');
     expect(s.timer).not.toBeNull();
     expect(s.timer?.durationMs).toBe(DEFAULT_TIMER_DURATION_MS);
     expect(s.timer?.status).toBe('idle');
+    expect(s.icebreaker).not.toBeNull();
+    expect(s.icebreaker?.currentIndex).toBe(0);
+    expect(s.icebreaker?.participantIds).toEqual(['id-1']);
   });
 
-  it('startRetro is rejected when already running', () => {
-    const s = startRetro(addParticipant(createRetro(), 'id-1', 'Alice'));
-    expect(() => startRetro(s)).toThrow(/already/i);
+  it('startIcebreaker is rejected when already started', () => {
+    const s = startIcebreaker(
+      addParticipant(createRetro(), 'id-1', 'Alice'),
+      firstPicker,
+    );
+    expect(() => startIcebreaker(s, firstPicker)).toThrow(/already/i);
+  });
+
+  it('advanceIcebreakerParticipant rotates through participants', () => {
+    let s = createRetro();
+    s = addParticipant(s, 'id-1', 'Alice');
+    s = addParticipant(s, 'id-2', 'Bob');
+    s = startIcebreaker(s, firstPicker);
+    expect(s.icebreaker?.currentIndex).toBe(0);
+    s = advanceIcebreakerParticipant(s);
+    expect(s.icebreaker?.currentIndex).toBe(1);
+    s = advanceIcebreakerParticipant(s);
+    expect(s.icebreaker?.currentIndex).toBe(1);
+  });
+
+  it('advanceIcebreakerParticipant throws without an active icebreaker', () => {
+    expect(() => advanceIcebreakerParticipant(createRetro())).toThrow();
   });
 
   it('start/pause/resume/tick/reset mutate the timer immutably', () => {
-    let s = startRetro(addParticipant(createRetro(), 'id-1', 'Alice'));
+    let s = startIcebreaker(
+      addParticipant(createRetro(), 'id-1', 'Alice'),
+      firstPicker,
+    );
     s = startRetroTimer(s);
     expect(s.timer?.status).toBe('running');
     s = tickRetroTimer(s, 1000);

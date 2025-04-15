@@ -1,12 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { InMemoryRetroRepository } from '../../src/adapters/storage/InMemoryRetroRepository';
-import { StartRetro } from '../../src/application/usecases/StartRetro';
+import { StartIcebreaker } from '../../src/application/usecases/StartIcebreaker';
 import { StartTimer } from '../../src/application/usecases/StartTimer';
 import { PauseTimer } from '../../src/application/usecases/PauseTimer';
 import { ResumeTimer } from '../../src/application/usecases/ResumeTimer';
 import { ResetTimer } from '../../src/application/usecases/ResetTimer';
 import { TickTimer } from '../../src/application/usecases/TickTimer';
 import { addParticipant, createRetro } from '../../src/domain/retro/Retro';
+import type { Picker } from '../../src/domain/ports/Picker';
+
+const firstPicker: Picker<string> = {
+  pick: <T,>(items: readonly T[]): T => items[0] as T,
+};
 
 function seededRepo(): InMemoryRetroRepository {
   return new InMemoryRetroRepository(
@@ -19,12 +24,12 @@ describe('Timer use cases', () => {
 
   beforeEach(() => {
     repo = seededRepo();
-    new StartRetro(repo).execute();
+    new StartIcebreaker(repo, firstPicker).execute();
   });
 
-  it('StartRetro moves stage to running with an idle timer', () => {
+  it('StartIcebreaker moves stage to icebreaker with an idle timer', () => {
     const s = repo.load();
-    expect(s.stage).toBe('running');
+    expect(s.stage).toBe('icebreaker');
     expect(s.timer?.status).toBe('idle');
   });
 
@@ -60,9 +65,9 @@ describe('Timer use cases', () => {
   });
 });
 
-describe('StartRetro guard', () => {
+describe('StartIcebreaker guard', () => {
   it('throws when there are no participants', () => {
     const repo = new InMemoryRetroRepository();
-    expect(() => new StartRetro(repo).execute()).toThrow();
+    expect(() => new StartIcebreaker(repo, firstPicker).execute()).toThrow();
   });
 });

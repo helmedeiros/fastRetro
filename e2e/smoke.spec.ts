@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('setup, persist, start retro, and run the present timer', async ({
+test('setup, persist, run icebreaker with rotating participant', async ({
   page,
 }) => {
   await page.goto('/');
@@ -33,9 +33,6 @@ test('setup, persist, start retro, and run the present timer', async ({
   await expect(
     page.getByRole('list', { name: /participants/i }).getByText('Alice'),
   ).toHaveCount(0);
-  await expect(
-    page.getByRole('list', { name: /participants/i }).getByText('Bob'),
-  ).toBeVisible();
 
   await page.reload();
 
@@ -46,26 +43,46 @@ test('setup, persist, start retro, and run the present timer', async ({
     page.getByRole('list', { name: /participants/i }).getByText('Bob'),
   ).toBeVisible();
 
-  // Start the retro and verify the present timer.
+  // Re-add Alice so we have two participants for the rotation.
+  await input.fill('Alice');
+  await addButton.click();
+
   await page.getByRole('button', { name: /start retro/i }).click();
   await expect(
-    page.getByRole('heading', { name: /retro in progress/i }),
+    page.getByRole('heading', { name: /icebreaker/i }),
   ).toBeVisible();
 
   const remaining = page.getByTestId('time-remaining');
   await expect(remaining).toHaveText('10:00');
 
-  await page.getByRole('button', { name: /^start$/i }).click();
-  await expect(remaining).not.toHaveText('10:00', { timeout: 3000 });
+  const question = page.getByTestId('icebreaker-question');
+  await expect(question).toBeVisible();
+  const questionText = (await question.textContent()) ?? '';
+  expect(questionText.length).toBeGreaterThan(0);
 
-  await page.getByRole('button', { name: /^pause$/i }).click();
-  const pausedText = await remaining.textContent();
+  const rotation = page.getByRole('list', { name: /icebreaker rotation/i });
+  const firstCurrent = rotation.locator('li[data-current="true"]');
+  await expect(firstCurrent).toHaveCount(1);
+  const firstName = await firstCurrent.textContent();
+
+  const nextButton = page.getByRole('button', { name: /^next$/i });
+  await expect(nextButton).toBeEnabled();
+  await nextButton.click();
+
+  const secondCurrent = rotation.locator('li[data-current="true"]');
+  await expect(secondCurrent).toHaveCount(1);
+  const secondName = await secondCurrent.textContent();
+  expect(secondName).not.toBe(firstName);
+  await expect(nextButton).toBeDisabled();
 
   await page.reload();
 
   await expect(
-    page.getByRole('heading', { name: /retro in progress/i }),
+    page.getByRole('heading', { name: /icebreaker/i }),
   ).toBeVisible();
-  await expect(page.getByRole('button', { name: /^resume$/i })).toBeVisible();
-  await expect(remaining).toHaveText(pausedText ?? '');
+  await expect(question).toHaveText(questionText);
+  await expect(
+    rotation.locator('li[data-current="true"]'),
+  ).toHaveText(secondName ?? '');
+  await expect(page.getByRole('button', { name: /^next$/i })).toBeDisabled();
 });

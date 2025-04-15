@@ -2,25 +2,30 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CryptoIdGenerator } from '../../adapters/id/CryptoIdGenerator';
 import { AddParticipant } from '../../application/usecases/AddParticipant';
 import { RemoveParticipant } from '../../application/usecases/RemoveParticipant';
-import { StartRetro } from '../../application/usecases/StartRetro';
+import { StartIcebreaker } from '../../application/usecases/StartIcebreaker';
+import { AdvanceIcebreaker } from '../../application/usecases/AdvanceIcebreaker';
 import { StartTimer } from '../../application/usecases/StartTimer';
 import { PauseTimer } from '../../application/usecases/PauseTimer';
 import { ResumeTimer } from '../../application/usecases/ResumeTimer';
 import { ResetTimer } from '../../application/usecases/ResetTimer';
 import { TickTimer } from '../../application/usecases/TickTimer';
 import type { Clock } from '../../domain/ports/Clock';
+import type { Picker } from '../../domain/ports/Picker';
 import type { RetroRepository } from '../../domain/ports/RetroRepository';
 import type { Participant } from '../../domain/retro/Participant';
 import type { RetroStage, RetroState } from '../../domain/retro/Retro';
+import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
 import type { Timer } from '../../domain/retro/Timer';
 
 export interface UseRetro {
   stage: RetroStage;
   participants: readonly Participant[];
   timer: Timer | null;
+  icebreaker: IcebreakerState | null;
   addParticipant: (name: string) => void;
   removeParticipant: (id: string) => void;
-  startRetro: () => void;
+  startIcebreaker: () => void;
+  advanceIcebreaker: () => void;
   startTimer: () => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
@@ -29,6 +34,7 @@ export interface UseRetro {
 
 export function useRetro(
   repository: RetroRepository,
+  picker: Picker<string>,
   clock?: Clock,
 ): UseRetro {
   const services = useMemo(() => {
@@ -37,14 +43,15 @@ export function useRetro(
       repo: repository,
       add: new AddParticipant(repository, ids),
       remove: new RemoveParticipant(repository),
-      startRetro: new StartRetro(repository),
+      startIcebreaker: new StartIcebreaker(repository, picker),
+      advanceIcebreaker: new AdvanceIcebreaker(repository),
       startTimer: new StartTimer(repository),
       pauseTimer: new PauseTimer(repository),
       resumeTimer: new ResumeTimer(repository),
       resetTimer: new ResetTimer(repository),
       tickTimer: new TickTimer(repository),
     };
-  }, [repository]);
+  }, [repository, picker]);
 
   const [state, setState] = useState<RetroState>(() => services.repo.load());
   const refresh = useCallback(() => {
@@ -91,8 +98,13 @@ export function useRetro(
     [services, refresh],
   );
 
-  const startRetro = useCallback(() => {
-    services.startRetro.execute();
+  const startIcebreaker = useCallback(() => {
+    services.startIcebreaker.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const advanceIcebreaker = useCallback(() => {
+    services.advanceIcebreaker.execute();
     refresh();
   }, [services, refresh]);
 
@@ -120,9 +132,11 @@ export function useRetro(
     stage: state.stage,
     participants: state.participants,
     timer: state.timer,
+    icebreaker: state.icebreaker,
     addParticipant,
     removeParticipant,
-    startRetro,
+    startIcebreaker,
+    advanceIcebreaker,
     startTimer,
     pauseTimer,
     resumeTimer,

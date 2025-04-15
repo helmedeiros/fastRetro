@@ -6,48 +6,56 @@ import {
 } from '../../domain/retro/Retro';
 import type { Participant } from '../../domain/retro/Participant';
 import type { Timer, TimerStatus } from '../../domain/retro/Timer';
+import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
 
-export const STORAGE_KEY = 'fastretro:state:v2';
-export const SCHEMA_VERSION = 2;
+export const STORAGE_KEY = 'fastretro:state:v3';
+export const SCHEMA_VERSION = 3;
 
-interface PersistedParticipantV2 {
+interface PersistedParticipantV3 {
   readonly id: string;
   readonly name: string;
 }
 
-interface PersistedTimerV2 {
+interface PersistedTimerV3 {
   readonly status: TimerStatus;
   readonly durationMs: number;
   readonly elapsedMs: number;
   readonly remainingMs: number;
 }
 
-interface PersistedRetroStateV2 {
+interface PersistedIcebreakerV3 {
+  readonly question: string;
+  readonly participantIds: readonly string[];
+  readonly currentIndex: number;
+}
+
+interface PersistedRetroStateV3 {
   readonly stage: RetroStage;
-  readonly participants: readonly PersistedParticipantV2[];
-  readonly timer: PersistedTimerV2 | null;
+  readonly participants: readonly PersistedParticipantV3[];
+  readonly timer: PersistedTimerV3 | null;
+  readonly icebreaker: PersistedIcebreakerV3 | null;
 }
 
-interface PersistedRetroV2 {
-  readonly version: 2;
-  readonly retro: PersistedRetroStateV2;
+interface PersistedRetroV3 {
+  readonly version: 3;
+  readonly retro: PersistedRetroStateV3;
 }
 
-function isPersistedParticipant(value: unknown): value is PersistedParticipantV2 {
+function isPersistedParticipant(value: unknown): value is PersistedParticipantV3 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return typeof v.id === 'string' && typeof v.name === 'string';
 }
 
 function isStage(value: unknown): value is RetroStage {
-  return value === 'setup' || value === 'running';
+  return value === 'setup' || value === 'icebreaker';
 }
 
 function isTimerStatus(value: unknown): value is TimerStatus {
   return value === 'idle' || value === 'running' || value === 'paused';
 }
 
-function isPersistedTimer(value: unknown): value is PersistedTimerV2 {
+function isPersistedTimer(value: unknown): value is PersistedTimerV3 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
@@ -58,7 +66,19 @@ function isPersistedTimer(value: unknown): value is PersistedTimerV2 {
   );
 }
 
-function isPersistedRetroV2(value: unknown): value is PersistedRetroV2 {
+function isPersistedIcebreaker(
+  value: unknown,
+): value is PersistedIcebreakerV3 {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  if (typeof v.question !== 'string') return false;
+  if (typeof v.currentIndex !== 'number') return false;
+  if (!Array.isArray(v.participantIds)) return false;
+  if (!v.participantIds.every((id) => typeof id === 'string')) return false;
+  return true;
+}
+
+function isPersistedRetroV3(value: unknown): value is PersistedRetroV3 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   if (v.version !== SCHEMA_VERSION) return false;
@@ -68,6 +88,8 @@ function isPersistedRetroV2(value: unknown): value is PersistedRetroV2 {
   if (!Array.isArray(retro.participants)) return false;
   if (!retro.participants.every(isPersistedParticipant)) return false;
   if (retro.timer !== null && !isPersistedTimer(retro.timer)) return false;
+  if (retro.icebreaker !== null && !isPersistedIcebreaker(retro.icebreaker))
+    return false;
   return true;
 }
 
@@ -85,7 +107,7 @@ export class LocalStorageRetroRepository implements RetroRepository {
     } catch {
       return createRetro();
     }
-    if (!isPersistedRetroV2(parsed)) {
+    if (!isPersistedRetroV3(parsed)) {
       return createRetro();
     }
     const participants: readonly Participant[] = parsed.retro.participants.map(
@@ -100,11 +122,24 @@ export class LocalStorageRetroRepository implements RetroRepository {
             elapsedMs: parsed.retro.timer.elapsedMs,
             remainingMs: parsed.retro.timer.remainingMs,
           };
-    return { stage: parsed.retro.stage, participants, timer };
+    const icebreaker: IcebreakerState | null =
+      parsed.retro.icebreaker === null
+        ? null
+        : {
+            question: parsed.retro.icebreaker.question,
+            participantIds: [...parsed.retro.icebreaker.participantIds],
+            currentIndex: parsed.retro.icebreaker.currentIndex,
+          };
+    return {
+      stage: parsed.retro.stage,
+      participants,
+      timer,
+      icebreaker,
+    };
   }
 
   save(state: RetroState): void {
-    const payload: PersistedRetroV2 = {
+    const payload: PersistedRetroV3 = {
       version: SCHEMA_VERSION,
       retro: {
         stage: state.stage,
@@ -120,6 +155,14 @@ export class LocalStorageRetroRepository implements RetroRepository {
                 durationMs: state.timer.durationMs,
                 elapsedMs: state.timer.elapsedMs,
                 remainingMs: state.timer.remainingMs,
+              },
+        icebreaker:
+          state.icebreaker === null
+            ? null
+            : {
+                question: state.icebreaker.question,
+                participantIds: [...state.icebreaker.participantIds],
+                currentIndex: state.icebreaker.currentIndex,
               },
       },
     };

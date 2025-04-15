@@ -8,8 +8,15 @@ import {
   tickTimer as tickTimerState,
   resetTimer as resetTimerState,
 } from './Timer';
+import type { Picker } from '../ports/Picker';
+import {
+  ICEBREAKER_QUESTIONS,
+  IcebreakerState,
+  createIcebreaker,
+  nextParticipant as nextIcebreakerParticipant,
+} from './stages/Icebreaker';
 
-export type RetroStage = 'setup' | 'running';
+export type RetroStage = 'setup' | 'icebreaker';
 
 export const DEFAULT_TIMER_DURATION_MS = 10 * 60 * 1000;
 
@@ -17,10 +24,16 @@ export interface RetroState {
   readonly stage: RetroStage;
   readonly participants: readonly Participant[];
   readonly timer: Timer | null;
+  readonly icebreaker: IcebreakerState | null;
 }
 
 export function createRetro(): RetroState {
-  return { stage: 'setup', participants: [], timer: null };
+  return {
+    stage: 'setup',
+    participants: [],
+    timer: null,
+    icebreaker: null,
+  };
 }
 
 export function addParticipant(
@@ -49,7 +62,10 @@ export function removeParticipant(
   return { ...state, participants: next };
 }
 
-export function startRetro(state: RetroState): RetroState {
+export function startIcebreaker(
+  state: RetroState,
+  picker: Picker<string>,
+): RetroState {
   if (state.stage !== 'setup') {
     throw new Error('Retro has already started');
   }
@@ -58,9 +74,21 @@ export function startRetro(state: RetroState): RetroState {
   }
   return {
     ...state,
-    stage: 'running',
+    stage: 'icebreaker',
     timer: createTimer(DEFAULT_TIMER_DURATION_MS),
+    icebreaker: createIcebreaker(
+      state.participants,
+      ICEBREAKER_QUESTIONS,
+      picker,
+    ),
   };
+}
+
+export function advanceIcebreakerParticipant(state: RetroState): RetroState {
+  if (state.icebreaker === null) {
+    throw new Error('No active icebreaker');
+  }
+  return { ...state, icebreaker: nextIcebreakerParticipant(state.icebreaker) };
 }
 
 function requireTimer(state: RetroState): Timer {
