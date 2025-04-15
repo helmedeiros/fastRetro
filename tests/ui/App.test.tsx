@@ -55,4 +55,27 @@ describe('App', () => {
     });
     expect(within(rotation).getByText('Alice')).toBeInTheDocument();
   });
+
+  it('transitions from icebreaker to brainstorm with a 5:00 timer', () => {
+    render(
+      <App
+        repository={new InMemoryRetroRepository()}
+        picker={firstPicker}
+      />,
+    );
+    const input = screen.getByLabelText(/participant name/i);
+    fireEvent.change(input, { target: { value: 'Alice' } });
+    fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /start retro/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to brainstorm/i }),
+    );
+    expect(
+      screen.getByRole('heading', { name: /brainstorm/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('5:00');
+    expect(
+      screen.getByRole('region', { name: /start column/i }),
+    ).toBeInTheDocument();
+  });
 });

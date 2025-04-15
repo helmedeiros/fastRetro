@@ -34,6 +34,7 @@ describe('IcebreakerPage', () => {
         onResumeTimer={noop}
         onResetTimer={noop}
         onNextParticipant={noop}
+        onContinueToBrainstorm={noop}
       />,
     );
     expect(screen.getByTestId('icebreaker-question')).toHaveTextContent(
@@ -58,6 +59,7 @@ describe('IcebreakerPage', () => {
         onResumeTimer={noop}
         onResetTimer={noop}
         onNextParticipant={onNext}
+        onContinueToBrainstorm={noop}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /next/i }));
@@ -75,6 +77,7 @@ describe('IcebreakerPage', () => {
         onResumeTimer={noop}
         onResetTimer={noop}
         onNextParticipant={noop}
+        onContinueToBrainstorm={noop}
       />,
     );
     expect(screen.getByRole('button', { name: /next/i })).toBeDisabled();
@@ -94,8 +97,30 @@ describe('IcebreakerPage', () => {
         onResumeTimer={noop}
         onResetTimer={noop}
         onNextParticipant={noop}
+        onContinueToBrainstorm={noop}
       />,
     );
     expect(screen.getByTestId('time-remaining')).toHaveTextContent('10:00');
+  });
+
+  it('fires onContinueToBrainstorm when clicked', () => {
+    const onContinue = vi.fn();
+    render(
+      <IcebreakerPage
+        timer={createTimer(10 * 60 * 1000)}
+        icebreaker={baseState(0)}
+        participants={participants}
+        onStartTimer={noop}
+        onPauseTimer={noop}
+        onResumeTimer={noop}
+        onResetTimer={noop}
+        onNextParticipant={noop}
+        onContinueToBrainstorm={onContinue}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to brainstorm/i }),
+    );
+    expect(onContinue).toHaveBeenCalledTimes(1);
   });
 });

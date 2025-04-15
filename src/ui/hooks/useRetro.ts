@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CryptoIdGenerator } from '../../adapters/id/CryptoIdGenerator';
 import { AddParticipant } from '../../application/usecases/AddParticipant';
 import { RemoveParticipant } from '../../application/usecases/RemoveParticipant';
 import { StartIcebreaker } from '../../application/usecases/StartIcebreaker';
 import { AdvanceIcebreaker } from '../../application/usecases/AdvanceIcebreaker';
+import { StartBrainstorm } from '../../application/usecases/StartBrainstorm';
+import { AddCard } from '../../application/usecases/AddCard';
+import { RemoveCard } from '../../application/usecases/RemoveCard';
 import { StartTimer } from '../../application/usecases/StartTimer';
 import { PauseTimer } from '../../application/usecases/PauseTimer';
 import { ResumeTimer } from '../../application/usecases/ResumeTimer';
 import { ResetTimer } from '../../application/usecases/ResetTimer';
 import { TickTimer } from '../../application/usecases/TickTimer';
 import type { Clock } from '../../domain/ports/Clock';
+import type { IdGenerator } from '../../domain/ports/IdGenerator';
 import type { Picker } from '../../domain/ports/Picker';
 import type { RetroRepository } from '../../domain/ports/RetroRepository';
+import type { Card, ColumnId } from '../../domain/retro/Card';
 import type { Participant } from '../../domain/retro/Participant';
 import type { RetroStage, RetroState } from '../../domain/retro/Retro';
 import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
@@ -22,10 +26,14 @@ export interface UseRetro {
   participants: readonly Participant[];
   timer: Timer | null;
   icebreaker: IcebreakerState | null;
+  cards: readonly Card[];
   addParticipant: (name: string) => void;
   removeParticipant: (id: string) => void;
   startIcebreaker: () => void;
   advanceIcebreaker: () => void;
+  startBrainstorm: () => void;
+  addCard: (columnId: ColumnId, text: string) => void;
+  removeCard: (cardId: string) => void;
   startTimer: () => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
@@ -35,23 +43,27 @@ export interface UseRetro {
 export function useRetro(
   repository: RetroRepository,
   picker: Picker<string>,
+  idGenerator: IdGenerator,
   clock?: Clock,
 ): UseRetro {
-  const services = useMemo(() => {
-    const ids = new CryptoIdGenerator();
-    return {
+  const services = useMemo(
+    () => ({
       repo: repository,
-      add: new AddParticipant(repository, ids),
+      add: new AddParticipant(repository, idGenerator),
       remove: new RemoveParticipant(repository),
       startIcebreaker: new StartIcebreaker(repository, picker),
       advanceIcebreaker: new AdvanceIcebreaker(repository),
+      startBrainstorm: new StartBrainstorm(repository),
+      addCard: new AddCard(repository, idGenerator),
+      removeCard: new RemoveCard(repository),
       startTimer: new StartTimer(repository),
       pauseTimer: new PauseTimer(repository),
       resumeTimer: new ResumeTimer(repository),
       resetTimer: new ResetTimer(repository),
       tickTimer: new TickTimer(repository),
-    };
-  }, [repository, picker]);
+    }),
+    [repository, picker, idGenerator],
+  );
 
   const [state, setState] = useState<RetroState>(() => services.repo.load());
   const refresh = useCallback(() => {
@@ -108,6 +120,27 @@ export function useRetro(
     refresh();
   }, [services, refresh]);
 
+  const startBrainstorm = useCallback(() => {
+    services.startBrainstorm.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const addCard = useCallback(
+    (columnId: ColumnId, text: string) => {
+      services.addCard.execute(columnId, text);
+      refresh();
+    },
+    [services, refresh],
+  );
+
+  const removeCard = useCallback(
+    (cardId: string) => {
+      services.removeCard.execute(cardId);
+      refresh();
+    },
+    [services, refresh],
+  );
+
   const startTimer = useCallback(() => {
     services.startTimer.execute();
     refresh();
@@ -133,10 +166,14 @@ export function useRetro(
     participants: state.participants,
     timer: state.timer,
     icebreaker: state.icebreaker,
+    cards: state.cards,
     addParticipant,
     removeParticipant,
     startIcebreaker,
     advanceIcebreaker,
+    startBrainstorm,
+    addCard,
+    removeCard,
     startTimer,
     pauseTimer,
     resumeTimer,

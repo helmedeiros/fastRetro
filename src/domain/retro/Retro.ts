@@ -9,6 +9,8 @@ import {
   resetTimer as resetTimerState,
 } from './Timer';
 import type { Picker } from '../ports/Picker';
+import type { IdGenerator } from '../ports/IdGenerator';
+import { Card, ColumnId, createCard } from './Card';
 import {
   ICEBREAKER_QUESTIONS,
   IcebreakerState,
@@ -16,15 +18,19 @@ import {
   nextParticipant as nextIcebreakerParticipant,
 } from './stages/Icebreaker';
 
-export type RetroStage = 'setup' | 'icebreaker';
+export type RetroStage = 'setup' | 'icebreaker' | 'brainstorm';
 
-export const DEFAULT_TIMER_DURATION_MS = 10 * 60 * 1000;
+export const STAGE_DURATIONS: Readonly<Record<'icebreaker' | 'brainstorm', number>> = {
+  icebreaker: 10 * 60 * 1000,
+  brainstorm: 5 * 60 * 1000,
+};
 
 export interface RetroState {
   readonly stage: RetroStage;
   readonly participants: readonly Participant[];
   readonly timer: Timer | null;
   readonly icebreaker: IcebreakerState | null;
+  readonly cards: readonly Card[];
 }
 
 export function createRetro(): RetroState {
@@ -33,6 +39,7 @@ export function createRetro(): RetroState {
     participants: [],
     timer: null,
     icebreaker: null,
+    cards: [],
   };
 }
 
@@ -75,7 +82,7 @@ export function startIcebreaker(
   return {
     ...state,
     stage: 'icebreaker',
-    timer: createTimer(DEFAULT_TIMER_DURATION_MS),
+    timer: createTimer(STAGE_DURATIONS.icebreaker),
     icebreaker: createIcebreaker(
       state.participants,
       ICEBREAKER_QUESTIONS,
@@ -89,6 +96,44 @@ export function advanceIcebreakerParticipant(state: RetroState): RetroState {
     throw new Error('No active icebreaker');
   }
   return { ...state, icebreaker: nextIcebreakerParticipant(state.icebreaker) };
+}
+
+export function startBrainstorm(state: RetroState): RetroState {
+  if (state.stage !== 'icebreaker') {
+    throw new Error('Brainstorm can only start from the icebreaker stage');
+  }
+  return {
+    ...state,
+    stage: 'brainstorm',
+    timer: createTimer(STAGE_DURATIONS.brainstorm),
+  };
+}
+
+export function addCardToBrainstorm(
+  state: RetroState,
+  columnId: ColumnId,
+  text: string,
+  ids: IdGenerator,
+): RetroState {
+  if (state.stage !== 'brainstorm') {
+    throw new Error('Cards can only be added during brainstorm');
+  }
+  const card = createCard(ids.next(), columnId, text);
+  return { ...state, cards: [...state.cards, card] };
+}
+
+export function removeCardFromBrainstorm(
+  state: RetroState,
+  cardId: string,
+): RetroState {
+  if (state.stage !== 'brainstorm') {
+    throw new Error('Cards can only be removed during brainstorm');
+  }
+  const next = state.cards.filter((c) => c.id !== cardId);
+  if (next.length === state.cards.length) {
+    throw new Error(`Card with id "${cardId}" not found`);
+  }
+  return { ...state, cards: next };
 }
 
 function requireTimer(state: RetroState): Timer {

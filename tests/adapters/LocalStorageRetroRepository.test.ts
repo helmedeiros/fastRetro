@@ -4,15 +4,26 @@ import {
   STORAGE_KEY,
 } from '../../src/adapters/storage/LocalStorageRetroRepository';
 import {
+  addCardToBrainstorm,
   addParticipant,
   advanceIcebreakerParticipant,
   createRetro,
+  startBrainstorm,
   startIcebreaker,
   startRetroTimer,
   tickRetroTimer,
   pauseRetroTimer,
 } from '../../src/domain/retro/Retro';
 import type { Picker } from '../../src/domain/ports/Picker';
+import type { IdGenerator } from '../../src/domain/ports/IdGenerator';
+
+class SeqIds implements IdGenerator {
+  private n = 0;
+  next(): string {
+    this.n += 1;
+    return `c-${String(this.n)}`;
+  }
+}
 
 const firstPicker: Picker<string> = {
   pick: <T,>(items: readonly T[]): T => items[0] as T,
@@ -87,7 +98,7 @@ describe('LocalStorageRetroRepository', () => {
   it('returns a fresh empty Retro when payload shape is invalid', () => {
     storage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ version: 3, retro: { participants: 'nope' } }),
+      JSON.stringify({ version: 4, retro: { participants: 'nope' } }),
     );
     const repo = new LocalStorageRetroRepository(storage);
     expect(repo.load()).toEqual(createRetro());
@@ -98,9 +109,9 @@ describe('LocalStorageRetroRepository', () => {
     repo.save(addParticipant(createRetro(), 'id-1', 'Alice'));
     const raw = storage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
-    expect(STORAGE_KEY).toBe('fastretro:state:v3');
+    expect(STORAGE_KEY).toBe('fastretro:state:v4');
     const parsed = JSON.parse(raw as string) as { version: number };
-    expect(parsed.version).toBe(3);
+    expect(parsed.version).toBe(4);
   });
 
   it('round-trips stage, timer, and icebreaker state', () => {
@@ -122,5 +133,26 @@ describe('LocalStorageRetroRepository', () => {
     expect(loaded.timer?.elapsedMs).toBe(2500);
     expect(loaded.icebreaker?.currentIndex).toBe(1);
     expect(loaded.icebreaker?.question).toBeTruthy();
+  });
+
+  it('round-trips brainstorm stage and cards', () => {
+    const repo = new LocalStorageRetroRepository(storage);
+    const ids = new SeqIds();
+    let state = createRetro();
+    state = addParticipant(state, 'p-1', 'Alice');
+    state = startIcebreaker(state, firstPicker);
+    state = startBrainstorm(state);
+    state = addCardToBrainstorm(state, 'start', 'ship faster', ids);
+    state = addCardToBrainstorm(state, 'stop', 'long meetings', ids);
+    repo.save(state);
+
+    const loaded = new LocalStorageRetroRepository(storage).load();
+    expect(loaded).toEqual(state);
+    expect(loaded.stage).toBe('brainstorm');
+    expect(loaded.cards.map((c) => c.text)).toEqual([
+      'ship faster',
+      'long meetings',
+    ]);
+    expect(loaded.cards.map((c) => c.columnId)).toEqual(['start', 'stop']);
   });
 });

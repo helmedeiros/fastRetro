@@ -10,9 +10,21 @@ import {
   resumeRetroTimer,
   tickRetroTimer,
   resetRetroTimer,
-  DEFAULT_TIMER_DURATION_MS,
+  STAGE_DURATIONS,
+  startBrainstorm,
+  addCardToBrainstorm,
+  removeCardFromBrainstorm,
 } from '../../src/domain/retro/Retro';
 import type { Picker } from '../../src/domain/ports/Picker';
+import type { IdGenerator } from '../../src/domain/ports/IdGenerator';
+
+class SeqIds implements IdGenerator {
+  private n = 0;
+  next(): string {
+    this.n += 1;
+    return `card-${String(this.n)}`;
+  }
+}
 
 const firstPicker: Picker<string> = {
   pick: <T,>(items: readonly T[]): T => items[0] as T,
@@ -82,7 +94,7 @@ describe('Retro stage + timer', () => {
     );
     expect(s.stage).toBe('icebreaker');
     expect(s.timer).not.toBeNull();
-    expect(s.timer?.durationMs).toBe(DEFAULT_TIMER_DURATION_MS);
+    expect(s.timer?.durationMs).toBe(STAGE_DURATIONS.icebreaker);
     expect(s.timer?.status).toBe('idle');
     expect(s.icebreaker).not.toBeNull();
     expect(s.icebreaker?.currentIndex).toBe(0);
@@ -144,5 +156,68 @@ describe('Retro stage + timer', () => {
     expect(() => pauseRetroTimer(s)).toThrow();
     expect(() => resumeRetroTimer(s)).toThrow();
     expect(() => resetRetroTimer(s)).toThrow();
+  });
+});
+
+describe('Retro brainstorm stage', () => {
+  function ready(): ReturnType<typeof createRetro> {
+    let s = createRetro();
+    s = addParticipant(s, 'p-1', 'Alice');
+    s = startIcebreaker(s, firstPicker);
+    return s;
+  }
+
+  it('createRetro starts with no cards', () => {
+    expect(createRetro().cards).toEqual([]);
+  });
+
+  it('startBrainstorm transitions from icebreaker with a fresh 5-min timer', () => {
+    const s = startBrainstorm(ready());
+    expect(s.stage).toBe('brainstorm');
+    expect(s.timer?.durationMs).toBe(STAGE_DURATIONS.brainstorm);
+    expect(s.timer?.status).toBe('idle');
+    expect(s.cards).toEqual([]);
+  });
+
+  it('startBrainstorm rejects when not in icebreaker stage', () => {
+    expect(() => startBrainstorm(createRetro())).toThrow(/icebreaker/);
+  });
+
+  it('addCardToBrainstorm appends a card in insertion order', () => {
+    const ids = new SeqIds();
+    let s = startBrainstorm(ready());
+    s = addCardToBrainstorm(s, 'start', 'ship faster', ids);
+    s = addCardToBrainstorm(s, 'stop', 'long meetings', ids);
+    expect(s.cards.map((c) => c.text)).toEqual([
+      'ship faster',
+      'long meetings',
+    ]);
+    expect(s.cards.map((c) => c.columnId)).toEqual(['start', 'stop']);
+  });
+
+  it('addCardToBrainstorm requires brainstorm stage', () => {
+    expect(() =>
+      addCardToBrainstorm(createRetro(), 'start', 'x', new SeqIds()),
+    ).toThrow(/brainstorm/);
+  });
+
+  it('removeCardFromBrainstorm removes by id', () => {
+    const ids = new SeqIds();
+    let s = startBrainstorm(ready());
+    s = addCardToBrainstorm(s, 'start', 'a', ids);
+    s = addCardToBrainstorm(s, 'start', 'b', ids);
+    s = removeCardFromBrainstorm(s, 'card-1');
+    expect(s.cards.map((c) => c.id)).toEqual(['card-2']);
+  });
+
+  it('removeCardFromBrainstorm throws when card id not found', () => {
+    const s = startBrainstorm(ready());
+    expect(() => removeCardFromBrainstorm(s, 'missing')).toThrow(/not found/);
+  });
+
+  it('removeCardFromBrainstorm requires brainstorm stage', () => {
+    expect(() => removeCardFromBrainstorm(createRetro(), 'x')).toThrow(
+      /brainstorm/,
+    );
   });
 });

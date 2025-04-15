@@ -12,6 +12,7 @@ export interface IcebreakerPageProps {
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onNextParticipant: () => void;
+  onContinueToBrainstorm: () => void;
 }
 
 export function IcebreakerPage({
@@ -23,6 +24,7 @@ export function IcebreakerPage({
   onResumeTimer,
   onResetTimer,
   onNextParticipant,
+  onContinueToBrainstorm,
 }: IcebreakerPageProps): JSX.Element {
   const currentId = icebreaker.participantIds[icebreaker.currentIndex];
   const atEnd = icebreaker.currentIndex >= icebreaker.participantIds.length - 1;
@@ -58,6 +60,9 @@ export function IcebreakerPage({
       </ul>
       <button type="button" onClick={onNextParticipant} disabled={atEnd}>
         Next
+      </button>
+      <button type="button" onClick={onContinueToBrainstorm}>
+        Continue to brainstorm
       </button>
     </section>
   );

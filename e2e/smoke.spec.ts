@@ -76,7 +76,6 @@ test('setup, persist, run icebreaker with rotating participant', async ({
   await expect(nextButton).toBeDisabled();
 
   await page.reload();
-
   await expect(
     page.getByRole('heading', { name: /icebreaker/i }),
   ).toBeVisible();
@@ -84,5 +83,38 @@ test('setup, persist, run icebreaker with rotating participant', async ({
   await expect(
     rotation.locator('li[data-current="true"]'),
   ).toHaveText(secondName ?? '');
-  await expect(page.getByRole('button', { name: /^next$/i })).toBeDisabled();
+
+  await page
+    .getByRole('button', { name: /continue to brainstorm/i })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: /brainstorm/i }),
+  ).toBeVisible();
+  await expect(page.getByTestId('time-remaining')).toHaveText('05:00');
+
+  const startCol = page.getByRole('region', { name: /start column/i });
+  const stopCol = page.getByRole('region', { name: /stop column/i });
+  await startCol.getByLabel(/start card text/i).fill('ship faster');
+  await startCol.getByRole('button', { name: /add start card/i }).click();
+  await stopCol.getByLabel(/stop card text/i).fill('long meetings');
+  await stopCol.getByRole('button', { name: /add stop card/i }).click();
+
+  await expect(startCol.getByText('ship faster')).toBeVisible();
+  await expect(stopCol.getByText('long meetings')).toBeVisible();
+
+  await page.reload();
+
+  await expect(
+    page.getByRole('heading', { name: /brainstorm/i }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: /start column/i })
+      .getByText('ship faster'),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: /stop column/i })
+      .getByText('long meetings'),
+  ).toBeVisible();
 });

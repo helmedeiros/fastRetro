@@ -7,55 +7,67 @@ import {
 import type { Participant } from '../../domain/retro/Participant';
 import type { Timer, TimerStatus } from '../../domain/retro/Timer';
 import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
+import type { Card, ColumnId } from '../../domain/retro/Card';
 
-export const STORAGE_KEY = 'fastretro:state:v3';
-export const SCHEMA_VERSION = 3;
+export const STORAGE_KEY = 'fastretro:state:v4';
+export const SCHEMA_VERSION = 4;
 
-interface PersistedParticipantV3 {
+interface PersistedParticipantV4 {
   readonly id: string;
   readonly name: string;
 }
 
-interface PersistedTimerV3 {
+interface PersistedTimerV4 {
   readonly status: TimerStatus;
   readonly durationMs: number;
   readonly elapsedMs: number;
   readonly remainingMs: number;
 }
 
-interface PersistedIcebreakerV3 {
+interface PersistedIcebreakerV4 {
   readonly question: string;
   readonly participantIds: readonly string[];
   readonly currentIndex: number;
 }
 
-interface PersistedRetroStateV3 {
+interface PersistedCardV4 {
+  readonly id: string;
+  readonly columnId: ColumnId;
+  readonly text: string;
+}
+
+interface PersistedRetroStateV4 {
   readonly stage: RetroStage;
-  readonly participants: readonly PersistedParticipantV3[];
-  readonly timer: PersistedTimerV3 | null;
-  readonly icebreaker: PersistedIcebreakerV3 | null;
+  readonly participants: readonly PersistedParticipantV4[];
+  readonly timer: PersistedTimerV4 | null;
+  readonly icebreaker: PersistedIcebreakerV4 | null;
+  readonly cards: readonly PersistedCardV4[];
 }
 
-interface PersistedRetroV3 {
-  readonly version: 3;
-  readonly retro: PersistedRetroStateV3;
+interface PersistedRetroV4 {
+  readonly version: 4;
+  readonly retro: PersistedRetroStateV4;
 }
 
-function isPersistedParticipant(value: unknown): value is PersistedParticipantV3 {
+function isPersistedParticipant(value: unknown): value is PersistedParticipantV4 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return typeof v.id === 'string' && typeof v.name === 'string';
 }
 
 function isStage(value: unknown): value is RetroStage {
-  return value === 'setup' || value === 'icebreaker';
+  return value === 'setup' || value === 'icebreaker' || value === 'brainstorm';
+}
+
+function isColumnId(value: unknown): value is ColumnId {
+  return value === 'start' || value === 'stop';
 }
 
 function isTimerStatus(value: unknown): value is TimerStatus {
   return value === 'idle' || value === 'running' || value === 'paused';
 }
 
-function isPersistedTimer(value: unknown): value is PersistedTimerV3 {
+function isPersistedTimer(value: unknown): value is PersistedTimerV4 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
@@ -68,7 +80,7 @@ function isPersistedTimer(value: unknown): value is PersistedTimerV3 {
 
 function isPersistedIcebreaker(
   value: unknown,
-): value is PersistedIcebreakerV3 {
+): value is PersistedIcebreakerV4 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   if (typeof v.question !== 'string') return false;
@@ -78,7 +90,17 @@ function isPersistedIcebreaker(
   return true;
 }
 
-function isPersistedRetroV3(value: unknown): value is PersistedRetroV3 {
+function isPersistedCard(value: unknown): value is PersistedCardV4 {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.id === 'string' &&
+    typeof v.text === 'string' &&
+    isColumnId(v.columnId)
+  );
+}
+
+function isPersistedRetroV4(value: unknown): value is PersistedRetroV4 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   if (v.version !== SCHEMA_VERSION) return false;
@@ -90,6 +112,8 @@ function isPersistedRetroV3(value: unknown): value is PersistedRetroV3 {
   if (retro.timer !== null && !isPersistedTimer(retro.timer)) return false;
   if (retro.icebreaker !== null && !isPersistedIcebreaker(retro.icebreaker))
     return false;
+  if (!Array.isArray(retro.cards)) return false;
+  if (!retro.cards.every(isPersistedCard)) return false;
   return true;
 }
 
@@ -107,7 +131,7 @@ export class LocalStorageRetroRepository implements RetroRepository {
     } catch {
       return createRetro();
     }
-    if (!isPersistedRetroV3(parsed)) {
+    if (!isPersistedRetroV4(parsed)) {
       return createRetro();
     }
     const participants: readonly Participant[] = parsed.retro.participants.map(
@@ -130,16 +154,22 @@ export class LocalStorageRetroRepository implements RetroRepository {
             participantIds: [...parsed.retro.icebreaker.participantIds],
             currentIndex: parsed.retro.icebreaker.currentIndex,
           };
+    const cards: readonly Card[] = parsed.retro.cards.map((c) => ({
+      id: c.id,
+      columnId: c.columnId,
+      text: c.text,
+    }));
     return {
       stage: parsed.retro.stage,
       participants,
       timer,
       icebreaker,
+      cards,
     };
   }
 
   save(state: RetroState): void {
-    const payload: PersistedRetroV3 = {
+    const payload: PersistedRetroV4 = {
       version: SCHEMA_VERSION,
       retro: {
         stage: state.stage,
@@ -164,6 +194,11 @@ export class LocalStorageRetroRepository implements RetroRepository {
                 participantIds: [...state.icebreaker.participantIds],
                 currentIndex: state.icebreaker.currentIndex,
               },
+        cards: state.cards.map((c) => ({
+          id: c.id,
+          columnId: c.columnId,
+          text: c.text,
+        })),
       },
     };
     this.storage.setItem(STORAGE_KEY, JSON.stringify(payload));
