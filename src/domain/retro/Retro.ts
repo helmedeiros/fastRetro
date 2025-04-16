@@ -13,21 +13,40 @@ import type { IdGenerator } from '../ports/IdGenerator';
 import { Card, ColumnId, createCard } from './Card';
 import { Vote } from './Vote';
 import {
+  DiscussLane,
+  DiscussNote,
+  createDiscussNote,
+} from './DiscussNote';
+import {
   ICEBREAKER_QUESTIONS,
   IcebreakerState,
   createIcebreaker,
   nextParticipant as nextIcebreakerParticipant,
 } from './stages/Icebreaker';
 
-export type RetroStage = 'setup' | 'icebreaker' | 'brainstorm' | 'vote';
+export type RetroStage =
+  | 'setup'
+  | 'icebreaker'
+  | 'brainstorm'
+  | 'vote'
+  | 'discuss';
 
 export const STAGE_DURATIONS: Readonly<
-  Record<'icebreaker' | 'brainstorm' | 'vote', number>
+  Record<'icebreaker' | 'brainstorm' | 'vote' | 'discuss', number>
 > = {
   icebreaker: 10 * 60 * 1000,
   brainstorm: 5 * 60 * 1000,
   vote: 5 * 60 * 1000,
+  discuss: 2.5 * 60 * 1000,
 };
+
+export type DiscussSegment = 'context' | 'actions';
+
+export interface DiscussState {
+  readonly order: readonly string[];
+  readonly currentIndex: number;
+  readonly segment: DiscussSegment;
+}
 
 export const DEFAULT_VOTE_BUDGET = 3;
 
@@ -39,6 +58,8 @@ export interface RetroState {
   readonly cards: readonly Card[];
   readonly votes: readonly Vote[];
   readonly voteBudget: number;
+  readonly discuss: DiscussState | null;
+  readonly discussNotes: readonly DiscussNote[];
 }
 
 export function createRetro(): RetroState {
@@ -50,6 +71,8 @@ export function createRetro(): RetroState {
     cards: [],
     votes: [],
     voteBudget: DEFAULT_VOTE_BUDGET,
+    discuss: null,
+    discussNotes: [],
   };
 }
 
@@ -207,6 +230,119 @@ export function castVote(
     return state;
   }
   return { ...state, votes: [...state.votes, { participantId, cardId }] };
+}
+
+export function startDiscuss(state: RetroState): RetroState {
+  if (state.stage !== 'vote') {
+    throw new Error('Discuss can only start from the vote stage');
+  }
+  const insertionIndex = new Map<string, number>();
+  state.cards.forEach((c, i) => insertionIndex.set(c.id, i));
+  const order = [...state.cards]
+    .sort((a, b) => {
+      const va = votesForCard(state, a.id);
+      const vb = votesForCard(state, b.id);
+      if (vb !== va) return vb - va;
+      return (
+        (insertionIndex.get(a.id) ?? 0) - (insertionIndex.get(b.id) ?? 0)
+      );
+    })
+    .map((c) => c.id);
+  return {
+    ...state,
+    stage: 'discuss',
+    timer: createTimer(STAGE_DURATIONS.discuss),
+    discuss: {
+      order,
+      currentIndex: 0,
+      segment: 'context',
+    },
+  };
+}
+
+function requireDiscuss(state: RetroState): DiscussState {
+  if (state.discuss === null) {
+    throw new Error('No active discuss state');
+  }
+  return state.discuss;
+}
+
+export function advanceDiscussSegment(state: RetroState): RetroState {
+  const d = requireDiscuss(state);
+  if (d.segment === 'context') {
+    return {
+      ...state,
+      discuss: { ...d, segment: 'actions' },
+      timer: createTimer(STAGE_DURATIONS.discuss),
+    };
+  }
+  if (d.currentIndex >= d.order.length - 1) {
+    return state;
+  }
+  return {
+    ...state,
+    discuss: {
+      ...d,
+      currentIndex: d.currentIndex + 1,
+      segment: 'context',
+    },
+    timer: createTimer(STAGE_DURATIONS.discuss),
+  };
+}
+
+export function previousDiscussSegment(state: RetroState): RetroState {
+  const d = requireDiscuss(state);
+  if (d.segment === 'actions') {
+    return {
+      ...state,
+      discuss: { ...d, segment: 'context' },
+      timer: createTimer(STAGE_DURATIONS.discuss),
+    };
+  }
+  if (d.currentIndex === 0) {
+    return state;
+  }
+  return {
+    ...state,
+    discuss: {
+      ...d,
+      currentIndex: d.currentIndex - 1,
+      segment: 'actions',
+    },
+    timer: createTimer(STAGE_DURATIONS.discuss),
+  };
+}
+
+export function addDiscussNote(
+  state: RetroState,
+  parentCardId: string,
+  lane: DiscussLane,
+  text: string,
+  ids: IdGenerator,
+): RetroState {
+  if (state.stage !== 'discuss') {
+    throw new Error('Discuss notes can only be added during discuss');
+  }
+  const cardExists = state.cards.some((c) => c.id === parentCardId);
+  if (!cardExists) {
+    throw new Error(`Card with id "${parentCardId}" not found`);
+  }
+  const note = createDiscussNote(ids.next(), parentCardId, lane, text);
+  return { ...state, discussNotes: [...state.discussNotes, note] };
+}
+
+export function removeDiscussNote(
+  state: RetroState,
+  noteId: string,
+): RetroState {
+  if (state.stage !== 'discuss') {
+    throw new Error('Discuss notes can only be removed during discuss');
+  }
+  const next = state.discussNotes.filter((n) => n.id !== noteId);
+  if (next.length === state.discussNotes.length) {
+    throw new Error(`Discuss note with id "${noteId}" not found`);
+  }
+  return { ...state, discussNotes: next };
 }
 
 function requireTimer(state: RetroState): Timer {

@@ -5,12 +5,15 @@ import {
 } from '../../src/adapters/storage/LocalStorageRetroRepository';
 import {
   addCardToBrainstorm,
+  addDiscussNote,
   addParticipant,
+  advanceDiscussSegment,
   advanceIcebreakerParticipant,
   castVote,
   createRetro,
   setVoteBudget,
   startBrainstorm,
+  startDiscuss,
   startIcebreaker,
   startRetroTimer,
   startVote,
@@ -112,9 +115,9 @@ describe('LocalStorageRetroRepository', () => {
     repo.save(addParticipant(createRetro(), 'id-1', 'Alice'));
     const raw = storage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
-    expect(STORAGE_KEY).toBe('fastretro:state:v5');
+    expect(STORAGE_KEY).toBe('fastretro:state:v6');
     const parsed = JSON.parse(raw as string) as { version: number };
-    expect(parsed.version).toBe(5);
+    expect(parsed.version).toBe(6);
   });
 
   it('round-trips stage, timer, and icebreaker state', () => {
@@ -180,5 +183,29 @@ describe('LocalStorageRetroRepository', () => {
     expect(loaded.stage).toBe('vote');
     expect(loaded.voteBudget).toBe(2);
     expect(loaded.votes).toHaveLength(2);
+  });
+
+  it('round-trips discuss stage with notes', () => {
+    const repo = new LocalStorageRetroRepository(storage);
+    const ids = new SeqIds();
+    let state = createRetro();
+    state = addParticipant(state, 'p-1', 'Alice');
+    state = startIcebreaker(state, firstPicker);
+    state = startBrainstorm(state);
+    state = addCardToBrainstorm(state, 'start', 'ship faster', ids);
+    state = addCardToBrainstorm(state, 'stop', 'long meetings', ids);
+    state = startVote(state);
+    state = castVote(state, 'p-1', 'c-1');
+    state = startDiscuss(state);
+    state = addDiscussNote(state, 'c-1', 'context', 'we have CI flakes', ids);
+    state = advanceDiscussSegment(state);
+    state = addDiscussNote(state, 'c-1', 'actions', 'fix flaky test', ids);
+    repo.save(state);
+
+    const loaded = new LocalStorageRetroRepository(storage).load();
+    expect(loaded).toEqual(state);
+    expect(loaded.stage).toBe('discuss');
+    expect(loaded.discuss?.segment).toBe('actions');
+    expect(loaded.discussNotes).toHaveLength(2);
   });
 });

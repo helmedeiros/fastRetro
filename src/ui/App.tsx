@@ -10,6 +10,7 @@ import { SetupPage } from './pages/SetupPage';
 import { IcebreakerPage } from './pages/IcebreakerPage';
 import { BrainstormPage } from './pages/BrainstormPage';
 import { VotePage } from './pages/VotePage';
+import { DiscussPage } from './pages/DiscussPage';
 
 export interface AppProps {
   repository: RetroRepository;
@@ -21,7 +22,7 @@ export interface AppProps {
 const defaultPicker = new RandomPicker<string>();
 
 function noop(): void {
-  // discuss stage not yet implemented
+  // review stage not yet implemented
 }
 
 export function App({
@@ -85,7 +86,26 @@ export function App({
           onResetTimer={retro.resetTimer}
           onSetVoteBudget={retro.setVoteBudget}
           onCastVote={retro.castVote}
-          onContinueToDiscuss={noop}
+          onContinueToDiscuss={retro.startDiscuss}
+        />
+      ) : retro.stage === 'discuss' &&
+        retro.timer !== null &&
+        retro.discuss !== null ? (
+        <DiscussPage
+          timer={retro.timer}
+          cards={retro.cards}
+          votes={retro.votes}
+          discuss={retro.discuss}
+          notes={retro.discussNotes}
+          onStartTimer={retro.startTimer}
+          onPauseTimer={retro.pauseTimer}
+          onResumeTimer={retro.resumeTimer}
+          onResetTimer={retro.resetTimer}
+          onPreviousSegment={retro.previousDiscussSegment}
+          onNextSegment={retro.advanceDiscussSegment}
+          onAddNote={retro.addDiscussNote}
+          onRemoveNote={retro.removeDiscussNote}
+          onContinueToReview={noop}
         />
       ) : null}
     </main>

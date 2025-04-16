@@ -14,6 +14,16 @@ import { PauseTimer } from '../../application/usecases/PauseTimer';
 import { ResumeTimer } from '../../application/usecases/ResumeTimer';
 import { ResetTimer } from '../../application/usecases/ResetTimer';
 import { TickTimer } from '../../application/usecases/TickTimer';
+import { StartDiscuss } from '../../application/usecases/StartDiscuss';
+import { AdvanceDiscussSegment } from '../../application/usecases/AdvanceDiscussSegment';
+import { PreviousDiscussSegment } from '../../application/usecases/PreviousDiscussSegment';
+import { AddDiscussNote } from '../../application/usecases/AddDiscussNote';
+import { RemoveDiscussNote } from '../../application/usecases/RemoveDiscussNote';
+import type {
+  DiscussLane,
+  DiscussNote,
+} from '../../domain/retro/DiscussNote';
+import type { DiscussState } from '../../domain/retro/Retro';
 import type { Clock } from '../../domain/ports/Clock';
 import type { IdGenerator } from '../../domain/ports/IdGenerator';
 import type { Picker } from '../../domain/ports/Picker';
@@ -33,6 +43,8 @@ export interface UseRetro {
   cards: readonly Card[];
   votes: readonly Vote[];
   voteBudget: number;
+  discuss: DiscussState | null;
+  discussNotes: readonly DiscussNote[];
   addParticipant: (name: string) => void;
   removeParticipant: (id: string) => void;
   startIcebreaker: () => void;
@@ -47,6 +59,11 @@ export interface UseRetro {
   pauseTimer: () => void;
   resumeTimer: () => void;
   resetTimer: () => void;
+  startDiscuss: () => void;
+  advanceDiscussSegment: () => void;
+  previousDiscussSegment: () => void;
+  addDiscussNote: (parentCardId: string, lane: DiscussLane, text: string) => void;
+  removeDiscussNote: (noteId: string) => void;
 }
 
 export function useRetro(
@@ -73,6 +90,11 @@ export function useRetro(
       resumeTimer: new ResumeTimer(repository),
       resetTimer: new ResetTimer(repository),
       tickTimer: new TickTimer(repository),
+      startDiscuss: new StartDiscuss(repository),
+      advanceDiscussSegment: new AdvanceDiscussSegment(repository),
+      previousDiscussSegment: new PreviousDiscussSegment(repository),
+      addDiscussNote: new AddDiscussNote(repository, idGenerator),
+      removeDiscussNote: new RemoveDiscussNote(repository),
     }),
     [repository, picker, idGenerator],
   );
@@ -194,6 +216,37 @@ export function useRetro(
     refresh();
   }, [services, refresh]);
 
+  const startDiscuss = useCallback(() => {
+    services.startDiscuss.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const advanceDiscussSegment = useCallback(() => {
+    services.advanceDiscussSegment.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const previousDiscussSegment = useCallback(() => {
+    services.previousDiscussSegment.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const addDiscussNote = useCallback(
+    (parentCardId: string, lane: DiscussLane, text: string) => {
+      services.addDiscussNote.execute(parentCardId, lane, text);
+      refresh();
+    },
+    [services, refresh],
+  );
+
+  const removeDiscussNote = useCallback(
+    (noteId: string) => {
+      services.removeDiscussNote.execute(noteId);
+      refresh();
+    },
+    [services, refresh],
+  );
+
   return {
     stage: state.stage,
     participants: state.participants,
@@ -202,6 +255,8 @@ export function useRetro(
     cards: state.cards,
     votes: state.votes,
     voteBudget: state.voteBudget,
+    discuss: state.discuss,
+    discussNotes: state.discussNotes,
     addParticipant,
     removeParticipant,
     startIcebreaker,
@@ -216,5 +271,10 @@ export function useRetro(
     pauseTimer,
     resumeTimer,
     resetTimer,
+    startDiscuss,
+    advanceDiscussSegment,
+    previousDiscussSegment,
+    addDiscussNote,
+    removeDiscussNote,
   };
 }

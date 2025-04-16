@@ -138,4 +138,48 @@ test('setup, persist, run icebreaker with rotating participant', async ({
   await expect(
     page.locator('[data-testid^="vote-count-"]').filter({ hasText: '★ 1' }),
   ).toHaveCount(1);
+
+  await page.getByRole('button', { name: /continue to discuss/i }).click();
+  await expect(
+    page.getByRole('heading', { name: /^discuss$/i }),
+  ).toBeVisible();
+  const activeCard = page.getByRole('region', { name: /active card/i });
+  await expect(activeCard.getByText('ship faster')).toBeVisible();
+  await expect(page.getByTestId('time-remaining')).toHaveText('02:30');
+
+  const contextSection = page.getByRole('region', { name: /context notes/i });
+  await contextSection
+    .getByLabel(/context note text/i)
+    .fill('we have CI flakes');
+  await contextSection
+    .getByRole('button', { name: /add context note/i })
+    .click();
+  await expect(contextSection.getByText('we have CI flakes')).toBeVisible();
+
+  await page.getByRole('button', { name: /next segment/i }).click();
+  const actionsSection = page.getByRole('region', { name: /actions notes/i });
+  await actionsSection
+    .getByLabel(/actions note text/i)
+    .fill('fix flaky test in PaymentService');
+  await actionsSection
+    .getByRole('button', { name: /add actions note/i })
+    .click();
+  await expect(
+    actionsSection.getByText('fix flaky test in PaymentService'),
+  ).toBeVisible();
+
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: /^discuss$/i }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: /context notes/i })
+      .getByText('we have CI flakes'),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: /actions notes/i })
+      .getByText('fix flaky test in PaymentService'),
+  ).toBeVisible();
 });

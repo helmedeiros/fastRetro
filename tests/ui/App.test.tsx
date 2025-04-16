@@ -102,4 +102,45 @@ describe('App', () => {
     expect(screen.getByTestId('time-remaining')).toHaveTextContent('05:00');
     expect(screen.getByLabelText(/votes per person/i)).toHaveValue(3);
   });
+
+  it('transitions from vote to discuss', () => {
+    render(
+      <App
+        repository={new InMemoryRetroRepository()}
+        picker={firstPicker}
+      />,
+    );
+    const input = screen.getByLabelText(/participant name/i);
+    fireEvent.change(input, { target: { value: 'Alice' } });
+    fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /start retro/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to brainstorm/i }),
+    );
+    const startCol = screen.getByRole('region', { name: /start column/i });
+    fireEvent.change(within(startCol).getByLabelText(/start card text/i), {
+      target: { value: 'ship faster' },
+    });
+    fireEvent.click(
+      within(startCol).getByRole('button', { name: /add start card/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to vote/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /vote for ship faster/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to discuss/i }),
+    );
+    expect(
+      screen.getByRole('heading', { name: /^discuss$/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('02:30');
+    expect(
+      within(screen.getByRole('region', { name: /active card/i })).getByText(
+        'ship faster',
+      ),
+    ).toBeInTheDocument();
+  });
 });
