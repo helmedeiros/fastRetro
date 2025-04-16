@@ -13,6 +13,7 @@ export interface BrainstormPageProps {
   onResetTimer: () => void;
   onAddCard: (columnId: ColumnId, text: string) => void;
   onRemoveCard: (cardId: string) => void;
+  onContinueToVote: () => void;
 }
 
 interface ColumnProps {
@@ -101,6 +102,7 @@ export function BrainstormPage({
   onResetTimer,
   onAddCard,
   onRemoveCard,
+  onContinueToVote,
 }: BrainstormPageProps): JSX.Element {
   const startCards = cards.filter((c) => c.columnId === 'start');
   const stopCards = cards.filter((c) => c.columnId === 'stop');
@@ -131,6 +133,9 @@ export function BrainstormPage({
           onRemoveCard={onRemoveCard}
         />
       </div>
+      <button type="button" onClick={onContinueToVote}>
+        Continue to vote
+      </button>
     </section>
   );
 }

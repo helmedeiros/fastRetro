@@ -6,6 +6,9 @@ import { AdvanceIcebreaker } from '../../application/usecases/AdvanceIcebreaker'
 import { StartBrainstorm } from '../../application/usecases/StartBrainstorm';
 import { AddCard } from '../../application/usecases/AddCard';
 import { RemoveCard } from '../../application/usecases/RemoveCard';
+import { StartVote } from '../../application/usecases/StartVote';
+import { CastVote } from '../../application/usecases/CastVote';
+import { SetVoteBudget } from '../../application/usecases/SetVoteBudget';
 import { StartTimer } from '../../application/usecases/StartTimer';
 import { PauseTimer } from '../../application/usecases/PauseTimer';
 import { ResumeTimer } from '../../application/usecases/ResumeTimer';
@@ -20,6 +23,7 @@ import type { Participant } from '../../domain/retro/Participant';
 import type { RetroStage, RetroState } from '../../domain/retro/Retro';
 import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
 import type { Timer } from '../../domain/retro/Timer';
+import type { Vote } from '../../domain/retro/Vote';
 
 export interface UseRetro {
   stage: RetroStage;
@@ -27,6 +31,8 @@ export interface UseRetro {
   timer: Timer | null;
   icebreaker: IcebreakerState | null;
   cards: readonly Card[];
+  votes: readonly Vote[];
+  voteBudget: number;
   addParticipant: (name: string) => void;
   removeParticipant: (id: string) => void;
   startIcebreaker: () => void;
@@ -34,6 +40,9 @@ export interface UseRetro {
   startBrainstorm: () => void;
   addCard: (columnId: ColumnId, text: string) => void;
   removeCard: (cardId: string) => void;
+  startVote: () => void;
+  castVote: (participantId: string, cardId: string) => void;
+  setVoteBudget: (budget: number) => void;
   startTimer: () => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
@@ -56,6 +65,9 @@ export function useRetro(
       startBrainstorm: new StartBrainstorm(repository),
       addCard: new AddCard(repository, idGenerator),
       removeCard: new RemoveCard(repository),
+      startVote: new StartVote(repository),
+      castVote: new CastVote(repository),
+      setVoteBudget: new SetVoteBudget(repository),
       startTimer: new StartTimer(repository),
       pauseTimer: new PauseTimer(repository),
       resumeTimer: new ResumeTimer(repository),
@@ -141,6 +153,27 @@ export function useRetro(
     [services, refresh],
   );
 
+  const startVote = useCallback(() => {
+    services.startVote.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const castVote = useCallback(
+    (participantId: string, cardId: string) => {
+      services.castVote.execute(participantId, cardId);
+      refresh();
+    },
+    [services, refresh],
+  );
+
+  const setVoteBudget = useCallback(
+    (budget: number) => {
+      services.setVoteBudget.execute(budget);
+      refresh();
+    },
+    [services, refresh],
+  );
+
   const startTimer = useCallback(() => {
     services.startTimer.execute();
     refresh();
@@ -167,6 +200,8 @@ export function useRetro(
     timer: state.timer,
     icebreaker: state.icebreaker,
     cards: state.cards,
+    votes: state.votes,
+    voteBudget: state.voteBudget,
     addParticipant,
     removeParticipant,
     startIcebreaker,
@@ -174,6 +209,9 @@ export function useRetro(
     startBrainstorm,
     addCard,
     removeCard,
+    startVote,
+    castVote,
+    setVoteBudget,
     startTimer,
     pauseTimer,
     resumeTimer,

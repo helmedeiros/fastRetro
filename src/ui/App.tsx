@@ -9,6 +9,7 @@ import { useRetro } from './hooks/useRetro';
 import { SetupPage } from './pages/SetupPage';
 import { IcebreakerPage } from './pages/IcebreakerPage';
 import { BrainstormPage } from './pages/BrainstormPage';
+import { VotePage } from './pages/VotePage';
 
 export interface AppProps {
   repository: RetroRepository;
@@ -18,6 +19,10 @@ export interface AppProps {
 }
 
 const defaultPicker = new RandomPicker<string>();
+
+function noop(): void {
+  // discuss stage not yet implemented
+}
 
 export function App({
   repository,
@@ -65,6 +70,22 @@ export function App({
           onResetTimer={retro.resetTimer}
           onAddCard={retro.addCard}
           onRemoveCard={retro.removeCard}
+          onContinueToVote={retro.startVote}
+        />
+      ) : retro.stage === 'vote' && retro.timer !== null ? (
+        <VotePage
+          timer={retro.timer}
+          participants={retro.participants}
+          cards={retro.cards}
+          votes={retro.votes}
+          voteBudget={retro.voteBudget}
+          onStartTimer={retro.startTimer}
+          onPauseTimer={retro.pauseTimer}
+          onResumeTimer={retro.resumeTimer}
+          onResetTimer={retro.resetTimer}
+          onSetVoteBudget={retro.setVoteBudget}
+          onCastVote={retro.castVote}
+          onContinueToDiscuss={noop}
         />
       ) : null}
     </main>

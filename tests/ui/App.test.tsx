@@ -78,4 +78,28 @@ describe('App', () => {
       screen.getByRole('region', { name: /start column/i }),
     ).toBeInTheDocument();
   });
+
+  it('transitions from brainstorm to vote', () => {
+    render(
+      <App
+        repository={new InMemoryRetroRepository()}
+        picker={firstPicker}
+      />,
+    );
+    const input = screen.getByLabelText(/participant name/i);
+    fireEvent.change(input, { target: { value: 'Alice' } });
+    fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /start retro/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to brainstorm/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to vote/i }),
+    );
+    expect(
+      screen.getByRole('heading', { name: /^vote$/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('05:00');
+    expect(screen.getByLabelText(/votes per person/i)).toHaveValue(3);
+  });
 });

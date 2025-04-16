@@ -22,6 +22,7 @@ describe('BrainstormPage', () => {
         onResetTimer={noop}
         onAddCard={noop}
         onRemoveCard={noop}
+        onContinueToVote={noop}
       />,
     );
     expect(screen.getByTestId('time-remaining')).toHaveTextContent('5:00');
@@ -41,6 +42,7 @@ describe('BrainstormPage', () => {
         onResetTimer={noop}
         onAddCard={onAdd}
         onRemoveCard={noop}
+        onContinueToVote={noop}
       />,
     );
     const startCol = screen.getByRole('region', { name: /start column/i });
@@ -62,6 +64,7 @@ describe('BrainstormPage', () => {
         onResetTimer={noop}
         onAddCard={noop}
         onRemoveCard={noop}
+        onContinueToVote={noop}
       />,
     );
     const startCol = screen.getByRole('region', { name: /start column/i });
@@ -95,6 +98,7 @@ describe('BrainstormPage', () => {
         onResetTimer={noop}
         onAddCard={noop}
         onRemoveCard={onRemove}
+        onContinueToVote={noop}
       />,
     );
     const startList = screen.getByRole('list', { name: /start cards/i });

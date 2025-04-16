@@ -7,10 +7,13 @@ import {
   addCardToBrainstorm,
   addParticipant,
   advanceIcebreakerParticipant,
+  castVote,
   createRetro,
+  setVoteBudget,
   startBrainstorm,
   startIcebreaker,
   startRetroTimer,
+  startVote,
   tickRetroTimer,
   pauseRetroTimer,
 } from '../../src/domain/retro/Retro';
@@ -98,7 +101,7 @@ describe('LocalStorageRetroRepository', () => {
   it('returns a fresh empty Retro when payload shape is invalid', () => {
     storage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ version: 4, retro: { participants: 'nope' } }),
+      JSON.stringify({ version: 5, retro: { participants: 'nope' } }),
     );
     const repo = new LocalStorageRetroRepository(storage);
     expect(repo.load()).toEqual(createRetro());
@@ -109,9 +112,9 @@ describe('LocalStorageRetroRepository', () => {
     repo.save(addParticipant(createRetro(), 'id-1', 'Alice'));
     const raw = storage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
-    expect(STORAGE_KEY).toBe('fastretro:state:v4');
+    expect(STORAGE_KEY).toBe('fastretro:state:v5');
     const parsed = JSON.parse(raw as string) as { version: number };
-    expect(parsed.version).toBe(4);
+    expect(parsed.version).toBe(5);
   });
 
   it('round-trips stage, timer, and icebreaker state', () => {
@@ -154,5 +157,28 @@ describe('LocalStorageRetroRepository', () => {
       'long meetings',
     ]);
     expect(loaded.cards.map((c) => c.columnId)).toEqual(['start', 'stop']);
+  });
+
+  it('round-trips vote stage with votes and budget', () => {
+    const repo = new LocalStorageRetroRepository(storage);
+    const ids = new SeqIds();
+    let state = createRetro();
+    state = addParticipant(state, 'p-1', 'Alice');
+    state = addParticipant(state, 'p-2', 'Bob');
+    state = startIcebreaker(state, firstPicker);
+    state = startBrainstorm(state);
+    state = addCardToBrainstorm(state, 'start', 'ship faster', ids);
+    state = addCardToBrainstorm(state, 'stop', 'long meetings', ids);
+    state = startVote(state);
+    state = setVoteBudget(state, 2);
+    state = castVote(state, 'p-1', 'c-1');
+    state = castVote(state, 'p-2', 'c-1');
+    repo.save(state);
+
+    const loaded = new LocalStorageRetroRepository(storage).load();
+    expect(loaded).toEqual(state);
+    expect(loaded.stage).toBe('vote');
+    expect(loaded.voteBudget).toBe(2);
+    expect(loaded.votes).toHaveLength(2);
   });
 });

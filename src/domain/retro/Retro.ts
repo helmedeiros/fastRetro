@@ -11,6 +11,7 @@ import {
 import type { Picker } from '../ports/Picker';
 import type { IdGenerator } from '../ports/IdGenerator';
 import { Card, ColumnId, createCard } from './Card';
+import { Vote } from './Vote';
 import {
   ICEBREAKER_QUESTIONS,
   IcebreakerState,
@@ -18,12 +19,17 @@ import {
   nextParticipant as nextIcebreakerParticipant,
 } from './stages/Icebreaker';
 
-export type RetroStage = 'setup' | 'icebreaker' | 'brainstorm';
+export type RetroStage = 'setup' | 'icebreaker' | 'brainstorm' | 'vote';
 
-export const STAGE_DURATIONS: Readonly<Record<'icebreaker' | 'brainstorm', number>> = {
+export const STAGE_DURATIONS: Readonly<
+  Record<'icebreaker' | 'brainstorm' | 'vote', number>
+> = {
   icebreaker: 10 * 60 * 1000,
   brainstorm: 5 * 60 * 1000,
+  vote: 5 * 60 * 1000,
 };
+
+export const DEFAULT_VOTE_BUDGET = 3;
 
 export interface RetroState {
   readonly stage: RetroStage;
@@ -31,6 +37,8 @@ export interface RetroState {
   readonly timer: Timer | null;
   readonly icebreaker: IcebreakerState | null;
   readonly cards: readonly Card[];
+  readonly votes: readonly Vote[];
+  readonly voteBudget: number;
 }
 
 export function createRetro(): RetroState {
@@ -40,6 +48,8 @@ export function createRetro(): RetroState {
     timer: null,
     icebreaker: null,
     cards: [],
+    votes: [],
+    voteBudget: DEFAULT_VOTE_BUDGET,
   };
 }
 
@@ -134,6 +144,69 @@ export function removeCardFromBrainstorm(
     throw new Error(`Card with id "${cardId}" not found`);
   }
   return { ...state, cards: next };
+}
+
+export function startVote(state: RetroState): RetroState {
+  if (state.stage !== 'brainstorm') {
+    throw new Error('Vote can only start from the brainstorm stage');
+  }
+  return {
+    ...state,
+    stage: 'vote',
+    timer: createTimer(STAGE_DURATIONS.vote),
+  };
+}
+
+export function setVoteBudget(state: RetroState, budget: number): RetroState {
+  if (state.stage !== 'vote') {
+    throw new Error('Vote budget can only be set during vote stage');
+  }
+  if (!Number.isFinite(budget) || budget < 0) {
+    throw new Error('Vote budget must be a non-negative number');
+  }
+  return { ...state, voteBudget: Math.floor(budget) };
+}
+
+export function votesForCard(state: RetroState, cardId: string): number {
+  return state.votes.filter((v) => v.cardId === cardId).length;
+}
+
+export function votesUsedBy(state: RetroState, participantId: string): number {
+  return state.votes.filter((v) => v.participantId === participantId).length;
+}
+
+export function remainingBudget(
+  state: RetroState,
+  participantId: string,
+): number {
+  return state.voteBudget - votesUsedBy(state, participantId);
+}
+
+export function castVote(
+  state: RetroState,
+  participantId: string,
+  cardId: string,
+): RetroState {
+  if (state.stage !== 'vote') {
+    throw new Error('Votes can only be cast during vote stage');
+  }
+  const participantExists = state.participants.some(
+    (p) => p.id === participantId,
+  );
+  if (!participantExists) return state;
+  const cardExists = state.cards.some((c) => c.id === cardId);
+  if (!cardExists) return state;
+  const existingIndex = state.votes.findIndex(
+    (v) => v.participantId === participantId && v.cardId === cardId,
+  );
+  if (existingIndex >= 0) {
+    const next = state.votes.filter((_, i) => i !== existingIndex);
+    return { ...state, votes: next };
+  }
+  if (remainingBudget(state, participantId) <= 0) {
+    return state;
+  }
+  return { ...state, votes: [...state.votes, { participantId, cardId }] };
 }
 
 function requireTimer(state: RetroState): Timer {

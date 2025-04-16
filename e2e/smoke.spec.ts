@@ -117,4 +117,25 @@ test('setup, persist, run icebreaker with rotating participant', async ({
       .getByRole('region', { name: /stop column/i })
       .getByText('long meetings'),
   ).toBeVisible();
+
+  await page.getByRole('button', { name: /continue to vote/i }).click();
+  await expect(page.getByRole('heading', { name: /^vote$/i })).toBeVisible();
+  await expect(page.getByTestId('time-remaining')).toHaveText('05:00');
+
+  const shipVoteBtn = page.getByRole('button', { name: /vote for ship faster/i });
+  await shipVoteBtn.click();
+  await shipVoteBtn.click();
+  await expect(
+    page.locator('[data-testid^="vote-count-"]').filter({ hasText: '★ 1' }),
+  ).toHaveCount(0);
+  await shipVoteBtn.click();
+  await expect(
+    page.locator('[data-testid^="vote-count-"]').filter({ hasText: '★ 1' }),
+  ).toHaveCount(1);
+
+  await page.reload();
+  await expect(page.getByRole('heading', { name: /^vote$/i })).toBeVisible();
+  await expect(
+    page.locator('[data-testid^="vote-count-"]').filter({ hasText: '★ 1' }),
+  ).toHaveCount(1);
 });
