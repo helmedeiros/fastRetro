@@ -13,69 +13,70 @@ import type { Card, ColumnId } from '../../domain/retro/Card';
 import type { Vote } from '../../domain/retro/Vote';
 import type { DiscussLane, DiscussNote } from '../../domain/retro/DiscussNote';
 
-export const STORAGE_KEY = 'fastretro:state:v6';
-export const SCHEMA_VERSION = 6;
+export const STORAGE_KEY = 'fastretro:state:v7';
+export const SCHEMA_VERSION = 7;
 
-interface PersistedParticipantV6 {
+interface PersistedParticipantV7 {
   readonly id: string;
   readonly name: string;
 }
 
-interface PersistedTimerV6 {
+interface PersistedTimerV7 {
   readonly status: TimerStatus;
   readonly durationMs: number;
   readonly elapsedMs: number;
   readonly remainingMs: number;
 }
 
-interface PersistedIcebreakerV6 {
+interface PersistedIcebreakerV7 {
   readonly question: string;
   readonly participantIds: readonly string[];
   readonly currentIndex: number;
 }
 
-interface PersistedCardV6 {
+interface PersistedCardV7 {
   readonly id: string;
   readonly columnId: ColumnId;
   readonly text: string;
 }
 
-interface PersistedVoteV6 {
+interface PersistedVoteV7 {
   readonly participantId: string;
   readonly cardId: string;
 }
 
-interface PersistedDiscussV6 {
+interface PersistedDiscussV7 {
   readonly order: readonly string[];
   readonly currentIndex: number;
   readonly segment: DiscussSegment;
 }
 
-interface PersistedDiscussNoteV6 {
+interface PersistedDiscussNoteV7 {
   readonly id: string;
   readonly parentCardId: string;
   readonly lane: DiscussLane;
   readonly text: string;
 }
 
-interface PersistedRetroStateV6 {
+interface PersistedRetroStateV7 {
   readonly stage: RetroStage;
-  readonly participants: readonly PersistedParticipantV6[];
-  readonly timer: PersistedTimerV6 | null;
-  readonly icebreaker: PersistedIcebreakerV6 | null;
-  readonly cards: readonly PersistedCardV6[];
-  readonly votes: readonly PersistedVoteV6[];
+  readonly participants: readonly PersistedParticipantV7[];
+  readonly timer: PersistedTimerV7 | null;
+  readonly icebreaker: PersistedIcebreakerV7 | null;
+  readonly cards: readonly PersistedCardV7[];
+  readonly votes: readonly PersistedVoteV7[];
   readonly voteBudget: number;
-  readonly discuss: PersistedDiscussV6 | null;
-  readonly discussNotes: readonly PersistedDiscussNoteV6[];
+  readonly discuss: PersistedDiscussV7 | null;
+  readonly discussNotes: readonly PersistedDiscussNoteV7[];
+  readonly actionItemOwners: Readonly<Record<string, string>>;
 }
 
-interface PersistedRetroV6 {
-  readonly version: 6;
-  readonly retro: PersistedRetroStateV6;
+interface PersistedRetroV7 {
+  readonly version: 7;
+  readonly retro: PersistedRetroStateV7;
 }
 
-function isPersistedParticipant(value: unknown): value is PersistedParticipantV6 {
+function isPersistedParticipant(value: unknown): value is PersistedParticipantV7 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return typeof v.id === 'string' && typeof v.name === 'string';
@@ -87,7 +88,8 @@ function isStage(value: unknown): value is RetroStage {
     value === 'icebreaker' ||
     value === 'brainstorm' ||
     value === 'vote' ||
-    value === 'discuss'
+    value === 'discuss' ||
+    value === 'review'
   );
 }
 
@@ -107,7 +109,7 @@ function isTimerStatus(value: unknown): value is TimerStatus {
   return value === 'idle' || value === 'running' || value === 'paused';
 }
 
-function isPersistedTimer(value: unknown): value is PersistedTimerV6 {
+function isPersistedTimer(value: unknown): value is PersistedTimerV7 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
@@ -120,7 +122,7 @@ function isPersistedTimer(value: unknown): value is PersistedTimerV6 {
 
 function isPersistedIcebreaker(
   value: unknown,
-): value is PersistedIcebreakerV6 {
+): value is PersistedIcebreakerV7 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   if (typeof v.question !== 'string') return false;
@@ -130,7 +132,7 @@ function isPersistedIcebreaker(
   return true;
 }
 
-function isPersistedCard(value: unknown): value is PersistedCardV6 {
+function isPersistedCard(value: unknown): value is PersistedCardV7 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
@@ -140,13 +142,13 @@ function isPersistedCard(value: unknown): value is PersistedCardV6 {
   );
 }
 
-function isPersistedVote(value: unknown): value is PersistedVoteV6 {
+function isPersistedVote(value: unknown): value is PersistedVoteV7 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return typeof v.participantId === 'string' && typeof v.cardId === 'string';
 }
 
-function isPersistedDiscuss(value: unknown): value is PersistedDiscussV6 {
+function isPersistedDiscuss(value: unknown): value is PersistedDiscussV7 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   if (typeof v.currentIndex !== 'number') return false;
@@ -158,7 +160,7 @@ function isPersistedDiscuss(value: unknown): value is PersistedDiscussV6 {
 
 function isPersistedDiscussNote(
   value: unknown,
-): value is PersistedDiscussNoteV6 {
+): value is PersistedDiscussNoteV7 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
@@ -169,7 +171,16 @@ function isPersistedDiscussNote(
   );
 }
 
-function isPersistedRetroV6(value: unknown): value is PersistedRetroV6 {
+function isActionItemOwners(
+  value: unknown,
+): value is Readonly<Record<string, string>> {
+  if (typeof value !== 'object' || value === null) return false;
+  return Object.values(value as Record<string, unknown>).every(
+    (v) => typeof v === 'string',
+  );
+}
+
+function isPersistedRetroV7(value: unknown): value is PersistedRetroV7 {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   if (v.version !== SCHEMA_VERSION) return false;
@@ -190,6 +201,7 @@ function isPersistedRetroV6(value: unknown): value is PersistedRetroV6 {
     return false;
   if (!Array.isArray(retro.discussNotes)) return false;
   if (!retro.discussNotes.every(isPersistedDiscussNote)) return false;
+  if (!isActionItemOwners(retro.actionItemOwners)) return false;
   return true;
 }
 
@@ -207,7 +219,7 @@ export class LocalStorageRetroRepository implements RetroRepository {
     } catch {
       return createRetro();
     }
-    if (!isPersistedRetroV6(parsed)) {
+    if (!isPersistedRetroV7(parsed)) {
       return createRetro();
     }
     const participants: readonly Participant[] = parsed.retro.participants.map(
@@ -265,11 +277,12 @@ export class LocalStorageRetroRepository implements RetroRepository {
       voteBudget: parsed.retro.voteBudget,
       discuss,
       discussNotes,
+      actionItemOwners: { ...parsed.retro.actionItemOwners },
     };
   }
 
   save(state: RetroState): void {
-    const payload: PersistedRetroV6 = {
+    const payload: PersistedRetroV7 = {
       version: SCHEMA_VERSION,
       retro: {
         stage: state.stage,
@@ -318,6 +331,7 @@ export class LocalStorageRetroRepository implements RetroRepository {
           lane: n.lane,
           text: n.text,
         })),
+        actionItemOwners: { ...state.actionItemOwners },
       },
     };
     this.storage.setItem(STORAGE_KEY, JSON.stringify(payload));

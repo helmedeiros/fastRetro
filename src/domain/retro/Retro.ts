@@ -29,15 +29,17 @@ export type RetroStage =
   | 'icebreaker'
   | 'brainstorm'
   | 'vote'
-  | 'discuss';
+  | 'discuss'
+  | 'review';
 
 export const STAGE_DURATIONS: Readonly<
-  Record<'icebreaker' | 'brainstorm' | 'vote' | 'discuss', number>
+  Record<'icebreaker' | 'brainstorm' | 'vote' | 'discuss' | 'review', number>
 > = {
   icebreaker: 10 * 60 * 1000,
   brainstorm: 5 * 60 * 1000,
   vote: 5 * 60 * 1000,
   discuss: 2.5 * 60 * 1000,
+  review: 5 * 60 * 1000,
 };
 
 export type DiscussSegment = 'context' | 'actions';
@@ -60,6 +62,13 @@ export interface RetroState {
   readonly voteBudget: number;
   readonly discuss: DiscussState | null;
   readonly discussNotes: readonly DiscussNote[];
+  readonly actionItemOwners: Readonly<Record<string, string>>;
+}
+
+export interface ActionItem {
+  readonly note: DiscussNote;
+  readonly parentCard: Card;
+  readonly ownerId: string | null;
 }
 
 export function createRetro(): RetroState {
@@ -73,6 +82,7 @@ export function createRetro(): RetroState {
     voteBudget: DEFAULT_VOTE_BUDGET,
     discuss: null,
     discussNotes: [],
+    actionItemOwners: {},
   };
 }
 
@@ -371,4 +381,75 @@ export function tickRetroTimer(state: RetroState, deltaMs: number): RetroState {
 
 export function resetRetroTimer(state: RetroState): RetroState {
   return { ...state, timer: resetTimerState(requireTimer(state)) };
+}
+
+export function startReview(state: RetroState): RetroState {
+  if (state.stage !== 'discuss') {
+    throw new Error('Review can only start from the discuss stage');
+  }
+  return {
+    ...state,
+    stage: 'review',
+    timer: createTimer(STAGE_DURATIONS.review),
+    discuss: null,
+  };
+}
+
+export function assignActionOwner(
+  state: RetroState,
+  noteId: string,
+  participantId: string | null,
+): RetroState {
+  const noteExists = state.discussNotes.some(
+    (n) => n.id === noteId && n.lane === 'actions',
+  );
+  if (!noteExists) return state;
+  if (participantId !== null) {
+    const participantExists = state.participants.some(
+      (p) => p.id === participantId,
+    );
+    if (!participantExists) return state;
+  }
+  const next: Record<string, string> = { ...state.actionItemOwners };
+  if (participantId === null) {
+    delete next[noteId];
+  } else {
+    next[noteId] = participantId;
+  }
+  return { ...state, actionItemOwners: next };
+}
+
+export function getActionItems(state: RetroState): readonly ActionItem[] {
+  // Determine parent card order: by votes desc, insertion order tie-break.
+  const insertionIndex = new Map<string, number>();
+  state.cards.forEach((c, i) => insertionIndex.set(c.id, i));
+  const orderedCards = [...state.cards].sort((a, b) => {
+    const va = votesForCard(state, a.id);
+    const vb = votesForCard(state, b.id);
+    if (vb !== va) return vb - va;
+    return (insertionIndex.get(a.id) ?? 0) - (insertionIndex.get(b.id) ?? 0);
+  });
+  const cardRank = new Map<string, number>();
+  orderedCards.forEach((c, i) => cardRank.set(c.id, i));
+
+  const actionNotes = state.discussNotes.filter((n) => n.lane === 'actions');
+  // Preserve original note insertion order; stable sort by parent card rank.
+  const withIndex = actionNotes.map((n, i) => ({ n, i }));
+  withIndex.sort((a, b) => {
+    const ra = cardRank.get(a.n.parentCardId) ?? Number.MAX_SAFE_INTEGER;
+    const rb = cardRank.get(b.n.parentCardId) ?? Number.MAX_SAFE_INTEGER;
+    if (ra !== rb) return ra - rb;
+    return a.i - b.i;
+  });
+  const items: ActionItem[] = [];
+  for (const { n } of withIndex) {
+    const parent = state.cards.find((c) => c.id === n.parentCardId);
+    if (parent === undefined) continue;
+    items.push({
+      note: n,
+      parentCard: parent,
+      ownerId: state.actionItemOwners[n.id] ?? null,
+    });
+  }
+  return items;
 }

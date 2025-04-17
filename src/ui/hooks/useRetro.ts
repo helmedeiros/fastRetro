@@ -19,11 +19,14 @@ import { AdvanceDiscussSegment } from '../../application/usecases/AdvanceDiscuss
 import { PreviousDiscussSegment } from '../../application/usecases/PreviousDiscussSegment';
 import { AddDiscussNote } from '../../application/usecases/AddDiscussNote';
 import { RemoveDiscussNote } from '../../application/usecases/RemoveDiscussNote';
+import { StartReview } from '../../application/usecases/StartReview';
+import { AssignActionOwner } from '../../application/usecases/AssignActionOwner';
 import type {
   DiscussLane,
   DiscussNote,
 } from '../../domain/retro/DiscussNote';
-import type { DiscussState } from '../../domain/retro/Retro';
+import type { ActionItem, DiscussState } from '../../domain/retro/Retro';
+import { getActionItems } from '../../domain/retro/Retro';
 import type { Clock } from '../../domain/ports/Clock';
 import type { IdGenerator } from '../../domain/ports/IdGenerator';
 import type { Picker } from '../../domain/ports/Picker';
@@ -45,6 +48,7 @@ export interface UseRetro {
   voteBudget: number;
   discuss: DiscussState | null;
   discussNotes: readonly DiscussNote[];
+  actionItems: readonly ActionItem[];
   addParticipant: (name: string) => void;
   removeParticipant: (id: string) => void;
   startIcebreaker: () => void;
@@ -64,6 +68,8 @@ export interface UseRetro {
   previousDiscussSegment: () => void;
   addDiscussNote: (parentCardId: string, lane: DiscussLane, text: string) => void;
   removeDiscussNote: (noteId: string) => void;
+  startReview: () => void;
+  assignActionOwner: (noteId: string, participantId: string | null) => void;
 }
 
 export function useRetro(
@@ -95,6 +101,8 @@ export function useRetro(
       previousDiscussSegment: new PreviousDiscussSegment(repository),
       addDiscussNote: new AddDiscussNote(repository, idGenerator),
       removeDiscussNote: new RemoveDiscussNote(repository),
+      startReview: new StartReview(repository),
+      assignActionOwner: new AssignActionOwner(repository),
     }),
     [repository, picker, idGenerator],
   );
@@ -247,6 +255,19 @@ export function useRetro(
     [services, refresh],
   );
 
+  const startReview = useCallback(() => {
+    services.startReview.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const assignActionOwner = useCallback(
+    (noteId: string, participantId: string | null) => {
+      services.assignActionOwner.execute(noteId, participantId);
+      refresh();
+    },
+    [services, refresh],
+  );
+
   return {
     stage: state.stage,
     participants: state.participants,
@@ -257,6 +278,7 @@ export function useRetro(
     voteBudget: state.voteBudget,
     discuss: state.discuss,
     discussNotes: state.discussNotes,
+    actionItems: getActionItems(state),
     addParticipant,
     removeParticipant,
     startIcebreaker,
@@ -276,5 +298,7 @@ export function useRetro(
     previousDiscussSegment,
     addDiscussNote,
     removeDiscussNote,
+    startReview,
+    assignActionOwner,
   };
 }

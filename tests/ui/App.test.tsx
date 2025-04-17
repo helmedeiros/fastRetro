@@ -103,6 +103,61 @@ describe('App', () => {
     expect(screen.getByLabelText(/votes per person/i)).toHaveValue(3);
   });
 
+  it('transitions from discuss to review', () => {
+    render(
+      <App
+        repository={new InMemoryRetroRepository()}
+        picker={firstPicker}
+      />,
+    );
+    const input = screen.getByLabelText(/participant name/i);
+    fireEvent.change(input, { target: { value: 'Alice' } });
+    fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /start retro/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to brainstorm/i }),
+    );
+    const startCol = screen.getByRole('region', { name: /start column/i });
+    fireEvent.change(within(startCol).getByLabelText(/start card text/i), {
+      target: { value: 'ship faster' },
+    });
+    fireEvent.click(
+      within(startCol).getByRole('button', { name: /add start card/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to vote/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /vote for ship faster/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to discuss/i }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /next segment/i }));
+    const actionsSection = screen.getByRole('region', {
+      name: /actions notes/i,
+    });
+    fireEvent.change(
+      within(actionsSection).getByLabelText(/actions note text/i),
+      { target: { value: 'fix flaky test' } },
+    );
+    fireEvent.click(
+      within(actionsSection).getByRole('button', {
+        name: /add actions note/i,
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to review/i }),
+    );
+    expect(
+      screen.getByRole('heading', { name: /^review$/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: /^action items$/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('fix flaky test')).toBeInTheDocument();
+  });
+
   it('transitions from vote to discuss', () => {
     render(
       <App

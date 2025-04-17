@@ -182,4 +182,33 @@ test('setup, persist, run icebreaker with rotating participant', async ({
       .getByRole('region', { name: /actions notes/i })
       .getByText('fix flaky test in PaymentService'),
   ).toBeVisible();
+
+  await page.getByRole('button', { name: /continue to review/i }).click();
+  await expect(
+    page.getByRole('heading', { name: /^review$/i }),
+  ).toBeVisible();
+  await expect(page.getByTestId('time-remaining')).toHaveText('05:00');
+  const actionItems = page.getByRole('region', { name: /^action items$/i });
+  await expect(
+    actionItems.getByText('fix flaky test in PaymentService'),
+  ).toBeVisible();
+  await expect(actionItems.getByText('ship faster')).toBeVisible();
+
+  const ownerSelect = page.getByLabel(
+    /owner for fix flaky test in PaymentService/i,
+  );
+  await ownerSelect.selectOption({ label: 'Alice' });
+
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: /^review$/i }),
+  ).toBeVisible();
+  const ownerSelectAfter = page.getByLabel(
+    /owner for fix flaky test in PaymentService/i,
+  );
+  await expect(ownerSelectAfter).toHaveValue(/.+/);
+  const selectedLabel = await ownerSelectAfter.evaluate(
+    (el) => (el as HTMLSelectElement).selectedOptions[0]?.textContent ?? '',
+  );
+  expect(selectedLabel).toBe('Alice');
 });

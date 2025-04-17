@@ -11,6 +11,7 @@ import { IcebreakerPage } from './pages/IcebreakerPage';
 import { BrainstormPage } from './pages/BrainstormPage';
 import { VotePage } from './pages/VotePage';
 import { DiscussPage } from './pages/DiscussPage';
+import { ReviewPage } from './pages/ReviewPage';
 
 export interface AppProps {
   repository: RetroRepository;
@@ -22,7 +23,7 @@ export interface AppProps {
 const defaultPicker = new RandomPicker<string>();
 
 function noop(): void {
-  // review stage not yet implemented
+  // close stage not yet implemented
 }
 
 export function App({
@@ -105,7 +106,19 @@ export function App({
           onNextSegment={retro.advanceDiscussSegment}
           onAddNote={retro.addDiscussNote}
           onRemoveNote={retro.removeDiscussNote}
-          onContinueToReview={noop}
+          onContinueToReview={retro.startReview}
+        />
+      ) : retro.stage === 'review' && retro.timer !== null ? (
+        <ReviewPage
+          timer={retro.timer}
+          participants={retro.participants}
+          actionItems={retro.actionItems}
+          onStartTimer={retro.startTimer}
+          onPauseTimer={retro.pauseTimer}
+          onResumeTimer={retro.resumeTimer}
+          onResetTimer={retro.resetTimer}
+          onAssignOwner={retro.assignActionOwner}
+          onContinueToClose={noop}
         />
       ) : null}
     </main>

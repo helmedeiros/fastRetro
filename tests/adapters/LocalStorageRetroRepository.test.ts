@@ -9,9 +9,11 @@ import {
   addParticipant,
   advanceDiscussSegment,
   advanceIcebreakerParticipant,
+  assignActionOwner,
   castVote,
   createRetro,
   setVoteBudget,
+  startReview,
   startBrainstorm,
   startDiscuss,
   startIcebreaker,
@@ -101,6 +103,39 @@ describe('LocalStorageRetroRepository', () => {
     expect(repo.load()).toEqual(createRetro());
   });
 
+  it('returns a fresh empty Retro when prior v6 payload is found', () => {
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ version: 6, retro: { participants: [] } }),
+    );
+    const repo = new LocalStorageRetroRepository(storage);
+    expect(repo.load()).toEqual(createRetro());
+  });
+
+  it('round-trips review stage with action item owners', () => {
+    const repo = new LocalStorageRetroRepository(storage);
+    const ids = new SeqIds();
+    let state = createRetro();
+    state = addParticipant(state, 'p-1', 'Alice');
+    state = startIcebreaker(state, firstPicker);
+    state = startBrainstorm(state);
+    state = addCardToBrainstorm(state, 'start', 'ship faster', ids);
+    state = startVote(state);
+    state = castVote(state, 'p-1', 'c-1');
+    state = startDiscuss(state);
+    state = advanceDiscussSegment(state);
+    state = addDiscussNote(state, 'c-1', 'actions', 'fix flaky test', ids);
+    const noteId = state.discussNotes[0].id;
+    state = startReview(state);
+    state = assignActionOwner(state, noteId, 'p-1');
+    repo.save(state);
+
+    const loaded = new LocalStorageRetroRepository(storage).load();
+    expect(loaded).toEqual(state);
+    expect(loaded.stage).toBe('review');
+    expect(loaded.actionItemOwners[noteId]).toBe('p-1');
+  });
+
   it('returns a fresh empty Retro when payload shape is invalid', () => {
     storage.setItem(
       STORAGE_KEY,
@@ -115,9 +150,9 @@ describe('LocalStorageRetroRepository', () => {
     repo.save(addParticipant(createRetro(), 'id-1', 'Alice'));
     const raw = storage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
-    expect(STORAGE_KEY).toBe('fastretro:state:v6');
+    expect(STORAGE_KEY).toBe('fastretro:state:v7');
     const parsed = JSON.parse(raw as string) as { version: number };
-    expect(parsed.version).toBe(6);
+    expect(parsed.version).toBe(7);
   });
 
   it('round-trips stage, timer, and icebreaker state', () => {
