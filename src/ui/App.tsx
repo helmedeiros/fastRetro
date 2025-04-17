@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { Clock } from '../domain/ports/Clock';
+import type { Downloader } from '../domain/ports/Downloader';
 import type { IdGenerator } from '../domain/ports/IdGenerator';
 import type { Picker } from '../domain/ports/Picker';
 import type { RetroRepository } from '../domain/ports/RetroRepository';
@@ -12,31 +13,30 @@ import { BrainstormPage } from './pages/BrainstormPage';
 import { VotePage } from './pages/VotePage';
 import { DiscussPage } from './pages/DiscussPage';
 import { ReviewPage } from './pages/ReviewPage';
+import { ClosePage } from './pages/ClosePage';
 
 export interface AppProps {
   repository: RetroRepository;
   clock?: Clock;
   picker?: Picker<string>;
   idGenerator?: IdGenerator;
+  downloader?: Downloader;
 }
 
 const defaultPicker = new RandomPicker<string>();
-
-function noop(): void {
-  // close stage not yet implemented
-}
 
 export function App({
   repository,
   clock,
   picker = defaultPicker,
   idGenerator,
+  downloader,
 }: AppProps): JSX.Element {
   const ids = useMemo(
     () => idGenerator ?? new CryptoIdGenerator(),
     [idGenerator],
   );
-  const retro = useRetro(repository, picker, ids, clock);
+  const retro = useRetro(repository, picker, ids, clock, downloader);
 
   return (
     <main>
@@ -118,8 +118,10 @@ export function App({
           onResumeTimer={retro.resumeTimer}
           onResetTimer={retro.resetTimer}
           onAssignOwner={retro.assignActionOwner}
-          onContinueToClose={noop}
+          onContinueToClose={retro.startClose}
         />
+      ) : retro.stage === 'close' ? (
+        <ClosePage summary={retro.closeSummary} onExport={retro.exportJson} />
       ) : null}
     </main>
   );

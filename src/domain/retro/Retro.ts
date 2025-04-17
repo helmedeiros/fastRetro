@@ -30,7 +30,8 @@ export type RetroStage =
   | 'brainstorm'
   | 'vote'
   | 'discuss'
-  | 'review';
+  | 'review'
+  | 'close';
 
 export const STAGE_DURATIONS: Readonly<
   Record<'icebreaker' | 'brainstorm' | 'vote' | 'discuss' | 'review', number>
@@ -417,6 +418,145 @@ export function assignActionOwner(
     next[noteId] = participantId;
   }
   return { ...state, actionItemOwners: next };
+}
+
+export function startClose(state: RetroState): RetroState {
+  if (state.stage !== 'review') {
+    throw new Error('Close can only start from the review stage');
+  }
+  return { ...state, stage: 'close', timer: null };
+}
+
+export interface CloseSummaryDiscussedItem {
+  readonly card: {
+    readonly id: string;
+    readonly columnId: ColumnId;
+    readonly text: string;
+    readonly votes: number;
+  };
+  readonly contextNotes: readonly DiscussNote[];
+  readonly actionItems: readonly {
+    readonly note: DiscussNote;
+    readonly owner: Participant | null;
+  }[];
+}
+
+export interface CloseSummary {
+  readonly discussed: readonly CloseSummaryDiscussedItem[];
+  readonly allActionItems: readonly {
+    readonly note: DiscussNote;
+    readonly parentCard: Card;
+    readonly owner: Participant | null;
+  }[];
+}
+
+function orderedCardsByVotes(state: RetroState): readonly Card[] {
+  const insertionIndex = new Map<string, number>();
+  state.cards.forEach((c, i) => insertionIndex.set(c.id, i));
+  return [...state.cards].sort((a, b) => {
+    const va = votesForCard(state, a.id);
+    const vb = votesForCard(state, b.id);
+    if (vb !== va) return vb - va;
+    return (insertionIndex.get(a.id) ?? 0) - (insertionIndex.get(b.id) ?? 0);
+  });
+}
+
+export function getCloseSummary(state: RetroState): CloseSummary {
+  const participantById = new Map<string, Participant>();
+  for (const p of state.participants) participantById.set(p.id, p);
+  const ownerFor = (noteId: string): Participant | null => {
+    const ownerId = state.actionItemOwners[noteId];
+    if (ownerId === undefined) return null;
+    return participantById.get(ownerId) ?? null;
+  };
+  const ordered = orderedCardsByVotes(state);
+  const discussed: CloseSummaryDiscussedItem[] = ordered.map((card) => {
+    const contextNotes = state.discussNotes.filter(
+      (n) => n.parentCardId === card.id && n.lane === 'context',
+    );
+    const actionItems = state.discussNotes
+      .filter((n) => n.parentCardId === card.id && n.lane === 'actions')
+      .map((note) => ({ note, owner: ownerFor(note.id) }));
+    return {
+      card: {
+        id: card.id,
+        columnId: card.columnId,
+        text: card.text,
+        votes: votesForCard(state, card.id),
+      },
+      contextNotes,
+      actionItems,
+    };
+  });
+  const allActionItems = getActionItems(state).map((item) => ({
+    note: item.note,
+    parentCard: item.parentCard,
+    owner: item.ownerId === null ? null : (participantById.get(item.ownerId) ?? null),
+  }));
+  return { discussed, allActionItems };
+}
+
+export interface ExportJsonV1 {
+  readonly version: 1;
+  readonly createdAt: string;
+  readonly participants: readonly { readonly id: string; readonly name: string }[];
+  readonly icebreaker:
+    | { readonly question: string; readonly rotation: readonly string[] }
+    | null;
+  readonly columns: {
+    readonly start: readonly Card[];
+    readonly stop: readonly Card[];
+  };
+  readonly groups: readonly never[];
+  readonly votes: readonly { readonly participantId: string; readonly cardId: string }[];
+  readonly discussion: readonly {
+    readonly cardId: string;
+    readonly context: readonly DiscussNote[];
+    readonly actionItems: readonly DiscussNote[];
+  }[];
+  readonly actionItems: readonly {
+    readonly id: string;
+    readonly text: string;
+    readonly ownerId: string | null;
+  }[];
+}
+
+export function serializeRetroToExportJson(
+  state: RetroState,
+  isoNow: string,
+): ExportJsonV1 {
+  const summary = getCloseSummary(state);
+  return {
+    version: 1,
+    createdAt: isoNow,
+    participants: state.participants.map((p) => ({ id: p.id, name: p.name })),
+    icebreaker:
+      state.icebreaker === null
+        ? null
+        : {
+            question: state.icebreaker.question,
+            rotation: [...state.icebreaker.participantIds],
+          },
+    columns: {
+      start: state.cards.filter((c) => c.columnId === 'start'),
+      stop: state.cards.filter((c) => c.columnId === 'stop'),
+    },
+    groups: [],
+    votes: state.votes.map((v) => ({
+      participantId: v.participantId,
+      cardId: v.cardId,
+    })),
+    discussion: summary.discussed.map((d) => ({
+      cardId: d.card.id,
+      context: d.contextNotes,
+      actionItems: d.actionItems.map((a) => a.note),
+    })),
+    actionItems: summary.allActionItems.map((a) => ({
+      id: a.note.id,
+      text: a.note.text,
+      ownerId: a.owner === null ? null : a.owner.id,
+    })),
+  };
 }
 
 export function getActionItems(state: RetroState): readonly ActionItem[] {

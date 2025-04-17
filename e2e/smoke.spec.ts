@@ -211,4 +211,35 @@ test('setup, persist, run icebreaker with rotating participant', async ({
     (el) => (el as HTMLSelectElement).selectedOptions[0]?.textContent ?? '',
   );
   expect(selectedLabel).toBe('Alice');
+
+  await page.getByRole('button', { name: /continue to close/i }).click();
+  await expect(
+    page.getByRole('heading', { name: /retro complete/i }),
+  ).toBeVisible();
+  await expect(page.getByText('ship faster')).toBeVisible();
+  await expect(
+    page.getByText('fix flaky test in PaymentService'),
+  ).toBeVisible();
+  await expect(page.getByText(/owned by Alice/i)).toBeVisible();
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: /export retro as json/i }).click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(
+    /^fastretro-\d{4}-\d{2}-\d{2}\.json$/,
+  );
+  const path = await download.path();
+  expect(path).not.toBeNull();
+  const fs = await import('node:fs');
+  const raw = fs.readFileSync(path as string, 'utf-8');
+  const parsed = JSON.parse(raw) as {
+    version: number;
+    participants: { id: string; name: string }[];
+  };
+  expect(parsed.version).toBe(1);
+  expect(parsed.participants.map((p) => p.name).sort()).toEqual([
+    'Alice',
+    'Bob',
+  ]);
 });

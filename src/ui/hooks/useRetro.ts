@@ -21,12 +21,19 @@ import { AddDiscussNote } from '../../application/usecases/AddDiscussNote';
 import { RemoveDiscussNote } from '../../application/usecases/RemoveDiscussNote';
 import { StartReview } from '../../application/usecases/StartReview';
 import { AssignActionOwner } from '../../application/usecases/AssignActionOwner';
+import { StartClose } from '../../application/usecases/StartClose';
+import { ExportRetro } from '../../application/usecases/ExportRetro';
+import type { Downloader } from '../../domain/ports/Downloader';
 import type {
   DiscussLane,
   DiscussNote,
 } from '../../domain/retro/DiscussNote';
-import type { ActionItem, DiscussState } from '../../domain/retro/Retro';
-import { getActionItems } from '../../domain/retro/Retro';
+import type {
+  ActionItem,
+  CloseSummary,
+  DiscussState,
+} from '../../domain/retro/Retro';
+import { getActionItems, getCloseSummary } from '../../domain/retro/Retro';
 import type { Clock } from '../../domain/ports/Clock';
 import type { IdGenerator } from '../../domain/ports/IdGenerator';
 import type { Picker } from '../../domain/ports/Picker';
@@ -49,6 +56,7 @@ export interface UseRetro {
   discuss: DiscussState | null;
   discussNotes: readonly DiscussNote[];
   actionItems: readonly ActionItem[];
+  closeSummary: CloseSummary;
   addParticipant: (name: string) => void;
   removeParticipant: (id: string) => void;
   startIcebreaker: () => void;
@@ -70,6 +78,8 @@ export interface UseRetro {
   removeDiscussNote: (noteId: string) => void;
   startReview: () => void;
   assignActionOwner: (noteId: string, participantId: string | null) => void;
+  startClose: () => void;
+  exportJson: () => void;
 }
 
 export function useRetro(
@@ -77,6 +87,7 @@ export function useRetro(
   picker: Picker<string>,
   idGenerator: IdGenerator,
   clock?: Clock,
+  downloader?: Downloader,
 ): UseRetro {
   const services = useMemo(
     () => ({
@@ -103,8 +114,13 @@ export function useRetro(
       removeDiscussNote: new RemoveDiscussNote(repository),
       startReview: new StartReview(repository),
       assignActionOwner: new AssignActionOwner(repository),
+      startClose: new StartClose(repository),
+      exportRetro:
+        clock !== undefined && downloader !== undefined
+          ? new ExportRetro(repository, clock, downloader)
+          : null,
     }),
-    [repository, picker, idGenerator],
+    [repository, picker, idGenerator, clock, downloader],
   );
 
   const [state, setState] = useState<RetroState>(() => services.repo.load());
@@ -268,6 +284,17 @@ export function useRetro(
     [services, refresh],
   );
 
+  const startClose = useCallback(() => {
+    services.startClose.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const exportJson = useCallback(() => {
+    if (services.exportRetro !== null) {
+      services.exportRetro.execute();
+    }
+  }, [services]);
+
   return {
     stage: state.stage,
     participants: state.participants,
@@ -279,6 +306,7 @@ export function useRetro(
     discuss: state.discuss,
     discussNotes: state.discussNotes,
     actionItems: getActionItems(state),
+    closeSummary: getCloseSummary(state),
     addParticipant,
     removeParticipant,
     startIcebreaker,
@@ -300,5 +328,7 @@ export function useRetro(
     removeDiscussNote,
     startReview,
     assignActionOwner,
+    startClose,
+    exportJson,
   };
 }
