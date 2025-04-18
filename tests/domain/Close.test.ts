@@ -13,6 +13,7 @@ import {
   startBrainstorm,
   startClose,
   startDiscuss,
+  startGroup,
   startIcebreaker,
   startReview,
   startVote,
@@ -42,6 +43,7 @@ function fixture(): RetroState {
   const ids = new SeqIds();
   s = addCardToBrainstorm(s, 'start', 'ship faster', ids); // c-1
   s = addCardToBrainstorm(s, 'stop', 'long meetings', ids); // c-2
+  s = startGroup(s);
   s = startVote(s);
   s = setVoteBudget(s, 3);
   s = castVote(s, 'p-1', 'c-1');
@@ -74,9 +76,13 @@ describe('Close stage', () => {
   it('getCloseSummary groups cards by votes with context + actions + owners', () => {
     const s = startClose(fixture());
     const summary = getCloseSummary(s);
-    expect(summary.discussed.map((d) => d.card.id)).toEqual(['c-1', 'c-2']);
-    expect(summary.discussed[0].card.votes).toBe(2);
-    expect(summary.discussed[1].card.votes).toBe(1);
+    const idOf = (d: (typeof summary.discussed)[number]): string =>
+      d.kind === 'card' ? d.card.id : d.group.id;
+    const votesOf = (d: (typeof summary.discussed)[number]): number =>
+      d.kind === 'card' ? d.card.votes : d.group.votes;
+    expect(summary.discussed.map(idOf)).toEqual(['c-1', 'c-2']);
+    expect(votesOf(summary.discussed[0])).toBe(2);
+    expect(votesOf(summary.discussed[1])).toBe(1);
     expect(summary.discussed[0].contextNotes.map((n) => n.id)).toEqual(['c-3']);
     expect(summary.discussed[0].actionItems.map((a) => a.note.id)).toEqual([
       'c-4',

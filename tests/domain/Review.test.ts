@@ -11,6 +11,7 @@ import {
   setVoteBudget,
   startBrainstorm,
   startDiscuss,
+  startGroup,
   startIcebreaker,
   startReview,
   startVote,
@@ -41,6 +42,7 @@ function baseInDiscuss(): RetroState {
   const ids = new SeqIds();
   s = addCardToBrainstorm(s, 'start', 'ship faster', ids); // c-1
   s = addCardToBrainstorm(s, 'stop', 'long meetings', ids); // c-2
+  s = startGroup(s);
   s = startVote(s);
   s = setVoteBudget(s, 3);
   s = castVote(s, 'p-1', 'c-1');

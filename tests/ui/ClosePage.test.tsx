@@ -6,6 +6,7 @@ import type { CloseSummary } from '../../src/domain/retro/Retro';
 const summary: CloseSummary = {
   discussed: [
     {
+      kind: 'card',
       card: { id: 'c-1', columnId: 'start', text: 'ship faster', votes: 2 },
       contextNotes: [
         { id: 'c-3', parentCardId: 'c-1', lane: 'context', text: 'CI flaky' },
@@ -23,6 +24,7 @@ const summary: CloseSummary = {
       ],
     },
     {
+      kind: 'card',
       card: { id: 'c-2', columnId: 'stop', text: 'long meetings', votes: 0 },
       contextNotes: [],
       actionItems: [

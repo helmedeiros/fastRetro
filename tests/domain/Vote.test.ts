@@ -8,6 +8,7 @@ import {
   setVoteBudget,
   startIcebreaker,
   startBrainstorm,
+  startGroup,
   startVote,
   votesForCard,
   DEFAULT_VOTE_BUDGET,
@@ -37,6 +38,7 @@ function seed(): ReturnType<typeof createRetro> {
   const ids = new SeqIds();
   s = addCardToBrainstorm(s, 'start', 'ship faster', ids);
   s = addCardToBrainstorm(s, 'stop', 'long meetings', ids);
+  s = startGroup(s);
   return s;
 }
 
@@ -50,7 +52,7 @@ describe('Vote domain', () => {
     expect(s.votes).toEqual([]);
   });
 
-  it('startVote only transitions from brainstorm', () => {
+  it('startVote only transitions from group', () => {
     expect(() => startVote(createRetro())).toThrow();
   });
 

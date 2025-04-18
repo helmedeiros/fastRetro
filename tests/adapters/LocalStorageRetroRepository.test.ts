@@ -17,6 +17,7 @@ import {
   startReview,
   startBrainstorm,
   startDiscuss,
+  startGroup,
   startIcebreaker,
   startRetroTimer,
   startVote,
@@ -104,10 +105,10 @@ describe('LocalStorageRetroRepository', () => {
     expect(repo.load()).toEqual(createRetro());
   });
 
-  it('returns a fresh empty Retro when prior v7 payload is found', () => {
+  it('returns a fresh empty Retro when prior v8 payload is found', () => {
     storage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ version: 7, retro: { participants: [] } }),
+      JSON.stringify({ version: 8, retro: { participants: [] } }),
     );
     const repo = new LocalStorageRetroRepository(storage);
     expect(repo.load()).toEqual(createRetro());
@@ -121,6 +122,7 @@ describe('LocalStorageRetroRepository', () => {
     state = startIcebreaker(state, firstPicker);
     state = startBrainstorm(state);
     state = addCardToBrainstorm(state, 'start', 'ship faster', ids);
+    state = startGroup(state);
     state = startVote(state);
     state = castVote(state, 'p-1', 'c-1');
     state = startDiscuss(state);
@@ -147,6 +149,7 @@ describe('LocalStorageRetroRepository', () => {
     state = startIcebreaker(state, firstPicker);
     state = startBrainstorm(state);
     state = addCardToBrainstorm(state, 'start', 'ship faster', ids);
+    state = startGroup(state);
     state = startVote(state);
     state = castVote(state, 'p-1', 'c-1');
     state = startDiscuss(state);
@@ -177,9 +180,9 @@ describe('LocalStorageRetroRepository', () => {
     repo.save(addParticipant(createRetro(), 'id-1', 'Alice'));
     const raw = storage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
-    expect(STORAGE_KEY).toBe('fastretro:state:v8');
+    expect(STORAGE_KEY).toBe('fastretro:state:v9');
     const parsed = JSON.parse(raw as string) as { version: number };
-    expect(parsed.version).toBe(8);
+    expect(parsed.version).toBe(9);
   });
 
   it('round-trips stage, timer, and icebreaker state', () => {
@@ -234,6 +237,7 @@ describe('LocalStorageRetroRepository', () => {
     state = startBrainstorm(state);
     state = addCardToBrainstorm(state, 'start', 'ship faster', ids);
     state = addCardToBrainstorm(state, 'stop', 'long meetings', ids);
+    state = startGroup(state);
     state = startVote(state);
     state = setVoteBudget(state, 2);
     state = castVote(state, 'p-1', 'c-1');
@@ -256,6 +260,7 @@ describe('LocalStorageRetroRepository', () => {
     state = startBrainstorm(state);
     state = addCardToBrainstorm(state, 'start', 'ship faster', ids);
     state = addCardToBrainstorm(state, 'stop', 'long meetings', ids);
+    state = startGroup(state);
     state = startVote(state);
     state = castVote(state, 'p-1', 'c-1');
     state = startDiscuss(state);

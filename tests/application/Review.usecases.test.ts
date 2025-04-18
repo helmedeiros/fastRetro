@@ -11,6 +11,7 @@ import {
   createRetro,
   startBrainstorm,
   startDiscuss,
+  startGroup,
   startIcebreaker,
   startVote,
 } from '../../src/domain/retro/Retro';
@@ -39,6 +40,7 @@ describe('Review use cases', () => {
     s = startIcebreaker(s, firstPicker);
     s = startBrainstorm(s);
     s = addCardToBrainstorm(s, 'start', 'ship faster', ids);
+    s = startGroup(s);
     s = startVote(s);
     s = castVote(s, 'p-1', 'c-1');
     s = startDiscuss(s);

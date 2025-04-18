@@ -8,6 +8,7 @@ import {
   addParticipant,
   createRetro,
   startBrainstorm,
+  startGroup,
   startIcebreaker,
   votesForCard,
 } from '../../src/domain/retro/Retro';
@@ -38,6 +39,7 @@ describe('Vote use cases', () => {
     const ids = new SeqIds();
     s = addCardToBrainstorm(s, 'start', 'ship faster', ids);
     s = addCardToBrainstorm(s, 'stop', 'long meetings', ids);
+    s = startGroup(s);
     repo = new InMemoryRetroRepository(s);
   });
 

@@ -11,6 +11,7 @@ import {
   castVote,
   createRetro,
   startBrainstorm,
+  startGroup,
   startIcebreaker,
   startVote,
 } from '../../src/domain/retro/Retro';
@@ -41,6 +42,7 @@ describe('Discuss use cases', () => {
     s = startBrainstorm(s);
     s = addCardToBrainstorm(s, 'start', 'ship faster', ids);
     s = addCardToBrainstorm(s, 'stop', 'long meetings', ids);
+    s = startGroup(s);
     s = startVote(s);
     s = castVote(s, 'p-1', 'c-1');
     repo = new InMemoryRetroRepository(s);

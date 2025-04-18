@@ -11,6 +11,7 @@ import {
   setVoteBudget,
   startBrainstorm,
   startDiscuss,
+  startGroup,
   startIcebreaker,
   startVote,
   STAGE_DURATIONS,
@@ -41,6 +42,7 @@ function baseWithCards(): RetroState {
   s = addCardToBrainstorm(s, 'start', 'A', ids); // c-1
   s = addCardToBrainstorm(s, 'start', 'B', ids); // c-2
   s = addCardToBrainstorm(s, 'stop', 'C', ids); // c-3
+  s = startGroup(s);
   s = startVote(s);
   s = setVoteBudget(s, 3);
   // A:2 votes, C:1 vote, B:0 votes -> order [c-1, c-3, c-2]

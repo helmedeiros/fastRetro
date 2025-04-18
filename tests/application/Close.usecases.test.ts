@@ -14,6 +14,7 @@ import {
   createRetro,
   startBrainstorm,
   startDiscuss,
+  startGroup,
   startIcebreaker,
   startReview,
   startVote,
@@ -62,6 +63,7 @@ function buildReviewState() {
   s = startBrainstorm(s);
   const ids = new SeqIds();
   s = addCardToBrainstorm(s, 'start', 'ship faster', ids);
+  s = startGroup(s);
   s = startVote(s);
   s = castVote(s, 'p-1', 'c-1');
   s = startDiscuss(s);
