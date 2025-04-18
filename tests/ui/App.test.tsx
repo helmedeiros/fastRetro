@@ -79,7 +79,7 @@ describe('App', () => {
     ).toBeInTheDocument();
   });
 
-  it('transitions from brainstorm to vote', () => {
+  it('transitions from brainstorm to group', () => {
     render(
       <App
         repository={new InMemoryRetroRepository()}
@@ -92,6 +92,32 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: /start retro/i }));
     fireEvent.click(
       screen.getByRole('button', { name: /continue to brainstorm/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to group/i }),
+    );
+    expect(
+      screen.getByRole('heading', { name: /^group$/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('5:00');
+  });
+
+  it('transitions from group to vote', () => {
+    render(
+      <App
+        repository={new InMemoryRetroRepository()}
+        picker={firstPicker}
+      />,
+    );
+    const input = screen.getByLabelText(/participant name/i);
+    fireEvent.change(input, { target: { value: 'Alice' } });
+    fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /start retro/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to brainstorm/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to group/i }),
     );
     fireEvent.click(
       screen.getByRole('button', { name: /continue to vote/i }),
@@ -123,6 +149,9 @@ describe('App', () => {
     });
     fireEvent.click(
       within(startCol).getByRole('button', { name: /add start card/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to group/i }),
     );
     fireEvent.click(
       screen.getByRole('button', { name: /continue to vote/i }),
@@ -180,6 +209,9 @@ describe('App', () => {
       within(startCol).getByRole('button', { name: /add start card/i }),
     );
     fireEvent.click(
+      screen.getByRole('button', { name: /continue to group/i }),
+    );
+    fireEvent.click(
       screen.getByRole('button', { name: /continue to vote/i }),
     );
     fireEvent.click(
@@ -235,6 +267,9 @@ describe('App', () => {
     });
     fireEvent.click(
       within(startCol).getByRole('button', { name: /add start card/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /continue to group/i }),
     );
     fireEvent.click(
       screen.getByRole('button', { name: /continue to vote/i }),

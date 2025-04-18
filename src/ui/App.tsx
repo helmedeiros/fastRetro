@@ -10,6 +10,7 @@ import { useRetro } from './hooks/useRetro';
 import { SetupPage } from './pages/SetupPage';
 import { IcebreakerPage } from './pages/IcebreakerPage';
 import { BrainstormPage } from './pages/BrainstormPage';
+import { GroupPage } from './pages/GroupPage';
 import { VotePage } from './pages/VotePage';
 import { DiscussPage } from './pages/DiscussPage';
 import { ReviewPage } from './pages/ReviewPage';
@@ -72,6 +73,20 @@ export function App({
           onResetTimer={retro.resetTimer}
           onAddCard={retro.addCard}
           onRemoveCard={retro.removeCard}
+          onContinueToGroup={retro.startGroup}
+        />
+      ) : retro.stage === 'group' && retro.timer !== null ? (
+        <GroupPage
+          timer={retro.timer}
+          cards={retro.cards}
+          groups={retro.groups}
+          onStartTimer={retro.startTimer}
+          onPauseTimer={retro.pauseTimer}
+          onResumeTimer={retro.resumeTimer}
+          onResetTimer={retro.resetTimer}
+          onCreateGroup={retro.createGroupByDrop}
+          onRenameGroup={retro.renameGroup}
+          onUngroupCard={retro.ungroupCard}
           onContinueToVote={retro.startVote}
         />
       ) : retro.stage === 'vote' && retro.timer !== null ? (

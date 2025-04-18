@@ -6,6 +6,10 @@ import { AdvanceIcebreaker } from '../../application/usecases/AdvanceIcebreaker'
 import { StartBrainstorm } from '../../application/usecases/StartBrainstorm';
 import { AddCard } from '../../application/usecases/AddCard';
 import { RemoveCard } from '../../application/usecases/RemoveCard';
+import { StartGroup } from '../../application/usecases/StartGroup';
+import { CreateGroupByDrop } from '../../application/usecases/CreateGroupByDrop';
+import { RenameGroup } from '../../application/usecases/RenameGroup';
+import { UngroupCard } from '../../application/usecases/UngroupCard';
 import { StartVote } from '../../application/usecases/StartVote';
 import { CastVote } from '../../application/usecases/CastVote';
 import { SetVoteBudget } from '../../application/usecases/SetVoteBudget';
@@ -39,6 +43,7 @@ import type { IdGenerator } from '../../domain/ports/IdGenerator';
 import type { Picker } from '../../domain/ports/Picker';
 import type { RetroRepository } from '../../domain/ports/RetroRepository';
 import type { Card, ColumnId } from '../../domain/retro/Card';
+import type { Group } from '../../domain/retro/Group';
 import type { Participant } from '../../domain/retro/Participant';
 import type { RetroStage, RetroState } from '../../domain/retro/Retro';
 import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
@@ -51,6 +56,7 @@ export interface UseRetro {
   timer: Timer | null;
   icebreaker: IcebreakerState | null;
   cards: readonly Card[];
+  groups: readonly Group[];
   votes: readonly Vote[];
   voteBudget: number;
   discuss: DiscussState | null;
@@ -64,6 +70,10 @@ export interface UseRetro {
   startBrainstorm: () => void;
   addCard: (columnId: ColumnId, text: string) => void;
   removeCard: (cardId: string) => void;
+  startGroup: () => void;
+  createGroupByDrop: (sourceCardId: string, targetCardId: string) => void;
+  renameGroup: (groupId: string, name: string) => void;
+  ungroupCard: (cardId: string) => void;
   startVote: () => void;
   castVote: (participantId: string, cardId: string) => void;
   setVoteBudget: (budget: number) => void;
@@ -99,6 +109,10 @@ export function useRetro(
       startBrainstorm: new StartBrainstorm(repository),
       addCard: new AddCard(repository, idGenerator),
       removeCard: new RemoveCard(repository),
+      startGroup: new StartGroup(repository),
+      createGroupByDrop: new CreateGroupByDrop(repository, idGenerator),
+      renameGroup: new RenameGroup(repository),
+      ungroupCard: new UngroupCard(repository),
       startVote: new StartVote(repository),
       castVote: new CastVote(repository),
       setVoteBudget: new SetVoteBudget(repository),
@@ -194,6 +208,35 @@ export function useRetro(
   const removeCard = useCallback(
     (cardId: string) => {
       services.removeCard.execute(cardId);
+      refresh();
+    },
+    [services, refresh],
+  );
+
+  const startGroup = useCallback(() => {
+    services.startGroup.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const createGroupByDrop = useCallback(
+    (sourceCardId: string, targetCardId: string) => {
+      services.createGroupByDrop.execute(sourceCardId, targetCardId);
+      refresh();
+    },
+    [services, refresh],
+  );
+
+  const renameGroup = useCallback(
+    (groupId: string, name: string) => {
+      services.renameGroup.execute(groupId, name);
+      refresh();
+    },
+    [services, refresh],
+  );
+
+  const ungroupCard = useCallback(
+    (cardId: string) => {
+      services.ungroupCard.execute(cardId);
       refresh();
     },
     [services, refresh],
@@ -301,6 +344,7 @@ export function useRetro(
     timer: state.timer,
     icebreaker: state.icebreaker,
     cards: state.cards,
+    groups: state.groups,
     votes: state.votes,
     voteBudget: state.voteBudget,
     discuss: state.discuss,
@@ -314,6 +358,10 @@ export function useRetro(
     startBrainstorm,
     addCard,
     removeCard,
+    startGroup,
+    createGroupByDrop,
+    renameGroup,
+    ungroupCard,
     startVote,
     castVote,
     setVoteBudget,
