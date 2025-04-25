@@ -13,6 +13,7 @@
     "typecheck": "tsc -b --noEmit",
     "e2e": "playwright test",
     "check": "npm run lint && npm run typecheck && npm run test:coverage && npm run build",
+    "package": "npm run build && cd dist && zip -r ../fastretro.zip .",
     "prepare": "husky"
   },
   "lint-staged": {
