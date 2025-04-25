@@ -15,6 +15,25 @@ export interface TeamDashboardPageProps {
   onViewCompletedRetro: (retroId: string) => void;
 }
 
+const AVATAR_COLORS = [
+  '#5ec4c8', '#e06060', '#6ec76e', '#d4a84e',
+  '#7a8fe0', '#c87ae0', '#e09060', '#60c4e0',
+];
+
+function avatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 export function TeamDashboardPage({
   members,
   history,
@@ -42,29 +61,35 @@ export function TeamDashboardPage({
 
   return (
     <section aria-label="Team Dashboard">
-      <div className="columns">
+      <div className="dashboard-layout">
         <aside>
           <section aria-label="Retrospectives">
             <h2>Retrospectives</h2>
             {hasActiveRetro ? (
-              <button type="button" className="primary" onClick={onResumeRetro}>
-                Resume Retrospective
+              <button
+                type="button"
+                className="start-retro-card"
+                onClick={onResumeRetro}
+              >
+                <span className="plus">&#9654;</span>
+                <span className="label">Resume Retrospective</span>
               </button>
             ) : (
               <button
                 type="button"
-                className="primary"
+                className="start-retro-card"
                 onClick={onStartRetro}
                 disabled={members.length === 0}
               >
-                + Start Retrospective
+                <span className="plus">+</span>
+                <span className="label">Start Retrospective</span>
               </button>
             )}
             {history.completed.length > 0 && (
               <ul aria-label="Past retrospectives">
                 {history.completed.map((r) => (
-                  <li key={r.id}>
-                    <span>{new Date(r.completedAt).toLocaleDateString()}</span>
+                  <li key={r.id} className="past-retro-item">
+                    <span>{new Date(r.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                     <button
                       type="button"
                       onClick={(): void => {
@@ -80,12 +105,8 @@ export function TeamDashboardPage({
           </section>
 
           <section aria-label="Members">
-            <h2>
-              Members{' '}
-              <small>({String(members.length)})</small>
-            </h2>
+            <h2>Members <small style={{ color: 'var(--fr-accent)' }}>+</small></h2>
             <form onSubmit={onSubmit}>
-              <label htmlFor="member-name">Name</label>
               <input
                 id="member-name"
                 type="text"
@@ -94,14 +115,25 @@ export function TeamDashboardPage({
                   setName(e.target.value);
                 }}
                 placeholder="Add member..."
+                aria-label="Name"
               />
               <button type="submit">Add</button>
             </form>
             {error !== null && <p role="alert">{error}</p>}
             <ul aria-label="Team members">
               {members.map((m) => (
-                <li key={m.id}>
-                  <span>{m.name}</span>
+                <li key={m.id} className="member-item">
+                  <span
+                    className="member-avatar"
+                    style={{ background: avatarColor(m.name) }}
+                  >
+                    {initials(m.name)}
+                  </span>
+                  <span>
+                    <span className="member-name">{m.name}</span>
+                    <br />
+                    <span className="member-role">Member</span>
+                  </span>
                   <button
                     type="button"
                     aria-label={`Remove ${m.name}`}
@@ -109,7 +141,7 @@ export function TeamDashboardPage({
                       onRemoveMember(m.id);
                     }}
                   >
-                    Remove
+                    &times;
                   </button>
                 </li>
               ))}
@@ -118,29 +150,41 @@ export function TeamDashboardPage({
         </aside>
 
         <section aria-label="Action items">
-          <h2>Action Items</h2>
+          <h2>Team Actions</h2>
           {allActionItems.length === 0 ? (
-            <p>No action items yet. Complete a retrospective to see them here.</p>
+            <p className="empty-state">
+              No action items yet.<br />
+              Complete a retrospective to see them here.
+            </p>
           ) : (
-            <ul aria-label="All action items">
+            <div>
               {allActionItems.map((item) => (
-                <li key={item.noteId} data-testid={`dashboard-action-${item.noteId}`}>
-                  <div>
-                    <span>{item.text}</span>
-                    <small>
-                      {' '}
-                      {item.ownerName !== null
-                        ? `— ${item.ownerName}`
-                        : '— unassigned'}
-                    </small>
-                    <br />
-                    <small>
-                      {item.parentText} · {new Date(item.completedAt).toLocaleDateString()}
-                    </small>
+                <div
+                  key={item.noteId}
+                  className="action-item-row"
+                  data-testid={`dashboard-action-${item.noteId}`}
+                >
+                  <span className="check-icon">&#10003;</span>
+                  <div className="action-content">
+                    <div className="action-text">{item.text}</div>
+                    <div className="action-meta">
+                      {item.parentText}
+                      {' \u00B7 '}
+                      {new Date(item.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
+                    </div>
                   </div>
-                </li>
+                  {item.ownerName !== null && (
+                    <span
+                      className="action-owner"
+                      style={{ background: avatarColor(item.ownerName) }}
+                      title={item.ownerName}
+                    >
+                      {initials(item.ownerName)}
+                    </span>
+                  )}
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </section>
       </div>
