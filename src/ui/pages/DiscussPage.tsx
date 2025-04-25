@@ -170,7 +170,7 @@ export function DiscussPage({
               Next →
             </button>
           </div>
-          <div>
+          <div className="columns">
             <Lane
               lane="context"
               title="Context"

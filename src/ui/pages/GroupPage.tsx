@@ -207,7 +207,7 @@ export function GroupPage({
         onReset={onResetTimer}
       />
       <p>Select two cards in the same column to group them together.</p>
-      <div>
+      <div className="columns">
         <Column
           columnId="start"
           title="Start"

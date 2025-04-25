@@ -29,7 +29,6 @@ export function PresentTimer({
       <p
         aria-label="Time remaining"
         data-testid="time-remaining"
-        style={{ fontSize: '2rem', fontVariantNumeric: 'tabular-nums' }}
       >
         {formatRemaining(timer.remainingMs)}
       </p>

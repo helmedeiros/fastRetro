@@ -117,7 +117,7 @@ export function BrainstormPage({
         onResume={onResumeTimer}
         onReset={onResetTimer}
       />
-      <div>
+      <div className="columns">
         <Column
           columnId="start"
           title="Start"

@@ -1,0 +1,297 @@
+/* fastRetro — responsive styles */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-border: #ddd;
+  --color-text: #1a1a1a;
+  --color-muted: #666;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-danger: #dc2626;
+  --color-selected: #dbeafe;
+  --radius: 6px;
+  --gap: 1rem;
+}
+
+html {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--gap);
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 var(--gap);
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 0 0 0.75rem;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+/* --- Buttons --- */
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  padding: 0.4em 0.8em;
+  color: var(--color-text);
+  touch-action: manipulation;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button[aria-pressed='true'] {
+  background: var(--color-selected);
+  border-color: var(--color-primary);
+}
+
+/* --- Inputs --- */
+
+input[type='text'],
+input[type='number'],
+select {
+  font: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.4em 0.6em;
+  width: 100%;
+  max-width: 24rem;
+}
+
+label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  margin-bottom: 0.25rem;
+}
+
+/* --- Lists --- */
+
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+/* --- Forms inline --- */
+
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-end;
+  margin-bottom: var(--gap);
+}
+
+form input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- Two-column boards (Brainstorm, Group, Vote) --- */
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+}
+
+@media (max-width: 600px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Timer --- */
+
+[aria-label='Present timer'] {
+  text-align: center;
+  margin-bottom: var(--gap);
+}
+
+[data-testid='time-remaining'] {
+  font-size: 2.5rem;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+[aria-label='Timer controls'] {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+/* --- Vote budget --- */
+
+#vote-budget-input {
+  width: 5rem;
+}
+
+/* --- Active voter buttons --- */
+
+[aria-label='Active voter'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: var(--gap);
+}
+
+/* --- Vote cards --- */
+
+[data-testid^='vote-card-'] button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* --- Discuss --- */
+
+[aria-label='Segment navigation'] {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: var(--gap);
+}
+
+[aria-label='Active card'] {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  background: var(--color-surface);
+}
+
+/* --- Group cards (tap-to-select) --- */
+
+[data-testid^='group-card-'] button {
+  width: 100%;
+  text-align: left;
+}
+
+/* --- Group items --- */
+
+[data-testid^='group-'] > span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* --- Review action items --- */
+
+[data-testid^='action-item-'] {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.6rem 0;
+}
+
+[data-testid^='action-item-'] select {
+  max-width: 14rem;
+}
+
+[data-testid^='action-parent-'] {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+[data-testid^='action-text-'] {
+  margin: 0;
+}
+
+/* --- Close summary --- */
+
+[aria-label='Close summary'] > li {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.75rem 0;
+}
+
+/* --- Stage continue buttons --- */
+
+section > button:last-child {
+  margin-top: var(--gap);
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+section > button:last-child:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+/* --- Alerts --- */
+
+[role='alert'] {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+}
+
+/* --- Responsive typography --- */
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.25rem;
+  }
+
+  [data-testid='time-remaining'] {
+    font-size: 2rem;
+  }
+
+  button {
+    padding: 0.5em 0.8em;
+    min-height: 44px;
+  }
+
+  input[type='text'],
+  input[type='number'],
+  select {
+    min-height: 44px;
+  }
+}

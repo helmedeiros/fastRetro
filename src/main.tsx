@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './ui/index.css';
 import { BrowserClock } from './adapters/clock/BrowserClock';
 import { LocalStorageRetroRepository } from './adapters/storage/LocalStorageRetroRepository';
 import { RandomPicker } from './adapters/random/RandomPicker';

@@ -136,7 +136,7 @@ export function VotePage({
           );
         })}
       </div>
-      <div>
+      <div className="columns">
         <Column
           columnId="start"
           title="Start"
