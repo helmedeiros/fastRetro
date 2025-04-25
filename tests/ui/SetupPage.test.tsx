@@ -1,22 +1,31 @@
 import { render, screen, within, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { App } from '../../src/ui/App';
-import { InMemoryRetroRepository } from '../../src/adapters/storage/InMemoryRetroRepository';
+import { InMemoryTeamRepository } from '../../src/adapters/storage/InMemoryTeamRepository';
+import type { Clock } from '../../src/domain/ports/Clock';
 
-function addParticipant(name: string): void {
-  const input = screen.getByLabelText(/participant name/i) as HTMLInputElement;
+const fakeClock: Clock = {
+  now: () => Date.now(),
+  subscribe: () => () => undefined,
+};
+
+let counter = 0;
+const ids = { next: () => `id-${String(++counter)}` };
+
+function addMember(name: string): void {
+  const input = screen.getByLabelText(/name/i) as HTMLInputElement;
   fireEvent.change(input, { target: { value: name } });
   fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
 }
 
-describe('SetupPage (via App)', () => {
-  it('adds and removes participants', () => {
-    render(<App repository={new InMemoryRetroRepository()} />);
+describe('Team members (via Dashboard)', () => {
+  it('adds and removes members', () => {
+    render(<App teamRepository={new InMemoryTeamRepository()} clock={fakeClock} idGenerator={ids} />);
 
-    addParticipant('Alice');
-    addParticipant('Bob');
+    addMember('Alice');
+    addMember('Bob');
 
-    const list = screen.getByRole('list', { name: /participants/i });
+    const list = screen.getByRole('list', { name: /team members/i });
     expect(within(list).getByText('Alice')).toBeInTheDocument();
     expect(within(list).getByText('Bob')).toBeInTheDocument();
 
@@ -26,14 +35,14 @@ describe('SetupPage (via App)', () => {
     expect(within(list).getByText('Bob')).toBeInTheDocument();
   });
 
-  it('shows an error on duplicate names and does not add', () => {
-    render(<App repository={new InMemoryRetroRepository()} />);
+  it('shows an error on duplicate names', () => {
+    render(<App teamRepository={new InMemoryTeamRepository()} clock={fakeClock} idGenerator={ids} />);
 
-    addParticipant('Alice');
-    addParticipant('Alice');
+    addMember('Alice');
+    addMember('Alice');
 
     expect(screen.getByRole('alert')).toHaveTextContent(/already/i);
-    const list = screen.getByRole('list', { name: /participants/i });
+    const list = screen.getByRole('list', { name: /team members/i });
     expect(within(list).getAllByText('Alice')).toHaveLength(1);
   });
 });

@@ -5,7 +5,9 @@ import type {
 
 export interface ClosePageProps {
   summary: CloseSummary;
-  onExport: () => void;
+  onExport?: () => void;
+  onReturnToDashboard?: () => void;
+  onBackToDashboard?: () => void;
 }
 
 function itemId(d: CloseSummaryDiscussedItem): string {
@@ -20,7 +22,7 @@ function itemVotes(d: CloseSummaryDiscussedItem): number {
   return d.kind === 'card' ? d.card.votes : d.group.votes;
 }
 
-export function ClosePage({ summary, onExport }: ClosePageProps): JSX.Element {
+export function ClosePage({ summary, onExport, onReturnToDashboard, onBackToDashboard }: ClosePageProps): JSX.Element {
   return (
     <section aria-label="Close">
       <h2>Retro complete</h2>
@@ -66,14 +68,36 @@ export function ClosePage({ summary, onExport }: ClosePageProps): JSX.Element {
           );
         })}
       </ol>
-      <button
-        type="button"
-        className="primary"
-        aria-label="Export retro as JSON"
-        onClick={onExport}
-      >
-        Export JSON
-      </button>
+      <div role="group" aria-label="Close actions">
+        {onExport !== undefined && (
+          <button
+            type="button"
+            className="primary"
+            aria-label="Export retro as JSON"
+            onClick={onExport}
+          >
+            Export JSON
+          </button>
+        )}
+        {onReturnToDashboard !== undefined && (
+          <button
+            type="button"
+            className="primary"
+            onClick={onReturnToDashboard}
+          >
+            Return to Dashboard
+          </button>
+        )}
+        {onBackToDashboard !== undefined && (
+          <button
+            type="button"
+            className="secondary"
+            onClick={onBackToDashboard}
+          >
+            Back to Dashboard
+          </button>
+        )}
+      </div>
     </section>
   );
 }

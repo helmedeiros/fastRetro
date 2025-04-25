@@ -90,6 +90,7 @@ export interface UseRetro {
   assignActionOwner: (noteId: string, participantId: string | null) => void;
   startClose: () => void;
   exportJson: () => void;
+  refresh: () => void;
 }
 
 export function useRetro(
@@ -378,5 +379,6 @@ export function useRetro(
     assignActionOwner,
     startClose,
     exportJson,
+    refresh,
   };
 }
