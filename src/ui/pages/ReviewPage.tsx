@@ -73,7 +73,7 @@ export function ReviewPage({
           })}
         </ul>
       </section>
-      <button type="button" onClick={onContinueToClose}>
+      <button type="button" className="primary" onClick={onContinueToClose}>
         Continue to close
       </button>
     </section>

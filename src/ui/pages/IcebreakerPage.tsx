@@ -61,7 +61,7 @@ export function IcebreakerPage({
       <button type="button" onClick={onNextParticipant} disabled={atEnd}>
         Next
       </button>
-      <button type="button" onClick={onContinueToBrainstorm}>
+      <button type="button" className="primary" onClick={onContinueToBrainstorm}>
         Continue to brainstorm
       </button>
     </section>

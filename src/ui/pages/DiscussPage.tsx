@@ -194,7 +194,7 @@ export function DiscussPage({
           </div>
         </section>
       )}
-      <button type="button" onClick={onContinueToReview}>
+      <button type="button" className="primary" onClick={onContinueToReview}>
         Continue to review
       </button>
     </section>

@@ -1,103 +1,17 @@
-/* fastRetro — responsive styles */
+/* Pico CSS base */
+@import '@picocss/pico/css/pico.min.css';
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* fastRetro overrides */
 
 :root {
-  --color-bg: #fafafa;
-  --color-surface: #ffffff;
-  --color-border: #ddd;
-  --color-text: #1a1a1a;
-  --color-muted: #666;
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-danger: #dc2626;
-  --color-selected: #dbeafe;
-  --radius: 6px;
-  --gap: 1rem;
-}
-
-html {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
-  color: var(--color-text);
-  background: var(--color-bg);
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-  padding: 0;
+  --pico-font-size: 100%;
 }
 
 main {
-  max-width: 64rem;
-  margin: 0 auto;
-  padding: var(--gap);
+  padding: 1rem;
 }
 
-h1 {
-  font-size: 1.5rem;
-  margin: 0 0 var(--gap);
-}
-
-h2 {
-  font-size: 1.25rem;
-  margin: 0 0 0.75rem;
-}
-
-h3 {
-  font-size: 1rem;
-  margin: 0 0 0.5rem;
-}
-
-/* --- Buttons --- */
-
-button {
-  font: inherit;
-  cursor: pointer;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-  padding: 0.4em 0.8em;
-  color: var(--color-text);
-  touch-action: manipulation;
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-button[aria-pressed='true'] {
-  background: var(--color-selected);
-  border-color: var(--color-primary);
-}
-
-/* --- Inputs --- */
-
-input[type='text'],
-input[type='number'],
-select {
-  font: inherit;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 0.4em 0.6em;
-  width: 100%;
-  max-width: 24rem;
-}
-
-label {
-  display: block;
-  font-size: 0.875rem;
-  color: var(--color-muted);
-  margin-bottom: 0.25rem;
-}
-
-/* --- Lists --- */
+/* --- Lists: remove default Pico margins --- */
 
 ul,
 ol {
@@ -110,35 +24,66 @@ li {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--pico-muted-border-color);
 }
 
 li:last-child {
   border-bottom: none;
 }
 
-/* --- Forms inline --- */
+/* --- Inline forms (Setup, Brainstorm, Discuss) --- */
 
 form {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: flex-end;
-  margin-bottom: var(--gap);
 }
 
 form input {
   flex: 1;
   min-width: 0;
+  margin-bottom: 0;
 }
 
-/* --- Two-column boards (Brainstorm, Group, Vote) --- */
+form button {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+/* Remove Pico's heavy bottom margin on inputs outside forms too */
+input,
+select {
+  margin-bottom: 0;
+}
+
+/* --- Buttons: tighter padding, inline sizing --- */
+
+button {
+  width: auto;
+  touch-action: manipulation;
+}
+
+button[aria-pressed='true'] {
+  background: var(--pico-primary-background);
+  border-color: var(--pico-primary-border-color);
+  color: var(--pico-primary-inverse);
+}
+
+/* Small inline buttons (remove, ungroup, x) */
+li button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  margin-left: auto;
+}
+
+/* --- Two-column boards (Brainstorm, Group, Vote, Discuss) --- */
 
 .columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--gap);
+  gap: 1.5rem;
 }
 
 @media (max-width: 600px) {
@@ -147,17 +92,27 @@ form input {
   }
 }
 
+/* Column sections as cards */
+.columns > section {
+  background: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: 1rem;
+}
+
 /* --- Timer --- */
 
 [aria-label='Present timer'] {
   text-align: center;
-  margin-bottom: var(--gap);
+  margin-bottom: 1.5rem;
 }
 
 [data-testid='time-remaining'] {
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
   margin: 0;
+  color: var(--pico-primary);
 }
 
 [aria-label='Timer controls'] {
@@ -167,43 +122,34 @@ form input {
   margin-top: 0.5rem;
 }
 
-/* --- Vote budget --- */
+[aria-label='Timer controls'] button {
+  padding: 0.3rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* --- Vote --- */
 
 #vote-budget-input {
   width: 5rem;
+  display: inline-block;
 }
-
-/* --- Active voter buttons --- */
 
 [aria-label='Active voter'] {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: var(--gap);
+  margin-bottom: 1rem;
 }
 
-/* --- Vote cards --- */
+[aria-label='Active voter'] button {
+  font-size: 0.85rem;
+}
 
 [data-testid^='vote-card-'] button {
   width: 100%;
   text-align: left;
   display: flex;
   justify-content: space-between;
-}
-
-/* --- Discuss --- */
-
-[aria-label='Segment navigation'] {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: var(--gap);
-}
-
-[aria-label='Active card'] {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: var(--gap);
-  background: var(--color-surface);
 }
 
 /* --- Group cards (tap-to-select) --- */
@@ -213,13 +159,41 @@ form input {
   text-align: left;
 }
 
-/* --- Group items --- */
-
 [data-testid^='group-'] > span {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+[data-testid^='group-'] > span button {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+}
+
+/* --- Discuss --- */
+
+[aria-label='Segment navigation'] {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+[aria-label='Active card'] {
+  background: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+[data-testid='discuss-segment'] span[data-active='true'] {
+  font-weight: 700;
+  color: var(--pico-primary);
+}
+
+[data-testid='discuss-segment'] span[data-active='false'] {
+  color: var(--pico-muted-color);
 }
 
 /* --- Review action items --- */
@@ -228,17 +202,17 @@ form input {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.25rem;
-  padding: 0.6rem 0;
+  padding: 0.75rem 0;
 }
 
 [data-testid^='action-item-'] select {
-  max-width: 14rem;
+  max-width: 16rem;
 }
 
 [data-testid^='action-parent-'] {
   margin: 0;
   font-size: 0.8rem;
-  color: var(--color-muted);
+  color: var(--pico-muted-color);
 }
 
 [data-testid^='action-text-'] {
@@ -250,42 +224,30 @@ form input {
 [aria-label='Close summary'] > li {
   flex-direction: column;
   align-items: flex-start;
-  padding: 0.75rem 0;
+  padding: 1rem 0;
 }
 
-/* --- Stage continue buttons --- */
+/* --- Continue / primary action buttons --- */
 
-section > button:last-child {
-  margin-top: var(--gap);
-  background: var(--color-primary);
-  color: #fff;
-  border-color: var(--color-primary);
-}
-
-section > button:last-child:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+section > button.primary {
+  margin-top: 1.5rem;
 }
 
 /* --- Alerts --- */
 
 [role='alert'] {
-  color: var(--color-danger);
+  color: var(--pico-del-color);
   font-size: 0.875rem;
 }
 
-/* --- Responsive typography --- */
+/* --- Responsive --- */
 
 @media (max-width: 600px) {
-  h1 {
-    font-size: 1.25rem;
-  }
-
   [data-testid='time-remaining'] {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 
   button {
-    padding: 0.5em 0.8em;
     min-height: 44px;
   }
 

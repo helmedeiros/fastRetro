@@ -40,7 +40,7 @@ export function App({
   const retro = useRetro(repository, picker, ids, clock, downloader);
 
   return (
-    <main>
+    <main className="container">
       <h1>fastRetro</h1>
       {retro.stage === 'setup' ? (
         <SetupPage

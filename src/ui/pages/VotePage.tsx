@@ -154,7 +154,7 @@ export function VotePage({
           onCastVote={onCastVote}
         />
       </div>
-      <button type="button" onClick={onContinueToDiscuss}>
+      <button type="button" className="primary" onClick={onContinueToDiscuss}>
         Continue to discuss
       </button>
     </section>

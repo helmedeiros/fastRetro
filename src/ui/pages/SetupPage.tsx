@@ -58,7 +58,7 @@ export function SetupPage({
           </li>
         ))}
       </ul>
-      <button type="button" onClick={onStartRetro} disabled={!canStart}>
+      <button type="button" className="primary" onClick={onStartRetro} disabled={!canStart}>
         Start retro
       </button>
     </section>

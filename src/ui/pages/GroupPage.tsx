@@ -231,7 +231,7 @@ export function GroupPage({
           onUngroupCard={onUngroupCard}
         />
       </div>
-      <button type="button" onClick={onContinueToVote}>
+      <button type="button" className="primary" onClick={onContinueToVote}>
         Continue to vote
       </button>
     </section>

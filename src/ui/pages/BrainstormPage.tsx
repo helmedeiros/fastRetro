@@ -133,7 +133,7 @@ export function BrainstormPage({
           onRemoveCard={onRemoveCard}
         />
       </div>
-      <button type="button" onClick={onContinueToGroup}>
+      <button type="button" className="primary" onClick={onContinueToGroup}>
         Continue to group
       </button>
     </section>

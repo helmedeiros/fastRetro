@@ -68,6 +68,7 @@ export function ClosePage({ summary, onExport }: ClosePageProps): JSX.Element {
       </ol>
       <button
         type="button"
+        className="primary"
         aria-label="Export retro as JSON"
         onClick={onExport}
       >
