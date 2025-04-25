@@ -372,6 +372,112 @@ form button {
   text-decoration: underline;
 }
 
+/* === Stage Navigation Bar === */
+
+.stage-nav {
+  display: flex;
+  gap: 0;
+  background: var(--fr-surface);
+  border-bottom: 2px solid var(--fr-border);
+  margin: -1.5rem -1.5rem 1.5rem;
+  padding: 0 1.5rem;
+  overflow-x: auto;
+}
+
+.stage-nav-item {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--fr-text-muted);
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.stage-nav-item.active {
+  color: var(--fr-accent);
+  border-bottom-color: var(--fr-accent);
+}
+
+/* === Icebreaker page === */
+
+[aria-label='Icebreaker'] {
+  text-align: center;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+[aria-label='Icebreaker'] h2 {
+  display: none;
+}
+
+[data-testid='icebreaker-question'] {
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--fr-text);
+  line-height: 1.3;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+
+[aria-label='Icebreaker rotation'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+[aria-label='Icebreaker rotation'] li {
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  background: var(--fr-surface-alt);
+  font-size: 0.85rem;
+}
+
+[aria-label='Icebreaker rotation'] li[aria-current='true'] {
+  background: var(--fr-accent);
+  color: #1a1a2e;
+  font-weight: 600;
+  font-size: 2.5rem;
+  background: transparent;
+  color: var(--fr-text-muted);
+  border-radius: 0;
+  padding: 1rem 0;
+}
+
+/* === Card colors (Brainstorm, Group, Vote) === */
+
+.columns > [aria-label*='Stop column'],
+.columns > [aria-label*='stop column'] {
+  --card-bg: #5c3a3a;
+  --card-border: #7a4a4a;
+}
+
+.columns > [aria-label*='Start column'],
+.columns > [aria-label*='start column'] {
+  --card-bg: #3a5c3a;
+  --card-border: #4a7a4a;
+}
+
+.columns > section li {
+  background: var(--card-bg, var(--fr-surface));
+  border: 1px solid var(--card-border, var(--fr-border));
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.columns > section li:last-child {
+  border-bottom: 1px solid var(--card-border, var(--fr-border));
+}
+
 /* --- Two-column boards (Brainstorm, Group, Vote, Discuss) --- */
 
 .columns {

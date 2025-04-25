@@ -17,6 +17,7 @@ import { VotePage } from './pages/VotePage';
 import { DiscussPage } from './pages/DiscussPage';
 import { ReviewPage } from './pages/ReviewPage';
 import { ClosePage } from './pages/ClosePage';
+import { StageNav } from './components/StageNav';
 
 export interface AppProps {
   teamRepository: TeamRepository;
@@ -77,6 +78,7 @@ export function App({
     return (
       <main className="container">
         <h1>fastRetro</h1>
+        <StageNav currentStage="close" />
         <ClosePage
           summary={retro.closeSummary}
           onExport={retro.exportJson}
@@ -91,6 +93,7 @@ export function App({
     return (
       <main className="container">
         <h1>fastRetro</h1>
+        <StageNav currentStage={retroStage} />
         {retro.stage === 'icebreaker' &&
           retro.timer !== null &&
           retro.icebreaker !== null ? (
