@@ -31,6 +31,7 @@ interface PersistedTimerV9 {
 
 interface PersistedIcebreakerV9 {
   readonly question: string;
+  readonly questions?: readonly string[];
   readonly participantIds: readonly string[];
   readonly currentIndex: number;
 }
@@ -263,6 +264,9 @@ export class LocalStorageRetroRepository implements RetroRepository {
         ? null
         : {
             question: parsed.retro.icebreaker.question,
+            questions: parsed.retro.icebreaker.questions
+              ? [...parsed.retro.icebreaker.questions]
+              : [parsed.retro.icebreaker.question],
             participantIds: [...parsed.retro.icebreaker.participantIds],
             currentIndex: parsed.retro.icebreaker.currentIndex,
           };
@@ -335,6 +339,7 @@ export class LocalStorageRetroRepository implements RetroRepository {
             ? null
             : {
                 question: state.icebreaker.question,
+                questions: [...state.icebreaker.questions],
                 participantIds: [...state.icebreaker.participantIds],
                 currentIndex: state.icebreaker.currentIndex,
               },

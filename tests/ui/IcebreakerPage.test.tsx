@@ -16,7 +16,8 @@ const participants: readonly Participant[] = [
 
 function baseState(currentIndex: number): IcebreakerState {
   return {
-    question: 'What made you laugh today?',
+    question: currentIndex === 0 ? 'What made you laugh today?' : 'What is your favorite hobby?',
+    questions: ['What made you laugh today?', 'What is your favorite hobby?'],
     participantIds: ['a', 'b'],
     currentIndex,
   };

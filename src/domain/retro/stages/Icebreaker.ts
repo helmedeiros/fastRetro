@@ -18,6 +18,7 @@ export const ICEBREAKER_QUESTIONS: readonly string[] = [
 
 export interface IcebreakerState {
   readonly question: string;
+  readonly questions: readonly string[];
   readonly participantIds: readonly string[];
   readonly currentIndex: number;
 }
@@ -33,18 +34,39 @@ export function createIcebreaker(
   if (questionPool.length === 0) {
     throw new Error('Icebreaker requires a non-empty question pool');
   }
+  const questions: string[] = [];
+  const remaining = [...questionPool];
+  for (let i = 0; i < participants.length; i++) {
+    if (remaining.length === 0) {
+      remaining.push(...questionPool);
+    }
+    const picked = picker.pick(remaining);
+    questions.push(picked);
+    const idx = remaining.indexOf(picked);
+    if (idx >= 0) remaining.splice(idx, 1);
+  }
   return {
-    question: picker.pick(questionPool),
+    question: questions[0],
+    questions,
     participantIds: participants.map((p) => p.id),
     currentIndex: 0,
   };
+}
+
+export function currentQuestion(state: IcebreakerState): string {
+  return state.questions[state.currentIndex] ?? state.question;
 }
 
 export function nextParticipant(state: IcebreakerState): IcebreakerState {
   if (isAtEnd(state)) {
     return state;
   }
-  return { ...state, currentIndex: state.currentIndex + 1 };
+  const nextIndex = state.currentIndex + 1;
+  return {
+    ...state,
+    currentIndex: nextIndex,
+    question: state.questions[nextIndex] ?? state.question,
+  };
 }
 
 export function isAtEnd(state: IcebreakerState): boolean {

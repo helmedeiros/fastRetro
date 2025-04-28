@@ -2,11 +2,17 @@ import { describe, it, expect } from 'vitest';
 import {
   ICEBREAKER_QUESTIONS,
   createIcebreaker,
+  currentQuestion,
   isAtEnd,
   nextParticipant,
 } from '../../src/domain/retro/stages/Icebreaker';
 import type { Picker } from '../../src/domain/ports/Picker';
 import type { Participant } from '../../src/domain/retro/Participant';
+
+let pickIndex = 0;
+const sequentialPicker: Picker<string> = {
+  pick: <T,>(items: readonly T[]): T => items[pickIndex++ % items.length] as T,
+};
 
 const firstPicker: Picker<string> = {
   pick: <T,>(items: readonly T[]): T => items[0] as T,
@@ -33,9 +39,10 @@ describe('ICEBREAKER_QUESTIONS', () => {
 });
 
 describe('createIcebreaker', () => {
-  it('picks a question via the injected picker and starts at index 0', () => {
+  it('picks a question per participant and starts at index 0', () => {
     const s = createIcebreaker(participants, ICEBREAKER_QUESTIONS, firstPicker);
     expect(s.question).toBe(ICEBREAKER_QUESTIONS[0]);
+    expect(s.questions).toHaveLength(3);
     expect(s.currentIndex).toBe(0);
     expect(s.participantIds).toEqual(['a', 'b', 'c']);
   });
@@ -60,15 +67,25 @@ describe('createIcebreaker', () => {
   });
 });
 
-describe('nextParticipant / isAtEnd', () => {
-  it('advances the index', () => {
-    let s = createIcebreaker(participants, ICEBREAKER_QUESTIONS, firstPicker);
+describe('nextParticipant / isAtEnd / currentQuestion', () => {
+  it('advances the index and changes the question', () => {
+    pickIndex = 0;
+    let s = createIcebreaker(participants, ICEBREAKER_QUESTIONS, sequentialPicker);
+    const q0 = currentQuestion(s);
+    expect(q0).toBe(s.questions[0]);
     expect(isAtEnd(s)).toBe(false);
+
     s = nextParticipant(s);
+    const q1 = currentQuestion(s);
     expect(s.currentIndex).toBe(1);
+    expect(q1).toBe(s.questions[1]);
+    expect(q1).not.toBe(q0);
     expect(isAtEnd(s)).toBe(false);
+
     s = nextParticipant(s);
+    const q2 = currentQuestion(s);
     expect(s.currentIndex).toBe(2);
+    expect(q2).toBe(s.questions[2]);
     expect(isAtEnd(s)).toBe(true);
   });
 

@@ -1,5 +1,5 @@
 import type { Participant } from '../../domain/retro/Participant';
-import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
+import { currentQuestion, type IcebreakerState } from '../../domain/retro/stages/Icebreaker';
 import type { Timer } from '../../domain/retro/Timer';
 import { PresentTimer } from '../components/PresentTimer';
 
@@ -43,7 +43,7 @@ export function IcebreakerPage({
         onResume={onResumeTimer}
         onReset={onResetTimer}
       />
-      <p data-testid="icebreaker-question">{icebreaker.question}</p>
+      <p data-testid="icebreaker-question">{currentQuestion(icebreaker)}</p>
       <ul aria-label="Icebreaker rotation">
         {orderedParticipants.map((p) => {
           const isCurrent = p.id === currentId;
