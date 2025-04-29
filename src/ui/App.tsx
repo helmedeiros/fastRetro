@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Clock } from '../domain/ports/Clock';
 import type { Downloader } from '../domain/ports/Downloader';
 import type { IdGenerator } from '../domain/ports/IdGenerator';
@@ -9,7 +9,9 @@ import { RandomPicker } from '../adapters/random/RandomPicker';
 import { ActiveRetroRepositoryBridge } from '../adapters/storage/ActiveRetroRepositoryBridge';
 import { useTeamDashboard } from './hooks/useTeamDashboard';
 import { useRetro } from './hooks/useRetro';
+import { AppNav, type AppTab } from './components/AppNav';
 import { TeamDashboardPage } from './pages/TeamDashboardPage';
+import { RetrospectivesPage } from './pages/RetrospectivesPage';
 import { IcebreakerPage } from './pages/IcebreakerPage';
 import { BrainstormPage } from './pages/BrainstormPage';
 import { GroupPage } from './pages/GroupPage';
@@ -46,10 +48,10 @@ export function App({
     [teamRepository],
   );
 
+  const [appTab, setAppTab] = useState<AppTab>('home');
   const dashboard = useTeamDashboard(teamRepository, ids, picker, clock);
   const retro = useRetro(bridge, picker, ids, clock, downloader);
 
-  // Use retro.stage (always fresh) for routing within an active retro
   const retroStage = retro.stage;
   const hasActiveRetro = dashboard.activeRetro !== null;
 
@@ -73,7 +75,7 @@ export function App({
     );
   }
 
-  // Active retro in close stage — show close page with return option
+  // Active retro in close stage
   if (isCloseStage) {
     return (
       <main className="container">
@@ -185,26 +187,43 @@ export function App({
     );
   }
 
-  // Dashboard (default view)
+  // Dashboard views (home / retrospectives)
   return (
     <main className="container">
       <h1>fastRetro</h1>
-      <TeamDashboardPage
-        members={dashboard.team.members}
-        history={dashboard.history}
-        allActionItems={dashboard.allActionItems}
-        hasActiveRetro={hasActiveRetro && retroStage !== 'setup'}
-        onAddMember={dashboard.addMember}
-        onRemoveMember={dashboard.removeMember}
-        onStartRetro={() => {
-          dashboard.startRetro();
-          retro.refresh();
-        }}
-        onResumeRetro={() => {
-          retro.refresh();
-        }}
-        onViewCompletedRetro={dashboard.viewCompletedRetro}
-      />
+      <AppNav currentTab={appTab} onNavigate={setAppTab} />
+      {appTab === 'home' ? (
+        <TeamDashboardPage
+          members={dashboard.team.members}
+          allActionItems={dashboard.allActionItems}
+          hasActiveRetro={hasActiveRetro && retroStage !== 'setup'}
+          activeRetroStage={retroStage}
+          onAddMember={dashboard.addMember}
+          onRemoveMember={dashboard.removeMember}
+          onStartRetro={() => {
+            dashboard.startRetro();
+            retro.refresh();
+          }}
+          onResumeRetro={() => {
+            retro.refresh();
+          }}
+        />
+      ) : (
+        <RetrospectivesPage
+          activeRetro={dashboard.activeRetro}
+          activeRetroStage={retroStage}
+          history={dashboard.history}
+          membersCount={dashboard.team.members.length}
+          onStartRetro={() => {
+            dashboard.startRetro();
+            retro.refresh();
+          }}
+          onResumeRetro={() => {
+            retro.refresh();
+          }}
+          onViewCompletedRetro={dashboard.viewCompletedRetro}
+        />
+      )}
     </main>
   );
 }

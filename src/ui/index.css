@@ -372,6 +372,119 @@ form button {
   text-decoration: underline;
 }
 
+/* === App Navigation (HOME / RETROSPECTIVES) === */
+
+.app-nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--fr-border);
+  margin-bottom: 1.5rem;
+}
+
+.app-nav-item {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--fr-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  border-radius: 0;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.app-nav-item:hover {
+  color: var(--fr-text);
+  background: none;
+}
+
+.app-nav-item.active {
+  color: var(--fr-text);
+  border-bottom-color: var(--fr-accent);
+}
+
+/* === Retro card grid (Retrospectives page) === */
+
+.retro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.retro-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 100px;
+}
+
+.retro-card:hover {
+  border-color: var(--fr-accent);
+  background: var(--fr-surface-alt);
+}
+
+.retro-card-columns {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.retro-col {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding-bottom: 0.25rem;
+  border-bottom: 3px solid;
+}
+
+.retro-col-stop {
+  color: #e06060;
+  border-color: #8b3a3a;
+}
+
+.retro-col-start {
+  color: #6ec76e;
+  border-color: #3a6e3a;
+}
+
+.retro-card-info {
+  margin-top: auto;
+}
+
+.retro-card-name {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--fr-text);
+  margin-bottom: 0.25rem;
+}
+
+.retro-card-meta {
+  font-size: 0.75rem;
+  color: var(--fr-text-muted);
+}
+
+.retro-badge {
+  display: inline-block;
+  padding: 0.1em 0.5em;
+  border-radius: 4px;
+  background: var(--fr-surface-alt);
+  border: 1px solid var(--fr-border);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--fr-text-muted);
+}
+
 /* === Stage Navigation Bar === */
 
 .stage-nav {

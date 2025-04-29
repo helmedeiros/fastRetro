@@ -1,18 +1,16 @@
 import { useState, type FormEvent } from 'react';
 import type { TeamMember } from '../../domain/team/Team';
 import type { FlatActionItem } from '../../domain/team/RetroHistory';
-import type { RetroHistoryState } from '../../domain/team/RetroHistory';
 
 export interface TeamDashboardPageProps {
   members: readonly TeamMember[];
-  history: RetroHistoryState;
   allActionItems: readonly FlatActionItem[];
   hasActiveRetro: boolean;
+  activeRetroStage: string;
   onAddMember: (name: string) => void;
   onRemoveMember: (id: string) => void;
   onStartRetro: () => void;
   onResumeRetro: () => void;
-  onViewCompletedRetro: (retroId: string) => void;
 }
 
 const AVATAR_COLORS = [
@@ -36,14 +34,13 @@ function initials(name: string): string {
 
 export function TeamDashboardPage({
   members,
-  history,
   allActionItems,
   hasActiveRetro,
+  activeRetroStage,
   onAddMember,
   onRemoveMember,
   onStartRetro,
   onResumeRetro,
-  onViewCompletedRetro,
 }: TeamDashboardPageProps): JSX.Element {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -68,11 +65,21 @@ export function TeamDashboardPage({
             {hasActiveRetro ? (
               <button
                 type="button"
-                className="start-retro-card"
+                className="retro-card"
                 onClick={onResumeRetro}
               >
-                <span className="plus">&#9654;</span>
-                <span className="label">Resume Retrospective</span>
+                <div className="retro-card-columns">
+                  <span className="retro-col retro-col-stop">Stop</span>
+                  <span className="retro-col retro-col-start">Start</span>
+                </div>
+                <div className="retro-card-info">
+                  <span className="retro-card-name">Current Retro</span>
+                  <span className="retro-card-meta">
+                    {activeRetroStage.toUpperCase()}
+                    {' \u00B7 '}
+                    <span className="retro-badge">IN PROGRESS</span>
+                  </span>
+                </div>
               </button>
             ) : (
               <button
@@ -85,23 +92,6 @@ export function TeamDashboardPage({
                 <span className="label">Start Retrospective</span>
               </button>
             )}
-            {history.completed.length > 0 && (
-              <ul aria-label="Past retrospectives">
-                {history.completed.map((r) => (
-                  <li key={r.id} className="past-retro-item">
-                    <span>{new Date(r.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-                    <button
-                      type="button"
-                      onClick={(): void => {
-                        onViewCompletedRetro(r.id);
-                      }}
-                    >
-                      View
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
           </section>
 
           <section aria-label="Members">
@@ -111,9 +101,7 @@ export function TeamDashboardPage({
                 id="member-name"
                 type="text"
                 value={name}
-                onChange={(e): void => {
-                  setName(e.target.value);
-                }}
+                onChange={(e): void => { setName(e.target.value); }}
                 placeholder="Add member..."
                 aria-label="Name"
               />
@@ -137,9 +125,7 @@ export function TeamDashboardPage({
                   <button
                     type="button"
                     aria-label={`Remove ${m.name}`}
-                    onClick={(): void => {
-                      onRemoveMember(m.id);
-                    }}
+                    onClick={(): void => { onRemoveMember(m.id); }}
                   >
                     &times;
                   </button>
