@@ -101,7 +101,7 @@ describe('IcebreakerPage', () => {
         onContinueToBrainstorm={noop}
       />,
     );
-    expect(screen.getByTestId('time-remaining')).toHaveTextContent('10:00');
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('10m 00s');
   });
 
   it('fires onContinueToBrainstorm when clicked', () => {

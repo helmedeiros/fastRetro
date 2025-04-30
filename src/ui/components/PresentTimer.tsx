@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Timer } from '../../domain/retro/Timer';
 
 export interface PresentTimerProps {
@@ -8,13 +9,21 @@ export interface PresentTimerProps {
   onReset: () => void;
 }
 
-function formatRemaining(ms: number): string {
+function formatCompact(ms: number): string {
   const totalSeconds = Math.ceil(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  const mm = String(minutes).padStart(2, '0');
-  const ss = String(seconds).padStart(2, '0');
-  return `${mm}:${ss}`;
+  if (minutes > 0) {
+    return `${String(minutes)}m ${String(seconds).padStart(2, '0')}s`;
+  }
+  return `${String(seconds)}s`;
+}
+
+function formatFull(ms: number): string {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
 export function PresentTimer({
@@ -24,34 +33,50 @@ export function PresentTimer({
   onResume,
   onReset,
 }: PresentTimerProps): JSX.Element {
+  const [open, setOpen] = useState(false);
+
   return (
-    <section aria-label="Present timer">
-      <p
-        aria-label="Time remaining"
-        data-testid="time-remaining"
+    <section aria-label="Present timer" className="timer-corner">
+      <button
+        type="button"
+        className="timer-toggle"
+        onClick={(): void => { setOpen(!open); }}
+        aria-expanded={open}
+        data-running={timer.status === 'running' ? 'true' : 'false'}
       >
-        {formatRemaining(timer.remainingMs)}
-      </p>
-      <div role="group" aria-label="Timer controls">
-        {timer.status === 'idle' && (
-          <button type="button" onClick={onStart}>
-            Start
-          </button>
-        )}
-        {timer.status === 'running' && (
-          <button type="button" onClick={onPause}>
-            Pause
-          </button>
-        )}
-        {timer.status === 'paused' && (
-          <button type="button" onClick={onResume}>
-            Resume
-          </button>
-        )}
-        <button type="button" onClick={onReset}>
-          Reset
-        </button>
-      </div>
+        <span className="timer-icon">&#9201;</span>
+        <span
+          aria-label="Time remaining"
+          data-testid="time-remaining"
+        >
+          {formatCompact(timer.remainingMs)}
+        </span>
+      </button>
+      {open && (
+        <div className="timer-dropdown" role="group" aria-label="Timer controls">
+          <p className="timer-display">{formatFull(timer.remainingMs)}</p>
+          <div className="timer-buttons">
+            {timer.status === 'idle' && (
+              <button type="button" className="primary" onClick={onStart}>
+                Start
+              </button>
+            )}
+            {timer.status === 'running' && (
+              <button type="button" onClick={onPause}>
+                Pause
+              </button>
+            )}
+            {timer.status === 'paused' && (
+              <button type="button" className="primary" onClick={onResume}>
+                Resume
+              </button>
+            )}
+            <button type="button" onClick={onReset}>
+              Reset
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

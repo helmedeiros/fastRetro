@@ -61,7 +61,7 @@ function Harness({ initialBudget = 3 }: HarnessProps): JSX.Element {
 describe('VotePage', () => {
   it('renders timer at 5:00 and both columns', () => {
     render(<Harness />);
-    expect(screen.getByTestId('time-remaining')).toHaveTextContent('05:00');
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('5m 00s');
     expect(
       screen.getByRole('region', { name: /start column/i }),
     ).toBeInTheDocument();

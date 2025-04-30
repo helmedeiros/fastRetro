@@ -7,8 +7,12 @@ function noop(): void {
   // intentionally empty
 }
 
+function openDropdown(): void {
+  fireEvent.click(screen.getByRole('button', { name: /time remaining/i }));
+}
+
 describe('PresentTimer', () => {
-  it('renders mm:ss for the remaining time', () => {
+  it('renders compact time in the toggle', () => {
     const timer = createTimer(10 * 60 * 1000);
     render(
       <PresentTimer
@@ -19,10 +23,10 @@ describe('PresentTimer', () => {
         onReset={noop}
       />,
     );
-    expect(screen.getByTestId('time-remaining')).toHaveTextContent('10:00');
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('10m 00s');
   });
 
-  it('shows Start when idle and fires onStart', () => {
+  it('shows Start when idle after opening dropdown and fires onStart', () => {
     const onStart = vi.fn();
     render(
       <PresentTimer
@@ -33,11 +37,12 @@ describe('PresentTimer', () => {
         onReset={noop}
       />,
     );
+    openDropdown();
     fireEvent.click(screen.getByRole('button', { name: /start/i }));
     expect(onStart).toHaveBeenCalledTimes(1);
   });
 
-  it('shows Pause when running and fires onPause', () => {
+  it('shows Pause when running after opening dropdown and fires onPause', () => {
     const onPause = vi.fn();
     render(
       <PresentTimer
@@ -48,11 +53,12 @@ describe('PresentTimer', () => {
         onReset={noop}
       />,
     );
+    openDropdown();
     fireEvent.click(screen.getByRole('button', { name: /pause/i }));
     expect(onPause).toHaveBeenCalledTimes(1);
   });
 
-  it('shows Resume when paused and fires onResume', () => {
+  it('shows Resume when paused after opening dropdown and fires onResume', () => {
     const onResume = vi.fn();
     render(
       <PresentTimer
@@ -63,11 +69,12 @@ describe('PresentTimer', () => {
         onReset={noop}
       />,
     );
+    openDropdown();
     fireEvent.click(screen.getByRole('button', { name: /resume/i }));
     expect(onResume).toHaveBeenCalledTimes(1);
   });
 
-  it('Reset is always available and fires onReset', () => {
+  it('Reset is available in dropdown and fires onReset', () => {
     const onReset = vi.fn();
     render(
       <PresentTimer
@@ -78,6 +85,7 @@ describe('PresentTimer', () => {
         onReset={onReset}
       />,
     );
+    openDropdown();
     fireEvent.click(screen.getByRole('button', { name: /reset/i }));
     expect(onReset).toHaveBeenCalledTimes(1);
   });

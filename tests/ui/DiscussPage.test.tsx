@@ -84,7 +84,7 @@ function Harness(): JSX.Element {
 describe('DiscussPage', () => {
   it('renders active card, timer, and context active', () => {
     render(<Harness />);
-    expect(screen.getByTestId('time-remaining')).toHaveTextContent('02:30');
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('2m 30s');
     const active = screen.getByRole('region', { name: /active card/i });
     expect(within(active).getByText('ship faster')).toBeInTheDocument();
     expect(within(active).getByTestId('discuss-card-index')).toHaveTextContent(

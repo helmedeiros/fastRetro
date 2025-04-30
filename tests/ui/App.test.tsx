@@ -66,7 +66,7 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { name: /icebreaker/i }),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('time-remaining')).toHaveTextContent('10:00');
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('10m 00s');
   });
 
   it('transitions from icebreaker to brainstorm', () => {
@@ -78,7 +78,7 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { name: /brainstorm/i }),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('time-remaining')).toHaveTextContent('5:00');
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('5m 00s');
   });
 
   it('transitions from brainstorm to group', () => {

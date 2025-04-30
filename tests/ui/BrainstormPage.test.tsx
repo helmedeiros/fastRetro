@@ -25,7 +25,7 @@ describe('BrainstormPage', () => {
         onContinueToGroup={noop}
       />,
     );
-    expect(screen.getByTestId('time-remaining')).toHaveTextContent('5:00');
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('5m 00s');
     expect(screen.getByRole('region', { name: /start column/i })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: /stop column/i })).toBeInTheDocument();
   });
