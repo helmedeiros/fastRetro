@@ -67,8 +67,15 @@ interface PersistedDiscussNoteV9 {
   readonly text: string;
 }
 
+interface PersistedMetaV9 {
+  readonly name?: string;
+  readonly date?: string;
+  readonly context?: string;
+}
+
 interface PersistedRetroStateV9 {
   readonly stage: RetroStage;
+  readonly meta?: PersistedMetaV9;
   readonly participants: readonly PersistedParticipantV9[];
   readonly timer: PersistedTimerV9 | null;
   readonly icebreaker: PersistedIcebreakerV9 | null;
@@ -301,8 +308,14 @@ export class LocalStorageRetroRepository implements RetroRepository {
         text: n.text,
       }),
     );
+    const meta = {
+      name: parsed.retro.meta?.name ?? '',
+      date: parsed.retro.meta?.date ?? '',
+      context: parsed.retro.meta?.context ?? '',
+    };
     return {
       stage: parsed.retro.stage,
+      meta,
       participants,
       timer,
       icebreaker,
@@ -321,6 +334,11 @@ export class LocalStorageRetroRepository implements RetroRepository {
       version: SCHEMA_VERSION,
       retro: {
         stage: state.stage,
+        meta: {
+          name: state.meta.name,
+          date: state.meta.date,
+          context: state.meta.context,
+        },
         participants: state.participants.map((p) => ({
           id: p.id,
           name: p.name,

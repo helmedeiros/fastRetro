@@ -10,7 +10,7 @@ import { AddTeamMember } from '../../application/usecases/AddTeamMember';
 import { RemoveTeamMember } from '../../application/usecases/RemoveTeamMember';
 import { StartNewRetro } from '../../application/usecases/StartNewRetro';
 import { ReturnToDashboard } from '../../application/usecases/ReturnToDashboard';
-import type { RetroState } from '../../domain/retro/Retro';
+import type { RetroState, RetroMeta } from '../../domain/retro/Retro';
 import { getCloseSummary, type CloseSummary } from '../../domain/retro/Retro';
 
 export interface UseTeamDashboard {
@@ -22,7 +22,7 @@ export interface UseTeamDashboard {
   readonly viewingCompletedSummary: CloseSummary | null;
   addMember: (name: string) => void;
   removeMember: (id: string) => void;
-  startRetro: () => void;
+  startRetro: (meta: RetroMeta) => void;
   returnToDashboard: () => void;
   viewCompletedRetro: (retroId: string) => void;
   backToDashboard: () => void;
@@ -75,10 +75,13 @@ export function useTeamDashboard(
     [services, refresh],
   );
 
-  const startRetro = useCallback(() => {
-    services.startRetro.execute();
-    refresh();
-  }, [services, refresh]);
+  const startRetro = useCallback(
+    (meta: RetroMeta) => {
+      services.startRetro.execute(meta);
+      refresh();
+    },
+    [services, refresh],
+  );
 
   const returnToDashboard = useCallback(() => {
     services.returnToDashboard.execute();

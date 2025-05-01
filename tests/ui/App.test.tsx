@@ -30,9 +30,18 @@ function renderApp(teamRepo?: InMemoryTeamRepository) {
 }
 
 function addMemberAndStartRetro() {
+  // Add member on dashboard
   const nameInput = screen.getByLabelText(/name/i);
   fireEvent.change(nameInput, { target: { value: 'Alice' } });
   fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
+  // Click start → setup page
+  fireEvent.click(
+    screen.getByRole('button', { name: /start retrospective/i }),
+  );
+  // Fill retro name and start
+  fireEvent.change(screen.getByLabelText(/name/i), {
+    target: { value: 'Sprint 1 Retro' },
+  });
   fireEvent.click(
     screen.getByRole('button', { name: /start retrospective/i }),
   );

@@ -12,6 +12,7 @@ import { useRetro } from './hooks/useRetro';
 import { AppNav, type AppTab } from './components/AppNav';
 import { TeamDashboardPage } from './pages/TeamDashboardPage';
 import { RetrospectivesPage } from './pages/RetrospectivesPage';
+import { RetroSetupPage } from './pages/RetroSetupPage';
 import { IcebreakerPage } from './pages/IcebreakerPage';
 import { BrainstormPage } from './pages/BrainstormPage';
 import { GroupPage } from './pages/GroupPage';
@@ -49,6 +50,7 @@ export function App({
   );
 
   const [appTab, setAppTab] = useState<AppTab>('home');
+  const [showingRetroSetup, setShowingRetroSetup] = useState(false);
   const dashboard = useTeamDashboard(teamRepository, ids, picker, clock);
   const retro = useRetro(bridge, picker, ids, clock, downloader);
 
@@ -187,7 +189,25 @@ export function App({
     );
   }
 
+  // Retro setup form
+  if (showingRetroSetup) {
+    return (
+      <main className="container">
+        <h1>fastRetro</h1>
+        <RetroSetupPage
+          onStart={(meta) => {
+            dashboard.startRetro(meta);
+            retro.refresh();
+            setShowingRetroSetup(false);
+          }}
+          onCancel={() => { setShowingRetroSetup(false); }}
+        />
+      </main>
+    );
+  }
+
   // Dashboard views (home / retrospectives)
+  const handleStartRetro = (): void => { setShowingRetroSetup(true); };
   return (
     <main className="container">
       <h1>fastRetro</h1>
@@ -200,10 +220,7 @@ export function App({
           activeRetroStage={retroStage}
           onAddMember={dashboard.addMember}
           onRemoveMember={dashboard.removeMember}
-          onStartRetro={() => {
-            dashboard.startRetro();
-            retro.refresh();
-          }}
+          onStartRetro={handleStartRetro}
           onResumeRetro={() => {
             retro.refresh();
           }}
@@ -214,10 +231,7 @@ export function App({
           activeRetroStage={retroStage}
           history={dashboard.history}
           membersCount={dashboard.team.members.length}
-          onStartRetro={() => {
-            dashboard.startRetro();
-            retro.refresh();
-          }}
+          onStartRetro={handleStartRetro}
           onResumeRetro={() => {
             retro.refresh();
           }}

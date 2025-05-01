@@ -63,8 +63,15 @@ export interface DiscussState {
 
 export const DEFAULT_VOTE_BUDGET = 3;
 
+export interface RetroMeta {
+  readonly name: string;
+  readonly date: string;
+  readonly context: string;
+}
+
 export interface RetroState {
   readonly stage: RetroStage;
+  readonly meta: RetroMeta;
   readonly participants: readonly Participant[];
   readonly timer: Timer | null;
   readonly icebreaker: IcebreakerState | null;
@@ -97,9 +104,10 @@ export type Votable =
       readonly cards: readonly Card[];
     };
 
-export function createRetro(): RetroState {
+export function createRetro(meta?: RetroMeta): RetroState {
   return {
     stage: 'setup',
+    meta: meta ?? { name: '', date: '', context: '' },
     participants: [],
     timer: null,
     icebreaker: null,
