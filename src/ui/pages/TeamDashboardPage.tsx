@@ -7,6 +7,7 @@ export interface TeamDashboardPageProps {
   allActionItems: readonly FlatActionItem[];
   hasActiveRetro: boolean;
   activeRetroStage: string;
+  activeRetroName: string;
   onAddMember: (name: string) => void;
   onRemoveMember: (id: string) => void;
   onStartRetro: () => void;
@@ -37,6 +38,7 @@ export function TeamDashboardPage({
   allActionItems,
   hasActiveRetro,
   activeRetroStage,
+  activeRetroName,
   onAddMember,
   onRemoveMember,
   onStartRetro,
@@ -73,7 +75,7 @@ export function TeamDashboardPage({
                   <span className="retro-col retro-col-start">Start</span>
                 </div>
                 <div className="retro-card-info">
-                  <span className="retro-card-name">Current Retro</span>
+                  <span className="retro-card-name">{activeRetroName || 'Current Retro'}</span>
                   <span className="retro-card-meta">
                     {activeRetroStage.toUpperCase()}
                     {' \u00B7 '}

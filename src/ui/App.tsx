@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Clock } from '../domain/ports/Clock';
 import type { Downloader } from '../domain/ports/Downloader';
 import type { IdGenerator } from '../domain/ports/IdGenerator';
@@ -51,6 +51,7 @@ export function App({
 
   const [appTab, setAppTab] = useState<AppTab>('home');
   const [showingRetroSetup, setShowingRetroSetup] = useState(false);
+  const [forceDashboard, setForceDashboard] = useState(false);
   const dashboard = useTeamDashboard(teamRepository, ids, picker, clock);
   const retro = useRetro(bridge, picker, ids, clock, downloader);
 
@@ -64,11 +65,35 @@ export function App({
 
   const isCloseStage = hasActiveRetro && retroStage === 'close';
 
+  const goHome = useCallback(() => {
+    setForceDashboard(true);
+    setShowingRetroSetup(false);
+    dashboard.backToDashboard();
+  }, [dashboard]);
+
+  const resumeRetro = useCallback(() => {
+    retro.refresh();
+    setForceDashboard(false);
+  }, [retro]);
+
+  const logo = (
+    <h1>
+      <button
+        type="button"
+        className="logo-btn"
+        onClick={goHome}
+        aria-label="Go to dashboard"
+      >
+        fastRetro
+      </button>
+    </h1>
+  );
+
   // Viewing a completed retro from history
   if (dashboard.viewingCompletedRetroId !== null && dashboard.viewingCompletedSummary !== null) {
     return (
       <main className="container">
-        <h1>fastRetro</h1>
+        {logo}
         <ClosePage
           summary={dashboard.viewingCompletedSummary}
           onBackToDashboard={dashboard.backToDashboard}
@@ -77,26 +102,29 @@ export function App({
     );
   }
 
-  // Active retro in close stage
-  if (isCloseStage) {
+  // Active retro in close stage (not forced to dashboard)
+  if (isCloseStage && !forceDashboard) {
     return (
       <main className="container">
-        <h1>fastRetro</h1>
+        {logo}
         <StageNav currentStage="close" />
         <ClosePage
           summary={retro.closeSummary}
           onExport={retro.exportJson}
-          onReturnToDashboard={dashboard.returnToDashboard}
+          onReturnToDashboard={() => {
+            dashboard.returnToDashboard();
+            setForceDashboard(true);
+          }}
         />
       </main>
     );
   }
 
-  // Active retro in progress
-  if (isActiveRetro) {
+  // Active retro in progress (not forced to dashboard)
+  if (isActiveRetro && !forceDashboard) {
     return (
       <main className="container">
-        <h1>fastRetro</h1>
+        {logo}
         <StageNav currentStage={retroStage} />
         {retro.stage === 'icebreaker' &&
           retro.timer !== null &&
@@ -193,12 +221,13 @@ export function App({
   if (showingRetroSetup) {
     return (
       <main className="container">
-        <h1>fastRetro</h1>
+        {logo}
         <RetroSetupPage
           onStart={(meta) => {
             dashboard.startRetro(meta);
             retro.refresh();
             setShowingRetroSetup(false);
+            setForceDashboard(false);
           }}
           onCancel={() => { setShowingRetroSetup(false); }}
         />
@@ -208,22 +237,22 @@ export function App({
 
   // Dashboard views (home / retrospectives)
   const handleStartRetro = (): void => { setShowingRetroSetup(true); };
+  const showActiveRetro = hasActiveRetro && retroStage !== 'setup';
   return (
     <main className="container">
-      <h1>fastRetro</h1>
+      {logo}
       <AppNav currentTab={appTab} onNavigate={setAppTab} />
       {appTab === 'home' ? (
         <TeamDashboardPage
           members={dashboard.team.members}
           allActionItems={dashboard.allActionItems}
-          hasActiveRetro={hasActiveRetro && retroStage !== 'setup'}
+          hasActiveRetro={showActiveRetro}
           activeRetroStage={retroStage}
+          activeRetroName={dashboard.activeRetro?.meta?.name ?? ''}
           onAddMember={dashboard.addMember}
           onRemoveMember={dashboard.removeMember}
           onStartRetro={handleStartRetro}
-          onResumeRetro={() => {
-            retro.refresh();
-          }}
+          onResumeRetro={resumeRetro}
         />
       ) : (
         <RetrospectivesPage
@@ -232,9 +261,7 @@ export function App({
           history={dashboard.history}
           membersCount={dashboard.team.members.length}
           onStartRetro={handleStartRetro}
-          onResumeRetro={() => {
-            retro.refresh();
-          }}
+          onResumeRetro={resumeRetro}
           onViewCompletedRetro={dashboard.viewCompletedRetro}
         />
       )}
