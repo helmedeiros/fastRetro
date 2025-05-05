@@ -48,9 +48,11 @@ export function RetrospectivesPage({
                 <span className="retro-col retro-col-start">Start</span>
               </div>
               <div className="retro-card-info">
-                <span className="retro-card-name">Current Retro</span>
+                <span className="retro-card-name">{activeRetro?.meta?.name || 'Current Retro'}</span>
                 <span className="retro-card-meta">
-                  {activeRetroStage.toUpperCase()}
+                  {activeRetro?.meta?.date
+                    ? new Date(activeRetro.meta.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })
+                    : activeRetroStage.toUpperCase()}
                   {' \u00B7 '}
                   <span className="retro-badge">IN PROGRESS</span>
                 </span>
@@ -80,13 +82,17 @@ export function RetrospectivesPage({
                   </div>
                   <div className="retro-card-info">
                     <span className="retro-card-name">
-                      {new Date(r.completedAt).toLocaleDateString('en-US', {
+                      {r.fullState.meta?.name || new Date(r.completedAt).toLocaleDateString('en-US', {
                         weekday: 'short',
                         day: 'numeric',
                         month: 'short',
                       })}
                     </span>
                     <span className="retro-card-meta">
+                      {r.fullState.meta?.date
+                        ? new Date(r.fullState.meta.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })
+                        : new Date(r.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      {' \u00B7 '}
                       {`${String(r.fullState.participants.length)} participants`}
                       {' \u00B7 '}
                       {`${String(stopCards + startCards)} cards`}
