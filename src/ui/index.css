@@ -608,6 +608,7 @@ form button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding-bottom: 2rem;
 }
 
 [aria-label='Icebreaker'] h2 {
@@ -619,35 +620,82 @@ form button {
   font-weight: 300;
   color: var(--fr-text);
   line-height: 1.3;
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto 2rem;
 }
 
+/* Speaker name (big center) */
+.icebreaker-speaker {
+  margin: 1.5rem 0 2.5rem;
+}
+
+.speaker-name {
+  font-size: 3.5rem;
+  font-weight: 200;
+  color: var(--fr-text-muted);
+  transition: opacity 0.1s;
+}
+
+.speaker-name.spinning {
+  color: var(--fr-accent);
+  opacity: 0.7;
+}
+
+@media (max-width: 600px) {
+  .speaker-name {
+    font-size: 2rem;
+  }
+}
+
+/* Participant pills */
 [aria-label='Icebreaker rotation'] {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: center;
-  margin-top: 2rem;
+  margin-bottom: 1.5rem;
 }
 
-[aria-label='Icebreaker rotation'] li {
-  border: none;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  background: var(--fr-surface-alt);
+.participant-pill {
+  border: 1px solid var(--fr-border) !important;
+  border-radius: 20px !important;
+  padding: 0.3rem 0.8rem !important;
+  background: var(--fr-surface-alt) !important;
   font-size: 0.85rem;
+  margin: 0 !important;
 }
 
-[aria-label='Icebreaker rotation'] li[aria-current='true'] {
-  background: var(--fr-accent);
+.participant-pill[data-current='true'] {
+  background: var(--fr-accent) !important;
+  border-color: var(--fr-accent) !important;
   color: #1a1a2e;
   font-weight: 600;
-  font-size: 2.5rem;
-  background: transparent;
-  color: var(--fr-text-muted);
-  border-radius: 0;
-  padding: 1rem 0;
+}
+
+/* Spin button */
+.icebreaker-actions {
+  margin-bottom: 2rem;
+}
+
+.spin-btn {
+  background: var(--fr-accent) !important;
+  border-color: var(--fr-accent) !important;
+  color: #1a1a2e !important;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.6rem 2rem;
+  border-radius: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.spin-btn:hover:not(:disabled) {
+  background: var(--fr-accent-hover) !important;
+  border-color: var(--fr-accent-hover) !important;
+}
+
+.spin-btn:disabled {
+  opacity: 0.4;
 }
 
 /* === Card colors (Brainstorm, Group, Vote) === */

@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import type { Participant } from '../../domain/retro/Participant';
 import { currentQuestion, type IcebreakerState } from '../../domain/retro/stages/Icebreaker';
 import type { Timer } from '../../domain/retro/Timer';
@@ -33,6 +34,40 @@ export function IcebreakerPage({
     .map((id) => participants.find((p) => p.id === id))
     .filter((p): p is Participant => p !== undefined);
 
+  const currentParticipant = participants.find((p) => p.id === currentId);
+
+  const [spinning, setSpinning] = useState(false);
+  const [displayName, setDisplayName] = useState(currentParticipant?.name ?? '');
+  const spinRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    setDisplayName(currentParticipant?.name ?? '');
+  }, [currentParticipant]);
+
+  const handleSpin = (): void => {
+    if (atEnd || spinning) return;
+    setSpinning(true);
+    let ticks = 0;
+    const totalTicks = 12 + Math.floor(Math.random() * 6);
+    spinRef.current = setInterval(() => {
+      const randomIdx = Math.floor(Math.random() * orderedParticipants.length);
+      setDisplayName(orderedParticipants[randomIdx].name);
+      ticks++;
+      if (ticks >= totalTicks) {
+        if (spinRef.current !== null) clearInterval(spinRef.current);
+        spinRef.current = null;
+        onNextParticipant();
+        setSpinning(false);
+      }
+    }, 100);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (spinRef.current !== null) clearInterval(spinRef.current);
+    };
+  }, []);
+
   return (
     <section aria-label="Icebreaker">
       <h2>Icebreaker</h2>
@@ -44,6 +79,13 @@ export function IcebreakerPage({
         onReset={onResetTimer}
       />
       <p data-testid="icebreaker-question">{currentQuestion(icebreaker)}</p>
+
+      <div className="icebreaker-speaker" data-testid="icebreaker-speaker">
+        <span className={`speaker-name${spinning ? ' spinning' : ''}`}>
+          {displayName}
+        </span>
+      </div>
+
       <ul aria-label="Icebreaker rotation">
         {orderedParticipants.map((p) => {
           const isCurrent = p.id === currentId;
@@ -52,15 +94,25 @@ export function IcebreakerPage({
               key={p.id}
               aria-current={isCurrent ? 'true' : undefined}
               data-current={isCurrent ? 'true' : 'false'}
+              className="participant-pill"
             >
-              {p.name}
+              <span>{p.name}</span>
             </li>
           );
         })}
       </ul>
-      <button type="button" onClick={onNextParticipant} disabled={atEnd}>
-        Next
-      </button>
+
+      <div className="icebreaker-actions">
+        <button
+          type="button"
+          className="spin-btn"
+          onClick={handleSpin}
+          disabled={atEnd || spinning}
+        >
+          {spinning ? 'Spinning...' : 'SPIN'}
+        </button>
+      </div>
+
       <button type="button" className="primary" onClick={onContinueToBrainstorm}>
         Continue to brainstorm
       </button>

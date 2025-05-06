@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, within } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, within, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { IcebreakerPage } from '../../src/ui/pages/IcebreakerPage';
 import { createTimer } from '../../src/domain/retro/Timer';
 import type { IcebreakerState } from '../../src/domain/retro/stages/Icebreaker';
@@ -24,6 +24,9 @@ function baseState(currentIndex: number): IcebreakerState {
 }
 
 describe('IcebreakerPage', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); });
+
   it('renders the question and highlights the current participant', () => {
     render(
       <IcebreakerPage
@@ -48,7 +51,7 @@ describe('IcebreakerPage', () => {
     expect(bob).toHaveAttribute('data-current', 'false');
   });
 
-  it('fires onNextParticipant when Next clicked', () => {
+  it('calls onNextParticipant after SPIN completes', () => {
     const onNext = vi.fn();
     render(
       <IcebreakerPage
@@ -63,11 +66,13 @@ describe('IcebreakerPage', () => {
         onContinueToBrainstorm={noop}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /next/i }));
+    fireEvent.click(screen.getByRole('button', { name: /spin/i }));
+    // Advance enough time for all spin ticks (max ~18 ticks * 100ms)
+    act(() => { vi.advanceTimersByTime(2000); });
     expect(onNext).toHaveBeenCalledTimes(1);
   });
 
-  it('disables Next at the last participant', () => {
+  it('disables SPIN at the last participant', () => {
     render(
       <IcebreakerPage
         timer={createTimer(10 * 60 * 1000)}
@@ -81,7 +86,7 @@ describe('IcebreakerPage', () => {
         onContinueToBrainstorm={noop}
       />,
     );
-    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /spin/i })).toBeDisabled();
     const list = screen.getByRole('list', { name: /icebreaker rotation/i });
     const bob = within(list).getByText('Bob').closest('li');
     expect(bob).toHaveAttribute('data-current', 'true');
