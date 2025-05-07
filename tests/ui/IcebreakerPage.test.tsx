@@ -12,13 +12,14 @@ function noop(): void {
 const participants: readonly Participant[] = [
   { id: 'a', name: 'Alice' },
   { id: 'b', name: 'Bob' },
+  { id: 'c', name: 'Carol' },
 ];
 
 function baseState(currentIndex: number): IcebreakerState {
   return {
-    question: currentIndex === 0 ? 'What made you laugh today?' : 'What is your favorite hobby?',
-    questions: ['What made you laugh today?', 'What is your favorite hobby?'],
-    participantIds: ['a', 'b'],
+    question: 'What made you laugh today?',
+    questions: ['What made you laugh today?', 'Favorite hobby?', 'Best meal?'],
+    participantIds: ['a', 'b', 'c'],
     currentIndex,
   };
 }
@@ -27,7 +28,7 @@ describe('IcebreakerPage', () => {
   beforeEach(() => { vi.useFakeTimers(); });
   afterEach(() => { vi.useRealTimers(); });
 
-  it('renders the question and highlights the current participant', () => {
+  it('shows current speaker big and remaining as pills (current removed)', () => {
     render(
       <IcebreakerPage
         timer={createTimer(10 * 60 * 1000)}
@@ -41,14 +42,13 @@ describe('IcebreakerPage', () => {
         onContinueToBrainstorm={noop}
       />,
     );
-    expect(screen.getByTestId('icebreaker-question')).toHaveTextContent(
-      'What made you laugh today?',
-    );
+    // Alice is current speaker (index 0) — shown big
+    expect(screen.getByTestId('icebreaker-speaker')).toHaveTextContent('Alice');
+    // Remaining pills: Bob and Carol (Alice is picked)
     const list = screen.getByRole('list', { name: /icebreaker rotation/i });
-    const alice = within(list).getByText('Alice').closest('li');
-    const bob = within(list).getByText('Bob').closest('li');
-    expect(alice).toHaveAttribute('data-current', 'true');
-    expect(bob).toHaveAttribute('data-current', 'false');
+    expect(within(list).queryByText('Alice')).not.toBeInTheDocument();
+    expect(within(list).getByText('Bob')).toBeInTheDocument();
+    expect(within(list).getByText('Carol')).toBeInTheDocument();
   });
 
   it('calls onNextParticipant after SPIN completes', () => {
@@ -67,16 +67,15 @@ describe('IcebreakerPage', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /spin/i }));
-    // Advance enough time for all spin ticks (max ~18 ticks * 100ms)
     act(() => { vi.advanceTimersByTime(2000); });
     expect(onNext).toHaveBeenCalledTimes(1);
   });
 
-  it('disables SPIN at the last participant', () => {
+  it('disables SPIN at the last participant and shows no remaining pills', () => {
     render(
       <IcebreakerPage
         timer={createTimer(10 * 60 * 1000)}
-        icebreaker={baseState(1)}
+        icebreaker={baseState(2)}
         participants={participants}
         onStartTimer={noop}
         onPauseTimer={noop}
@@ -87,9 +86,11 @@ describe('IcebreakerPage', () => {
       />,
     );
     expect(screen.getByRole('button', { name: /spin/i })).toBeDisabled();
+    expect(screen.getByTestId('icebreaker-speaker')).toHaveTextContent('Carol');
     const list = screen.getByRole('list', { name: /icebreaker rotation/i });
-    const bob = within(list).getByText('Bob').closest('li');
-    expect(bob).toHaveAttribute('data-current', 'true');
+    expect(within(list).queryByText('Alice')).not.toBeInTheDocument();
+    expect(within(list).queryByText('Bob')).not.toBeInTheDocument();
+    expect(within(list).queryByText('Carol')).not.toBeInTheDocument();
   });
 
   it('renders the present timer', () => {

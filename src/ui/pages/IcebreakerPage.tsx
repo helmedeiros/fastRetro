@@ -34,6 +34,14 @@ export function IcebreakerPage({
     .map((id) => participants.find((p) => p.id === id))
     .filter((p): p is Participant => p !== undefined);
 
+  // Already picked = indices 0..currentIndex (inclusive)
+  const pickedIds = new Set(
+    icebreaker.participantIds.slice(0, icebreaker.currentIndex + 1),
+  );
+
+  // Remaining = everyone not yet picked
+  const remaining = orderedParticipants.filter((p) => !pickedIds.has(p.id));
+
   const currentParticipant = participants.find((p) => p.id === currentId);
 
   const [spinning, setSpinning] = useState(false);
@@ -41,17 +49,19 @@ export function IcebreakerPage({
   const spinRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    setDisplayName(currentParticipant?.name ?? '');
-  }, [currentParticipant]);
+    if (!spinning) {
+      setDisplayName(currentParticipant?.name ?? '');
+    }
+  }, [currentParticipant, spinning]);
 
   const handleSpin = (): void => {
-    if (atEnd || spinning) return;
+    if (atEnd || spinning || remaining.length === 0) return;
     setSpinning(true);
     let ticks = 0;
     const totalTicks = 12 + Math.floor(Math.random() * 6);
     spinRef.current = setInterval(() => {
-      const randomIdx = Math.floor(Math.random() * orderedParticipants.length);
-      setDisplayName(orderedParticipants[randomIdx].name);
+      const randomIdx = Math.floor(Math.random() * remaining.length);
+      setDisplayName(remaining[randomIdx].name);
       ticks++;
       if (ticks >= totalTicks) {
         if (spinRef.current !== null) clearInterval(spinRef.current);
@@ -87,19 +97,15 @@ export function IcebreakerPage({
       </div>
 
       <ul aria-label="Icebreaker rotation">
-        {orderedParticipants.map((p) => {
-          const isCurrent = p.id === currentId;
-          return (
-            <li
-              key={p.id}
-              aria-current={isCurrent ? 'true' : undefined}
-              data-current={isCurrent ? 'true' : 'false'}
-              className="participant-pill"
-            >
-              <span>{p.name}</span>
-            </li>
-          );
-        })}
+        {remaining.map((p) => (
+          <li
+            key={p.id}
+            data-current="false"
+            className="participant-pill"
+          >
+            <span>{p.name}</span>
+          </li>
+        ))}
       </ul>
 
       <div className="icebreaker-actions">
