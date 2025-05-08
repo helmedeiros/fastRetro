@@ -169,6 +169,53 @@ export function startIcebreaker(
   };
 }
 
+export function addIcebreakerParticipant(
+  state: RetroState,
+  id: string,
+  name: string,
+  picker: Picker<string>,
+): RetroState {
+  if (state.stage !== 'icebreaker' || state.icebreaker === null) {
+    throw new Error('Can only add participants during icebreaker');
+  }
+  const withParticipant = addParticipant(state, id, name);
+  const question = picker.pick(ICEBREAKER_QUESTIONS);
+  return {
+    ...withParticipant,
+    icebreaker: {
+      ...state.icebreaker,
+      participantIds: [...state.icebreaker.participantIds, id],
+      questions: [...state.icebreaker.questions, question],
+    },
+  };
+}
+
+export function removeIcebreakerParticipant(
+  state: RetroState,
+  id: string,
+): RetroState {
+  if (state.stage !== 'icebreaker' || state.icebreaker === null) {
+    throw new Error('Can only remove participants during icebreaker');
+  }
+  const idx = state.icebreaker.participantIds.indexOf(id);
+  if (idx < 0) return state;
+  // Don't allow removing the current or already-passed participants
+  if (idx <= state.icebreaker.currentIndex) return state;
+  const withRemoved = removeParticipant(state, id);
+  const nextIds = state.icebreaker.participantIds.filter((pid) => pid !== id);
+  const nextQuestions = state.icebreaker.questions.filter((_, i) =>
+    state.icebreaker!.participantIds[i] !== id,
+  );
+  return {
+    ...withRemoved,
+    icebreaker: {
+      ...state.icebreaker,
+      participantIds: nextIds,
+      questions: nextQuestions,
+    },
+  };
+}
+
 export function advanceIcebreakerParticipant(state: RetroState): RetroState {
   if (state.icebreaker === null) {
     throw new Error('No active icebreaker');

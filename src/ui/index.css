@@ -672,6 +672,36 @@ form button {
   font-weight: 600;
 }
 
+.pill-remove {
+  all: unset;
+  cursor: pointer;
+  margin-left: 0.25rem;
+  color: var(--fr-text-muted);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.pill-remove:hover {
+  color: var(--fr-text);
+}
+
+.add-pill {
+  background: transparent !important;
+  border: 1px dashed var(--fr-border) !important;
+}
+
+.add-pill input {
+  all: unset;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--fr-text);
+  width: 8rem;
+}
+
+.add-pill input::placeholder {
+  color: var(--fr-text-muted);
+}
+
 /* Spin button */
 .icebreaker-actions {
   margin-bottom: 2rem;

@@ -138,6 +138,8 @@ export function App({
             onResumeTimer={retro.resumeTimer}
             onResetTimer={retro.resetTimer}
             onNextParticipant={retro.advanceIcebreaker}
+            onAddParticipant={retro.addIcebreakerParticipant}
+            onRemoveParticipant={retro.removeIcebreakerParticipant}
             onContinueToBrainstorm={retro.startBrainstorm}
           />
         ) : retro.stage === 'brainstorm' && retro.timer !== null ? (

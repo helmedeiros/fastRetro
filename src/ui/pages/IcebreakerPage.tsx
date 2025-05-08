@@ -13,6 +13,8 @@ export interface IcebreakerPageProps {
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onNextParticipant: () => void;
+  onAddParticipant?: (name: string) => void;
+  onRemoveParticipant?: (id: string) => void;
   onContinueToBrainstorm: () => void;
 }
 
@@ -25,8 +27,11 @@ export function IcebreakerPage({
   onResumeTimer,
   onResetTimer,
   onNextParticipant,
+  onAddParticipant,
+  onRemoveParticipant,
   onContinueToBrainstorm,
 }: IcebreakerPageProps): JSX.Element {
+  const [newName, setNewName] = useState('');
   const currentId = icebreaker.participantIds[icebreaker.currentIndex];
   const atEnd = icebreaker.currentIndex >= icebreaker.participantIds.length - 1;
 
@@ -104,8 +109,35 @@ export function IcebreakerPage({
             className="participant-pill"
           >
             <span>{p.name}</span>
+            {onRemoveParticipant !== undefined && (
+              <button
+                type="button"
+                className="pill-remove"
+                aria-label={`Remove ${p.name}`}
+                onClick={(): void => { onRemoveParticipant(p.id); }}
+              >
+                &times;
+              </button>
+            )}
           </li>
         ))}
+        {onAddParticipant !== undefined && (
+          <li className="participant-pill add-pill">
+            <input
+              type="text"
+              value={newName}
+              onChange={(e): void => { setNewName(e.target.value); }}
+              placeholder="Add names..."
+              aria-label="Add participant name"
+              onKeyDown={(e): void => {
+                if (e.key === 'Enter' && newName.trim().length > 0) {
+                  onAddParticipant(newName.trim());
+                  setNewName('');
+                }
+              }}
+            />
+          </li>
+        )}
       </ul>
 
       <div className="icebreaker-actions">

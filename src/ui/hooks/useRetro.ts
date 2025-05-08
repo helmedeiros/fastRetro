@@ -27,6 +27,8 @@ import { StartReview } from '../../application/usecases/StartReview';
 import { AssignActionOwner } from '../../application/usecases/AssignActionOwner';
 import { StartClose } from '../../application/usecases/StartClose';
 import { ExportRetro } from '../../application/usecases/ExportRetro';
+import { AddIcebreakerParticipant } from '../../application/usecases/AddIcebreakerParticipant';
+import { RemoveIcebreakerParticipant } from '../../application/usecases/RemoveIcebreakerParticipant';
 import type { Downloader } from '../../domain/ports/Downloader';
 import type {
   DiscussLane,
@@ -91,6 +93,8 @@ export interface UseRetro {
   startClose: () => void;
   exportJson: () => void;
   refresh: () => void;
+  addIcebreakerParticipant: (name: string) => void;
+  removeIcebreakerParticipant: (id: string) => void;
 }
 
 export function useRetro(
@@ -130,6 +134,8 @@ export function useRetro(
       startReview: new StartReview(repository),
       assignActionOwner: new AssignActionOwner(repository),
       startClose: new StartClose(repository),
+      addIcebreakerParticipant: new AddIcebreakerParticipant(repository, idGenerator, picker),
+      removeIcebreakerParticipant: new RemoveIcebreakerParticipant(repository),
       exportRetro:
         clock !== undefined && downloader !== undefined
           ? new ExportRetro(repository, clock, downloader)
@@ -339,6 +345,22 @@ export function useRetro(
     }
   }, [services]);
 
+  const addIcebreakerParticipantCb = useCallback(
+    (name: string) => {
+      services.addIcebreakerParticipant.execute(name);
+      refresh();
+    },
+    [services, refresh],
+  );
+
+  const removeIcebreakerParticipantCb = useCallback(
+    (id: string) => {
+      services.removeIcebreakerParticipant.execute(id);
+      refresh();
+    },
+    [services, refresh],
+  );
+
   return {
     stage: state.stage,
     participants: state.participants,
@@ -380,5 +402,7 @@ export function useRetro(
     startClose,
     exportJson,
     refresh,
+    addIcebreakerParticipant: addIcebreakerParticipantCb,
+    removeIcebreakerParticipant: removeIcebreakerParticipantCb,
   };
 }
