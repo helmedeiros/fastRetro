@@ -261,6 +261,27 @@ export function removeCardFromBrainstorm(
   return { ...state, cards: next };
 }
 
+export function moveCard(
+  state: RetroState,
+  cardId: string,
+  targetColumnId: ColumnId,
+  targetIndex: number,
+): RetroState {
+  if (state.stage !== 'brainstorm') {
+    throw new Error('Cards can only be moved during brainstorm');
+  }
+  const card = state.cards.find((c) => c.id === cardId);
+  if (card === undefined) return state;
+  const movedCard = { ...card, columnId: targetColumnId };
+  const without = state.cards.filter((c) => c.id !== cardId);
+  const startCards = without.filter((c) => c.columnId === 'start');
+  const stopCards = without.filter((c) => c.columnId === 'stop');
+  const target = targetColumnId === 'start' ? startCards : stopCards;
+  const clampedIdx = Math.max(0, Math.min(targetIndex, target.length));
+  target.splice(clampedIdx, 0, movedCard);
+  return { ...state, cards: [...startCards, ...stopCards] };
+}
+
 export function startGroup(state: RetroState): RetroState {
   if (state.stage !== 'brainstorm') {
     throw new Error('Group can only start from the brainstorm stage');

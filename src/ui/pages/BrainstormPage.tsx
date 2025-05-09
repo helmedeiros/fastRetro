@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type DragEvent } from 'react';
 import type { Card, ColumnId } from '../../domain/retro/Card';
 import { MAX_CARD_LENGTH } from '../../domain/retro/Card';
 import type { Timer } from '../../domain/retro/Timer';
@@ -13,6 +13,7 @@ export interface BrainstormPageProps {
   onResetTimer: () => void;
   onAddCard: (columnId: ColumnId, text: string) => void;
   onRemoveCard: (cardId: string) => void;
+  onMoveCard?: (cardId: string, targetColumnId: ColumnId, targetIndex: number) => void;
   onContinueToGroup: () => void;
 }
 
@@ -22,6 +23,7 @@ interface ColumnProps {
   cards: readonly Card[];
   onAddCard: (columnId: ColumnId, text: string) => void;
   onRemoveCard: (cardId: string) => void;
+  onDrop: (cardId: string, targetIndex: number) => void;
 }
 
 function Column({
@@ -30,8 +32,10 @@ function Column({
   cards,
   onAddCard,
   onRemoveCard,
+  onDrop,
 }: ColumnProps): JSX.Element {
   const [text, setText] = useState('');
+  const [dropTarget, setDropTarget] = useState<number | null>(null);
   const trimmedLength = text.trim().length;
   const tooLong = text.length > MAX_CARD_LENGTH;
   const disabled = trimmedLength === 0 || tooLong;
@@ -44,8 +48,39 @@ function Column({
     setText('');
   };
 
+  const handleDragOver = (e: DragEvent, index: number): void => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDropTarget(index);
+  };
+
+  const handleColumnDragOver = (e: DragEvent): void => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDropTarget(cards.length);
+  };
+
+  const handleDrop = (e: DragEvent, index: number): void => {
+    e.preventDefault();
+    const cardId = e.dataTransfer.getData('text/plain');
+    if (cardId) onDrop(cardId, index);
+    setDropTarget(null);
+  };
+
+  const handleColumnDrop = (e: DragEvent): void => {
+    e.preventDefault();
+    const cardId = e.dataTransfer.getData('text/plain');
+    if (cardId) onDrop(cardId, cards.length);
+    setDropTarget(null);
+  };
+
   return (
-    <section aria-label={`${title} column`}>
+    <section
+      aria-label={`${title} column`}
+      onDragOver={handleColumnDragOver}
+      onDrop={handleColumnDrop}
+      onDragLeave={(): void => { setDropTarget(null); }}
+    >
       <h3>{title}</h3>
       <label htmlFor={inputId}>{`${title} card text`}</label>
       <input
@@ -54,6 +89,9 @@ function Column({
         value={text}
         onChange={(e): void => {
           setText(e.target.value);
+        }}
+        onKeyDown={(e): void => {
+          if (e.key === 'Enter') submit();
         }}
         aria-describedby={counterId}
         aria-invalid={tooLong}
@@ -74,8 +112,19 @@ function Column({
         Add
       </button>
       <ul aria-label={`${title} cards`}>
-        {cards.map((c) => (
-          <li key={c.id} data-testid={`card-${c.id}`}>
+        {cards.map((c, i) => (
+          <li
+            key={c.id}
+            data-testid={`card-${c.id}`}
+            draggable
+            className={`brainstorm-card${dropTarget === i ? ' drop-above' : ''}`}
+            onDragStart={(e): void => {
+              e.dataTransfer.setData('text/plain', c.id);
+              e.dataTransfer.effectAllowed = 'move';
+            }}
+            onDragOver={(e): void => { handleDragOver(e, i); }}
+            onDrop={(e): void => { handleDrop(e, i); }}
+          >
             <span>{c.text}</span>
             <button
               type="button"
@@ -102,10 +151,15 @@ export function BrainstormPage({
   onResetTimer,
   onAddCard,
   onRemoveCard,
+  onMoveCard,
   onContinueToGroup,
 }: BrainstormPageProps): JSX.Element {
   const startCards = cards.filter((c) => c.columnId === 'start');
   const stopCards = cards.filter((c) => c.columnId === 'stop');
+
+  const handleDrop = (targetColumnId: ColumnId) => (cardId: string, targetIndex: number): void => {
+    if (onMoveCard) onMoveCard(cardId, targetColumnId, targetIndex);
+  };
 
   return (
     <section aria-label="Brainstorm">
@@ -124,6 +178,7 @@ export function BrainstormPage({
           cards={startCards}
           onAddCard={onAddCard}
           onRemoveCard={onRemoveCard}
+          onDrop={handleDrop('start')}
         />
         <Column
           columnId="stop"
@@ -131,6 +186,7 @@ export function BrainstormPage({
           cards={stopCards}
           onAddCard={onAddCard}
           onRemoveCard={onRemoveCard}
+          onDrop={handleDrop('stop')}
         />
       </div>
       <button type="button" className="primary" onClick={onContinueToGroup}>

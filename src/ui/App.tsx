@@ -152,6 +152,7 @@ export function App({
             onResetTimer={retro.resetTimer}
             onAddCard={retro.addCard}
             onRemoveCard={retro.removeCard}
+            onMoveCard={retro.moveCard}
             onContinueToGroup={retro.startGroup}
           />
         ) : retro.stage === 'group' && retro.timer !== null ? (

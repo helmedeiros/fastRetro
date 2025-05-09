@@ -754,6 +754,26 @@ form button {
   border-bottom: 1px solid var(--card-border, var(--fr-border));
 }
 
+/* === Brainstorm drag-and-drop cards === */
+
+.brainstorm-card {
+  cursor: grab;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.brainstorm-card:active {
+  cursor: grabbing;
+}
+
+.brainstorm-card[draggable='true']:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.brainstorm-card.drop-above {
+  border-top: 2px solid var(--fr-accent) !important;
+}
+
 /* --- Two-column boards (Brainstorm, Group, Vote, Discuss) --- */
 
 .columns {

@@ -26,6 +26,7 @@ import { RemoveDiscussNote } from '../../application/usecases/RemoveDiscussNote'
 import { StartReview } from '../../application/usecases/StartReview';
 import { AssignActionOwner } from '../../application/usecases/AssignActionOwner';
 import { StartClose } from '../../application/usecases/StartClose';
+import { MoveCard } from '../../application/usecases/MoveCard';
 import { ExportRetro } from '../../application/usecases/ExportRetro';
 import { AddIcebreakerParticipant } from '../../application/usecases/AddIcebreakerParticipant';
 import { RemoveIcebreakerParticipant } from '../../application/usecases/RemoveIcebreakerParticipant';
@@ -72,6 +73,7 @@ export interface UseRetro {
   startBrainstorm: () => void;
   addCard: (columnId: ColumnId, text: string) => void;
   removeCard: (cardId: string) => void;
+  moveCard: (cardId: string, targetColumnId: ColumnId, targetIndex: number) => void;
   startGroup: () => void;
   createGroupByDrop: (sourceCardId: string, targetCardId: string) => void;
   renameGroup: (groupId: string, name: string) => void;
@@ -114,6 +116,7 @@ export function useRetro(
       startBrainstorm: new StartBrainstorm(repository),
       addCard: new AddCard(repository, idGenerator),
       removeCard: new RemoveCard(repository),
+      moveCard: new MoveCard(repository),
       startGroup: new StartGroup(repository),
       createGroupByDrop: new CreateGroupByDrop(repository, idGenerator),
       renameGroup: new RenameGroup(repository),
@@ -215,6 +218,14 @@ export function useRetro(
   const removeCard = useCallback(
     (cardId: string) => {
       services.removeCard.execute(cardId);
+      refresh();
+    },
+    [services, refresh],
+  );
+
+  const moveCardCb = useCallback(
+    (cardId: string, targetColumnId: ColumnId, targetIndex: number) => {
+      services.moveCard.execute(cardId, targetColumnId, targetIndex);
       refresh();
     },
     [services, refresh],
@@ -381,6 +392,7 @@ export function useRetro(
     startBrainstorm,
     addCard,
     removeCard,
+    moveCard: moveCardCb,
     startGroup,
     createGroupByDrop,
     renameGroup,
