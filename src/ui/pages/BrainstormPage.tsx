@@ -20,6 +20,7 @@ export interface BrainstormPageProps {
 interface ColumnProps {
   columnId: ColumnId;
   title: string;
+  description: string;
   cards: readonly Card[];
   onAddCard: (columnId: ColumnId, text: string) => void;
   onRemoveCard: (cardId: string) => void;
@@ -29,6 +30,7 @@ interface ColumnProps {
 function Column({
   columnId,
   title,
+  description,
   cards,
   onAddCard,
   onRemoveCard,
@@ -36,15 +38,11 @@ function Column({
 }: ColumnProps): JSX.Element {
   const [text, setText] = useState('');
   const [dropTarget, setDropTarget] = useState<number | null>(null);
-  const trimmedLength = text.trim().length;
-  const tooLong = text.length > MAX_CARD_LENGTH;
-  const disabled = trimmedLength === 0 || tooLong;
-  const inputId = `card-input-${columnId}`;
-  const counterId = `card-counter-${columnId}`;
 
   const submit = (): void => {
-    if (disabled) return;
-    onAddCard(columnId, text);
+    const trimmed = text.trim();
+    if (trimmed.length === 0 || trimmed.length > MAX_CARD_LENGTH) return;
+    onAddCard(columnId, trimmed);
     setText('');
   };
 
@@ -77,41 +75,44 @@ function Column({
   return (
     <section
       aria-label={`${title} column`}
+      className={`brainstorm-column brainstorm-col-${columnId}`}
       onDragOver={handleColumnDragOver}
       onDrop={handleColumnDrop}
       onDragLeave={(): void => { setDropTarget(null); }}
     >
       <h3>{title}</h3>
-      <label htmlFor={inputId}>{`${title} card text`}</label>
-      <input
-        id={inputId}
-        type="text"
-        value={text}
-        onChange={(e): void => {
-          setText(e.target.value);
-        }}
-        onKeyDown={(e): void => {
-          if (e.key === 'Enter') submit();
-        }}
-        aria-describedby={counterId}
-        aria-invalid={tooLong}
-      />
-      <span
-        id={counterId}
-        data-testid={`card-counter-${columnId}`}
-        data-over-limit={tooLong ? 'true' : 'false'}
-      >
-        {`${String(text.length)}/${String(MAX_CARD_LENGTH)}`}
-      </span>
-      <button
-        type="button"
-        onClick={submit}
-        disabled={disabled}
-        aria-label={`Add ${title} card`}
-      >
-        Add
-      </button>
-      <ul aria-label={`${title} cards`}>
+      <p className="column-desc">{description}</p>
+
+      <div className="brainstorm-input-row">
+        <span className="brainstorm-input-plus">+</span>
+        <input
+          type="text"
+          value={text}
+          onChange={(e): void => { setText(e.target.value); }}
+          onKeyDown={(e): void => { if (e.key === 'Enter') submit(); }}
+          placeholder="Add idea..."
+          aria-label={`${title} card text`}
+          data-testid={`card-input-${columnId}`}
+        />
+        <span
+          className="brainstorm-input-counter"
+          data-testid={`card-counter-${columnId}`}
+          data-over-limit={text.length > MAX_CARD_LENGTH ? 'true' : 'false'}
+        >
+          {text.length > 0 ? `${String(text.length)}/${String(MAX_CARD_LENGTH)}` : ''}
+        </span>
+        <button
+          type="button"
+          className="brainstorm-input-add"
+          onClick={submit}
+          disabled={text.trim().length === 0 || text.length > MAX_CARD_LENGTH}
+          aria-label={`Add ${title} card`}
+        >
+          Add
+        </button>
+      </div>
+
+      <ul aria-label={`${title} cards`} className="brainstorm-card-list">
         {cards.map((c, i) => (
           <li
             key={c.id}
@@ -125,15 +126,14 @@ function Column({
             onDragOver={(e): void => { handleDragOver(e, i); }}
             onDrop={(e): void => { handleDrop(e, i); }}
           >
-            <span>{c.text}</span>
+            <span className="brainstorm-card-text">{c.text}</span>
             <button
               type="button"
-              onClick={(): void => {
-                onRemoveCard(c.id);
-              }}
+              className="brainstorm-card-remove"
+              onClick={(): void => { onRemoveCard(c.id); }}
               aria-label={`Remove card ${c.text}`}
             >
-              ×
+              &times;
             </button>
           </li>
         ))}
@@ -173,20 +173,22 @@ export function BrainstormPage({
       />
       <div className="columns">
         <Column
-          columnId="start"
-          title="Start"
-          cards={startCards}
-          onAddCard={onAddCard}
-          onRemoveCard={onRemoveCard}
-          onDrop={handleDrop('start')}
-        />
-        <Column
           columnId="stop"
           title="Stop"
+          description="What factors are slowing us down or holding us back?"
           cards={stopCards}
           onAddCard={onAddCard}
           onRemoveCard={onRemoveCard}
           onDrop={handleDrop('stop')}
+        />
+        <Column
+          columnId="start"
+          title="Start"
+          description="What factors are driving us forward and enabling our success?"
+          cards={startCards}
+          onAddCard={onAddCard}
+          onRemoveCard={onRemoveCard}
+          onDrop={handleDrop('start')}
         />
       </div>
       <button type="button" className="primary" onClick={onContinueToGroup}>

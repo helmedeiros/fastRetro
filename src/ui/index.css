@@ -754,24 +754,135 @@ form button {
   border-bottom: 1px solid var(--card-border, var(--fr-border));
 }
 
-/* === Brainstorm drag-and-drop cards === */
+/* === Brainstorm layout === */
+
+.brainstorm-column {
+  min-height: 300px;
+}
+
+.brainstorm-column h3 {
+  font-size: 1.1rem;
+  color: var(--fr-text);
+  text-transform: none;
+  letter-spacing: normal;
+  margin-bottom: 0.25rem;
+}
+
+.column-desc {
+  font-size: 0.8rem;
+  color: var(--fr-text-muted);
+  margin: 0 0 1rem;
+}
+
+/* Inline card input */
+.brainstorm-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--fr-surface-alt);
+  border: 1px dashed var(--fr-border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.brainstorm-input-plus {
+  color: var(--fr-text-muted);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.brainstorm-input-row input {
+  all: unset;
+  flex: 1;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--fr-text);
+  min-width: 0;
+}
+
+.brainstorm-input-row input::placeholder {
+  color: var(--fr-text-muted);
+}
+
+.brainstorm-input-counter {
+  font-size: 0.7rem;
+  color: var(--fr-text-muted);
+}
+
+.brainstorm-input-counter[data-over-limit='true'] {
+  color: var(--fr-danger);
+}
+
+.brainstorm-input-add {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  background: transparent;
+  border-color: var(--fr-accent);
+  color: var(--fr-accent);
+}
+
+/* Card list */
+.brainstorm-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
 .brainstorm-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
   cursor: grab;
   transition: transform 0.1s, box-shadow 0.1s;
+  border: none !important;
+  margin: 0 !important;
+}
+
+.brainstorm-col-stop .brainstorm-card {
+  background: #5c3a3a;
+}
+
+.brainstorm-col-start .brainstorm-card {
+  background: #3a5c3a;
 }
 
 .brainstorm-card:active {
   cursor: grabbing;
 }
 
-.brainstorm-card[draggable='true']:hover {
+.brainstorm-card:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transform: translateY(-1px);
 }
 
 .brainstorm-card.drop-above {
-  border-top: 2px solid var(--fr-accent) !important;
+  box-shadow: 0 -2px 0 0 var(--fr-accent);
+}
+
+.brainstorm-card-text {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.brainstorm-card-remove {
+  all: unset;
+  cursor: pointer;
+  color: var(--fr-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.brainstorm-card:hover .brainstorm-card-remove {
+  opacity: 1;
+}
+
+.brainstorm-card-remove:hover {
+  color: var(--fr-danger);
 }
 
 /* --- Two-column boards (Brainstorm, Group, Vote, Discuss) --- */
