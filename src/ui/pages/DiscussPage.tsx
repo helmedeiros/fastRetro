@@ -34,7 +34,6 @@ interface LaneProps {
 }
 
 function Lane({
-  lane,
   title,
   notes,
   active,
@@ -45,7 +44,6 @@ function Lane({
   const trimmed = text.trim().length;
   const tooLong = text.length > MAX_CARD_LENGTH;
   const disabled = !active || trimmed === 0 || tooLong;
-  const inputId = `discuss-input-${lane}`;
   const submit = (): void => {
     if (disabled) return;
     onAdd(text);
@@ -53,41 +51,41 @@ function Lane({
   };
   return (
     <section aria-label={`${title} notes`} data-active={active ? 'true' : 'false'}>
-      <h3>{title}</h3>
+      <h4>{title}</h4>
       {active && (
-        <>
-          <label htmlFor={inputId}>{`${title} note text`}</label>
+        <div className="brainstorm-input-row">
+          <span className="brainstorm-input-plus">+</span>
           <input
-            id={inputId}
             type="text"
             value={text}
-            onChange={(e): void => {
-              setText(e.target.value);
-            }}
+            onChange={(e): void => { setText(e.target.value); }}
+            onKeyDown={(e): void => { if (e.key === 'Enter') submit(); }}
+            placeholder={`Add ${title.toLowerCase()}...`}
+            aria-label={`${title} note text`}
             aria-invalid={tooLong}
           />
           <button
             type="button"
+            className="brainstorm-input-add"
             onClick={submit}
             disabled={disabled}
             aria-label={`Add ${title} note`}
           >
             Add
           </button>
-        </>
+        </div>
       )}
-      <ul aria-label={`${title} notes list`}>
+      <ul aria-label={`${title} notes list`} className="brainstorm-card-list">
         {notes.map((n) => (
-          <li key={n.id} data-testid={`discuss-note-${n.id}`}>
-            <span>{n.text}</span>
+          <li key={n.id} data-testid={`discuss-note-${n.id}`} className="brainstorm-card">
+            <span className="brainstorm-card-text">{n.text}</span>
             <button
               type="button"
-              onClick={(): void => {
-                onRemove(n.id);
-              }}
+              className="brainstorm-card-remove"
+              onClick={(): void => { onRemove(n.id); }}
               aria-label={`Remove ${title} note ${n.text}`}
             >
-              ×
+              &times;
             </button>
           </li>
         ))}
@@ -137,13 +135,22 @@ export function DiscussPage({
         onReset={onResetTimer}
       />
       {activeCard !== undefined && (
-        <section aria-label="Active card">
-          <p data-testid="discuss-card-index">
-            {`Card ${String(discuss.currentIndex + 1)} of ${String(total)}`}
+        <section aria-label="Active card" className="discuss-active-card">
+          <div className="discuss-progress">
+            <span className="discuss-dots" data-testid="discuss-card-index">
+              {Array.from({ length: total }, (_, i) => (
+                <span
+                  key={String(i)}
+                  className={`discuss-dot${i === discuss.currentIndex ? ' current' : ''}`}
+                />
+              ))}
+            </span>
+          </div>
+          <h3 data-testid="discuss-card-text" className="discuss-card-title">{activeCard.text}</h3>
+          <p data-testid="discuss-card-votes" className="discuss-card-votes">
+            {voteCount > 0 ? `${String(voteCount)} votes` : 'No votes'}
           </p>
-          <h3 data-testid="discuss-card-text">{activeCard.text}</h3>
-          <p data-testid="discuss-card-votes">{`★ ${String(voteCount)}`}</p>
-          <p data-testid="discuss-segment">
+          <p data-testid="discuss-segment" className="discuss-segment-indicator">
             <span data-active={discuss.segment === 'context' ? 'true' : 'false'}>
               Context
             </span>
@@ -152,14 +159,14 @@ export function DiscussPage({
               Actions
             </span>
           </p>
-          <div role="group" aria-label="Segment navigation">
+          <div role="group" aria-label="Segment navigation" className="discuss-nav">
             <button
               type="button"
               aria-label="Previous segment"
               onClick={onPreviousSegment}
               disabled={isFirst}
             >
-              ← Previous
+              &#8592; Previous
             </button>
             <button
               type="button"
@@ -167,7 +174,7 @@ export function DiscussPage({
               onClick={onNextSegment}
               disabled={isLast}
             >
-              Next →
+              Next &#8594;
             </button>
           </div>
           <div className="columns">

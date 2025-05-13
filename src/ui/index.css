@@ -987,99 +987,301 @@ form button {
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Vote --- */
+/* === Stage instruction text === */
 
-#vote-budget-input {
-  width: 5rem;
-  display: inline-block;
+.stage-instruction {
+  color: var(--fr-text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0 0 1.5rem;
 }
 
-[aria-label='Active voter'] {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+/* === Group page === */
+
+.group-item {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  border: none !important;
+  padding: 0 !important;
   margin-bottom: 1rem;
 }
 
-[aria-label='Active voter'] button {
-  font-size: 0.85rem;
+.group-header {
+  margin-bottom: 0.5rem;
 }
 
-[data-testid^='vote-card-'] button {
-  width: 100%;
-  text-align: left;
-  display: flex;
-  justify-content: space-between;
-}
-
-/* --- Group cards --- */
-
-[data-testid^='group-card-'] button {
-  width: 100%;
-  text-align: left;
-}
-
-[data-testid^='group-'] > span {
+.group-title-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: wrap;
 }
 
-[data-testid^='group-'] > span button {
-  font-size: 0.8rem;
-  padding: 0.2rem 0.5rem;
+.group-title-row strong {
+  font-size: 0.95rem;
 }
 
-/* --- Discuss --- */
+.group-rename-btn,
+.group-save-btn,
+.group-cancel-btn {
+  all: unset;
+  cursor: pointer;
+  color: var(--fr-text-muted);
+  font-size: 0.85rem;
+}
 
-[aria-label='Segment navigation'] {
+.group-rename-btn:hover,
+.group-save-btn:hover { color: var(--fr-accent); }
+.group-cancel-btn:hover { color: var(--fr-danger); }
+
+.group-edit-row {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
 }
 
-[aria-label='Active card'] {
+.group-edit-row input {
+  font: inherit;
+  font-size: 0.9rem;
   background: var(--fr-surface);
   border: 1px solid var(--fr-border);
-  border-radius: 8px;
-  padding: 1.25rem;
+  border-radius: 6px;
+  color: var(--fr-text);
+  padding: 0.3em 0.5em;
+  flex: 1;
+}
+
+.group-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--fr-border);
+}
+
+.brainstorm-card-btn {
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+}
+
+.brainstorm-card-btn.selected {
+  outline: 2px solid var(--fr-accent);
+  outline-offset: -2px;
+}
+
+.brainstorm-col-stop-card { background: #5c3a3a; }
+.brainstorm-col-start-card { background: #3a5c3a; }
+
+/* === Vote page === */
+
+.vote-controls {
+  margin-bottom: 1.5rem;
+}
+
+.vote-budget-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-[data-testid='discuss-segment'] span[data-active='true'] {
+.vote-budget-row label {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+#vote-budget-input {
+  width: 4rem;
+  text-align: center;
+}
+
+.voter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.voter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  background: var(--fr-surface-alt);
+  border: 1px solid var(--fr-border);
+  color: var(--fr-text);
+}
+
+.voter-pill.active {
+  background: var(--fr-accent);
+  border-color: var(--fr-accent);
+  color: #1a1a2e;
+}
+
+.voter-remaining {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.vote-card-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vote-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--fr-accent);
+  color: #1a1a2e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.vote-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--fr-surface-alt);
+  border: 1px solid var(--fr-border);
+  color: var(--fr-text-muted);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* === Discuss page === */
+
+.discuss-active-card {
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.discuss-progress {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.discuss-dots {
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.discuss-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--fr-border);
+}
+
+.discuss-dot.current {
+  background: var(--fr-accent);
+}
+
+.discuss-card-title {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--fr-text);
+  text-transform: none;
+  letter-spacing: normal;
+  margin: 0 0 0.5rem;
+}
+
+.discuss-card-votes {
+  text-align: center;
+  color: var(--fr-text-muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.discuss-segment-indicator {
+  text-align: center;
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+}
+
+.discuss-segment-indicator span[data-active='true'] {
   font-weight: 700;
   color: var(--fr-accent);
 }
 
-[data-testid='discuss-segment'] span[data-active='false'] {
+.discuss-segment-indicator span[data-active='false'] {
   color: var(--fr-text-muted);
 }
 
-/* --- Review action items --- */
+.discuss-nav {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
 
-[data-testid^='action-item-'] {
+/* === Review page === */
+
+.review-list {
+  display: flex;
   flex-direction: column;
+  gap: 0.75rem;
+}
+
+.review-item {
+  display: flex !important;
+  gap: 1rem;
   align-items: flex-start;
-  gap: 0.25rem;
-  padding: 0.75rem 0;
+  padding: 1rem !important;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border) !important;
+  border-radius: 8px;
 }
 
-[data-testid^='action-item-'] select {
-  max-width: 16rem;
+.review-item-content {
+  flex: 1;
 }
 
-[data-testid^='action-parent-'] {
-  margin: 0;
-  font-size: 0.8rem;
+.review-parent {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
   color: var(--fr-text-muted);
 }
 
-[data-testid^='action-text-'] {
+.review-text {
   margin: 0;
+  font-size: 0.95rem;
 }
 
-/* --- Close summary --- */
+.review-owner {
+  flex-shrink: 0;
+}
+
+.review-owner label {
+  font-size: 0.7rem;
+}
+
+.review-owner select {
+  max-width: 12rem;
+  font-size: 0.85rem;
+}
+
+/* === Close summary === */
 
 [aria-label='Close summary'] > li {
   flex-direction: column;

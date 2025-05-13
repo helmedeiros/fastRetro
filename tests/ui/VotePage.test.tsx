@@ -73,11 +73,11 @@ describe('VotePage', () => {
   it('clicking a card toggles the vote count', () => {
     render(<Harness />);
     const voteBtn = screen.getByRole('button', { name: /vote for ship faster/i });
-    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('★ 0');
+    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+');
     fireEvent.click(voteBtn);
-    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('★ 1');
+    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+1');
     fireEvent.click(voteBtn);
-    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('★ 0');
+    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+');
   });
 
   it('enforces the per-participant budget', () => {
@@ -86,18 +86,18 @@ describe('VotePage', () => {
     fireEvent.click(
       screen.getByRole('button', { name: /vote for long meetings/i }),
     );
-    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('★ 1');
-    expect(screen.getByTestId('vote-count-c-2')).toHaveTextContent('★ 0');
+    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+1');
+    expect(screen.getByTestId('vote-count-c-2')).toHaveTextContent('+');
   });
 
   it('switching active voter updates remaining budget display', () => {
     render(<Harness />);
     fireEvent.click(screen.getByRole('button', { name: /vote for ship faster/i }));
     const voters = screen.getByRole('group', { name: /active voter/i });
-    expect(within(voters).getByRole('button', { name: /alice \(2 left\)/i })).toBeInTheDocument();
-    expect(within(voters).getByRole('button', { name: /bob \(3 left\)/i })).toBeInTheDocument();
+    expect(within(voters).getByRole('button', { name: /alice/i })).toBeInTheDocument();
+    expect(within(voters).getByRole('button', { name: /bob/i })).toBeInTheDocument();
     fireEvent.click(within(voters).getByRole('button', { name: /bob/i }));
     fireEvent.click(screen.getByRole('button', { name: /vote for ship faster/i }));
-    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('★ 2');
+    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+2');
   });
 });

@@ -23,6 +23,7 @@ export interface VotePageProps {
 interface ColumnProps {
   columnId: ColumnId;
   title: string;
+  description: string;
   cards: readonly Card[];
   votes: readonly Vote[];
   activeParticipantId: string | null;
@@ -36,15 +37,17 @@ function countFor(votes: readonly Vote[], cardId: string): number {
 function Column({
   columnId,
   title,
+  description,
   cards,
   votes,
   activeParticipantId,
   onCastVote,
 }: ColumnProps): JSX.Element {
   return (
-    <section aria-label={`${title} column`}>
+    <section aria-label={`${title} column`} className={`brainstorm-column brainstorm-col-${columnId}`}>
       <h3>{title}</h3>
-      <ul aria-label={`${title} cards`}>
+      <p className="column-desc">{description}</p>
+      <ul aria-label={`${title} cards`} className="brainstorm-card-list">
         {cards
           .filter((c) => c.columnId === columnId)
           .map((c) => {
@@ -53,6 +56,7 @@ function Column({
               <li key={c.id} data-testid={`vote-card-${c.id}`}>
                 <button
                   type="button"
+                  className="brainstorm-card brainstorm-card-btn vote-card-btn"
                   aria-label={`Vote for ${c.text}`}
                   disabled={activeParticipantId === null}
                   onClick={(): void => {
@@ -60,10 +64,17 @@ function Column({
                     onCastVote(activeParticipantId, c.id);
                   }}
                 >
-                  <span>{c.text}</span>
-                  <span data-testid={`vote-count-${c.id}`}>
-                    {`★ ${String(count)}`}
-                  </span>
+                  <span className="brainstorm-card-text">{c.text}</span>
+                  {count > 0 && (
+                    <span className="vote-badge" data-testid={`vote-count-${c.id}`}>
+                      +{String(count)}
+                    </span>
+                  )}
+                  {count === 0 && (
+                    <span className="vote-add" data-testid={`vote-count-${c.id}`}>
+                      +
+                    </span>
+                  )}
                 </button>
               </li>
             );
@@ -103,51 +114,56 @@ export function VotePage({
         onResume={onResumeTimer}
         onReset={onResetTimer}
       />
-      <div>
-        <label htmlFor="vote-budget-input">Votes per person</label>
-        <input
-          id="vote-budget-input"
-          type="number"
-          min={0}
-          value={voteBudget}
-          onChange={(e): void => {
-            const n = Number(e.target.value);
-            if (Number.isFinite(n) && n >= 0) {
-              onSetVoteBudget(n);
-            }
-          }}
-        />
-      </div>
-      <div role="group" aria-label="Active voter">
-        {participants.map((p) => {
-          const remaining = voteBudget - usedBy(p.id);
-          const selected = p.id === activeId;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              aria-pressed={selected}
-              onClick={(): void => {
-                setActiveId(p.id);
-              }}
-            >
-              {`${p.name} (${String(remaining)} left)`}
-            </button>
-          );
-        })}
+      <p className="stage-instruction">Vote on the items you want to discuss. Click a card to vote.</p>
+      <div className="vote-controls">
+        <div className="vote-budget-row">
+          <label htmlFor="vote-budget-input">Votes per person</label>
+          <input
+            id="vote-budget-input"
+            type="number"
+            min={0}
+            value={voteBudget}
+            onChange={(e): void => {
+              const n = Number(e.target.value);
+              if (Number.isFinite(n) && n >= 0) {
+                onSetVoteBudget(n);
+              }
+            }}
+          />
+        </div>
+        <div role="group" aria-label="Active voter" className="voter-pills">
+          {participants.map((p) => {
+            const remaining = voteBudget - usedBy(p.id);
+            const selected = p.id === activeId;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                aria-pressed={selected}
+                className={`voter-pill${selected ? ' active' : ''}`}
+                onClick={(): void => { setActiveId(p.id); }}
+              >
+                {p.name}
+                <span className="voter-remaining">{String(remaining)}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
       <div className="columns">
         <Column
-          columnId="start"
-          title="Start"
+          columnId="stop"
+          title="Stop"
+          description="What factors are slowing us down?"
           cards={cards}
           votes={votes}
           activeParticipantId={activeId}
           onCastVote={onCastVote}
         />
         <Column
-          columnId="stop"
-          title="Stop"
+          columnId="start"
+          title="Start"
+          description="What factors are driving us forward?"
           cards={cards}
           votes={votes}
           activeParticipantId={activeId}

@@ -21,6 +21,7 @@ export interface GroupPageProps {
 interface ColumnProps {
   columnId: ColumnId;
   title: string;
+  description: string;
   cards: readonly Card[];
   groups: readonly Group[];
   selectedCardId: string | null;
@@ -40,11 +41,13 @@ function groupOfCard(
 function GroupItem({
   group,
   cards,
+  columnId,
   onRename,
   onUngroup,
 }: {
   group: Group;
   cards: readonly Card[];
+  columnId: ColumnId;
   onRename: (groupId: string, name: string) => void;
   onUngroup: (cardId: string) => void;
 }): JSX.Element {
@@ -55,58 +58,64 @@ function GroupItem({
     .filter((c): c is Card => c !== undefined);
 
   return (
-    <li data-testid={`group-${group.id}`}>
-      {editing ? (
-        <span>
-          <label htmlFor={`group-name-${group.id}`}>Group name</label>
-          <input
-            id={`group-name-${group.id}`}
-            type="text"
-            value={name}
-            onChange={(e): void => {
-              setName(e.target.value);
-            }}
-          />
-          <button
-            type="button"
-            aria-label={`Save group name ${group.name}`}
-            onClick={(): void => {
-              if (name.trim().length > 0) {
-                onRename(group.id, name);
-              }
-              setEditing(false);
-            }}
-          >
-            Save
-          </button>
-        </span>
-      ) : (
-        <span>
-          <strong>{group.name}</strong>
-          <button
-            type="button"
-            aria-label={`Rename group ${group.name}`}
-            onClick={(): void => {
-              setName(group.name);
-              setEditing(true);
-            }}
-          >
-            Rename
-          </button>
-        </span>
-      )}
-      <ul aria-label={`Cards in group ${group.name}`}>
-        {groupCards.map((c) => (
-          <li key={c.id}>
-            <span>{c.text}</span>
+    <li data-testid={`group-${group.id}`} className="group-item">
+      <div className="group-header">
+        {editing ? (
+          <div className="group-edit-row">
+            <input
+              type="text"
+              value={name}
+              onChange={(e): void => { setName(e.target.value); }}
+              aria-label={`Group name ${group.name}`}
+              id={`group-name-${group.id}`}
+            />
             <button
               type="button"
-              aria-label={`Ungroup card ${c.text}`}
+              className="group-save-btn"
+              aria-label={`Save group name ${group.name}`}
               onClick={(): void => {
-                onUngroup(c.id);
+                if (name.trim().length > 0) onRename(group.id, name);
+                setEditing(false);
               }}
             >
-              Ungroup
+              &#10003;
+            </button>
+            <button
+              type="button"
+              className="group-cancel-btn"
+              onClick={(): void => { setEditing(false); }}
+            >
+              &#10005;
+            </button>
+          </div>
+        ) : (
+          <div className="group-title-row">
+            <strong>{group.name}</strong>
+            <button
+              type="button"
+              className="group-rename-btn"
+              aria-label={`Rename group ${group.name}`}
+              onClick={(): void => { setName(group.name); setEditing(true); }}
+            >
+              &#9998;
+            </button>
+          </div>
+        )}
+      </div>
+      <ul aria-label={`Cards in group ${group.name}`} className="group-card-list">
+        {groupCards.map((c) => (
+          <li
+            key={c.id}
+            className={`brainstorm-card brainstorm-col-${columnId === 'stop' ? 'stop' : 'start'}-card`}
+          >
+            <span className="brainstorm-card-text">{c.text}</span>
+            <button
+              type="button"
+              className="brainstorm-card-remove"
+              aria-label={`Ungroup card ${c.text}`}
+              onClick={(): void => { onUngroup(c.id); }}
+            >
+              &times;
             </button>
           </li>
         ))}
@@ -118,6 +127,7 @@ function GroupItem({
 function Column({
   columnId,
   title,
+  description,
   cards,
   groups,
   selectedCardId,
@@ -134,10 +144,11 @@ function Column({
   );
 
   return (
-    <section aria-label={`${title} column`}>
+    <section aria-label={`${title} column`} className={`brainstorm-column brainstorm-col-${columnId}`}>
       <h3>{title}</h3>
+      <p className="column-desc">{description}</p>
       {columnGroups.length > 0 && (
-        <ul aria-label={`${title} groups`}>
+        <ul aria-label={`${title} groups`} className="brainstorm-card-list">
           {columnGroups.map((g) => {
             if (emittedGroupIds.has(g.id)) return null;
             emittedGroupIds.add(g.id);
@@ -146,6 +157,7 @@ function Column({
                 key={g.id}
                 group={g}
                 cards={cards}
+                columnId={columnId}
                 onRename={onRenameGroup}
                 onUngroup={onUngroupCard}
               />
@@ -153,7 +165,7 @@ function Column({
           })}
         </ul>
       )}
-      <ul aria-label={`${title} ungrouped cards`}>
+      <ul aria-label={`${title} ungrouped cards`} className="brainstorm-card-list">
         {ungroupedCards.map((c) => {
           const isSelected = c.id === selectedCardId;
           return (
@@ -162,6 +174,7 @@ function Column({
                 type="button"
                 aria-pressed={isSelected}
                 aria-label={`Select card ${c.text}`}
+                className={`brainstorm-card brainstorm-card-btn${isSelected ? ' selected' : ''}`}
                 onClick={(): void => {
                   if (selectedCardId !== null && selectedCardId !== c.id) {
                     onCreateGroup(selectedCardId, c.id);
@@ -206,11 +219,12 @@ export function GroupPage({
         onResume={onResumeTimer}
         onReset={onResetTimer}
       />
-      <p>Select two cards in the same column to group them together.</p>
+      <p className="stage-instruction">Select two cards in the same column to group them together.</p>
       <div className="columns">
         <Column
-          columnId="start"
-          title="Start"
+          columnId="stop"
+          title="Stop"
+          description="What factors are slowing us down or holding us back?"
           cards={cards}
           groups={groups}
           selectedCardId={selectedCardId}
@@ -220,8 +234,9 @@ export function GroupPage({
           onUngroupCard={onUngroupCard}
         />
         <Column
-          columnId="stop"
-          title="Stop"
+          columnId="start"
+          title="Start"
+          description="What factors are driving us forward and enabling our success?"
           cards={cards}
           groups={groups}
           selectedCardId={selectedCardId}
