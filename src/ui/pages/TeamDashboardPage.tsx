@@ -96,36 +96,38 @@ export function TeamDashboardPage({
             )}
           </section>
 
-          <section aria-label="Members">
-            <h2>Members <small style={{ color: 'var(--fr-accent)' }}>+</small></h2>
-            <form onSubmit={onSubmit}>
+          <section aria-label="Members" className="members-section">
+            <h2>Members</h2>
+            <p className="members-desc">Manage your retrospective team</p>
+            <form onSubmit={onSubmit} className="members-add-form">
               <input
                 id="member-name"
                 type="text"
                 value={name}
                 onChange={(e): void => { setName(e.target.value); }}
-                placeholder="Add member..."
+                placeholder="Search or add name..."
                 aria-label="Name"
+                className="members-search-input"
               />
-              <button type="submit">Add</button>
+              <button type="submit" className="members-invite-btn">Add</button>
             </form>
             {error !== null && <p role="alert">{error}</p>}
-            <ul aria-label="Team members">
+            <ul aria-label="Team members" className="members-list">
               {members.map((m) => (
-                <li key={m.id} className="member-item">
+                <li key={m.id} className="member-row">
                   <span
-                    className="member-avatar"
+                    className="member-avatar-lg"
                     style={{ background: avatarColor(m.name) }}
                   >
                     {initials(m.name)}
                   </span>
-                  <span>
-                    <span className="member-name">{m.name}</span>
-                    <br />
-                    <span className="member-role">Member</span>
-                  </span>
+                  <div className="member-info">
+                    <span className="member-name-lg">{m.name}</span>
+                    <span className="member-role-tag">Member</span>
+                  </div>
                   <button
                     type="button"
+                    className="member-remove-btn"
                     aria-label={`Remove ${m.name}`}
                     onClick={(): void => { onRemoveMember(m.id); }}
                   >

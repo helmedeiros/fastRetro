@@ -281,37 +281,115 @@ form button {
   color: var(--fr-accent);
 }
 
-/* Member avatar */
-.member-avatar {
+/* === Members section === */
+
+.members-section {
+  margin-top: 0.5rem;
+}
+
+.members-desc {
+  color: var(--fr-text-muted);
+  font-size: 0.8rem;
+  margin: -0.75rem 0 1rem;
+}
+
+.members-add-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.members-search-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--fr-surface) !important;
+  border: 1px solid var(--fr-border) !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.9rem !important;
+  color: var(--fr-text) !important;
+}
+
+.members-invite-btn {
+  background: var(--fr-accent) !important;
+  border-color: var(--fr-accent) !important;
+  color: #1a1a2e !important;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.members-invite-btn:hover {
+  background: var(--fr-accent-hover) !important;
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.member-row {
+  display: flex !important;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0 !important;
+  border-bottom: 1px solid var(--fr-border) !important;
+}
+
+.member-row:last-child {
+  border-bottom: none !important;
+}
+
+.member-avatar-lg {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
 }
 
-.member-item {
-  gap: 0.75rem;
+.member-info {
+  flex: 1;
+  min-width: 0;
 }
 
-.member-item .member-name {
-  font-weight: 500;
+.member-name-lg {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--fr-text);
 }
 
-.member-item .member-role {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.1em 0.4em;
-  border-radius: 3px;
-  background: var(--fr-accent);
-  color: #1a1a2e;
+.member-role-tag {
+  font-size: 0.7rem;
+  color: var(--fr-text-muted);
+}
+
+.member-remove-btn {
+  all: unset;
+  cursor: pointer;
+  color: var(--fr-text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0.25rem;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.member-row:hover .member-remove-btn {
+  opacity: 1;
+}
+
+.member-remove-btn:hover {
+  color: var(--fr-danger);
 }
 
 /* Action items list */
