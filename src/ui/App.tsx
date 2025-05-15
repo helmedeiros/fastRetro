@@ -13,6 +13,7 @@ import { AppNav, type AppTab } from './components/AppNav';
 import { TeamDashboardPage } from './pages/TeamDashboardPage';
 import { RetrospectivesPage } from './pages/RetrospectivesPage';
 import { RetroSetupPage } from './pages/RetroSetupPage';
+import { MemberProfilePage } from './pages/MemberProfilePage';
 import { IcebreakerPage } from './pages/IcebreakerPage';
 import { BrainstormPage } from './pages/BrainstormPage';
 import { GroupPage } from './pages/GroupPage';
@@ -52,6 +53,7 @@ export function App({
   const [appTab, setAppTab] = useState<AppTab>('home');
   const [showingRetroSetup, setShowingRetroSetup] = useState(false);
   const [forceDashboard, setForceDashboard] = useState(false);
+  const [viewingMemberId, setViewingMemberId] = useState<string | null>(null);
   const dashboard = useTeamDashboard(teamRepository, ids, picker, clock);
   const retro = useRetro(bridge, picker, ids, clock, downloader);
 
@@ -68,6 +70,7 @@ export function App({
   const goHome = useCallback(() => {
     setForceDashboard(true);
     setShowingRetroSetup(false);
+    setViewingMemberId(null);
     dashboard.backToDashboard();
   }, [dashboard]);
 
@@ -220,6 +223,23 @@ export function App({
     );
   }
 
+  // Member profile view
+  if (viewingMemberId !== null) {
+    const member = dashboard.team.members.find((m) => m.id === viewingMemberId);
+    if (member !== undefined) {
+      return (
+        <main className="container">
+          {logo}
+          <MemberProfilePage
+            member={member}
+            history={dashboard.history}
+            onBack={() => { setViewingMemberId(null); }}
+          />
+        </main>
+      );
+    }
+  }
+
   // Retro setup form
   if (showingRetroSetup) {
     return (
@@ -256,6 +276,7 @@ export function App({
           onRemoveMember={dashboard.removeMember}
           onStartRetro={handleStartRetro}
           onResumeRetro={resumeRetro}
+          onViewMember={setViewingMemberId}
         />
       ) : (
         <RetrospectivesPage

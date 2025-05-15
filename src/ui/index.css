@@ -1065,6 +1065,196 @@ form button {
   font-variant-numeric: tabular-nums;
 }
 
+/* === Member Profile === */
+
+.member-profile {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.profile-back-btn {
+  all: unset;
+  cursor: pointer;
+  color: var(--fr-accent);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+  display: inline-block;
+}
+
+.profile-back-btn:hover {
+  text-decoration: underline;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.profile-header-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  color: var(--fr-text);
+  text-transform: none;
+  letter-spacing: normal;
+  margin: 0 0 0.25rem;
+}
+
+.profile-role {
+  color: var(--fr-text-muted);
+  font-size: 0.85rem;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 10px;
+  min-width: 80px;
+}
+
+.profile-stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--fr-accent);
+}
+
+.profile-stat-label {
+  font-size: 0.75rem;
+  color: var(--fr-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profile-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 600px) {
+  .profile-sections {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profile-card {
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.profile-card h3 {
+  font-size: 0.95rem;
+  color: var(--fr-text);
+  text-transform: none;
+  letter-spacing: normal;
+  margin: 0 0 1rem;
+}
+
+.profile-empty {
+  color: var(--fr-text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+.profile-retro-list,
+.profile-action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.profile-retro-item {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0 !important;
+  border-bottom: 1px solid var(--fr-border) !important;
+}
+
+.profile-retro-item:last-child {
+  border-bottom: none !important;
+}
+
+.profile-retro-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.profile-retro-date {
+  font-size: 0.75rem;
+  color: var(--fr-text-muted);
+}
+
+.profile-action-item {
+  display: flex !important;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.6rem 0 !important;
+  border-bottom: 1px solid var(--fr-border) !important;
+}
+
+.profile-action-item:last-child {
+  border-bottom: none !important;
+}
+
+.profile-action-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--fr-accent);
+  color: var(--fr-accent);
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.profile-action-content {
+  flex: 1;
+}
+
+.profile-action-text {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.profile-action-meta {
+  font-size: 0.75rem;
+  color: var(--fr-text-muted);
+}
+
 /* === Stage instruction text === */
 
 .stage-instruction {

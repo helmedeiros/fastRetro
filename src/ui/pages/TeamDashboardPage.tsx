@@ -12,6 +12,7 @@ export interface TeamDashboardPageProps {
   onRemoveMember: (id: string) => void;
   onStartRetro: () => void;
   onResumeRetro: () => void;
+  onViewMember?: (memberId: string) => void;
 }
 
 const AVATAR_COLORS = [
@@ -43,6 +44,7 @@ export function TeamDashboardPage({
   onRemoveMember,
   onStartRetro,
   onResumeRetro,
+  onViewMember,
 }: TeamDashboardPageProps): JSX.Element {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -117,11 +119,16 @@ export function TeamDashboardPage({
                 <li key={m.id} className="member-row">
                   <span
                     className="member-avatar-lg"
-                    style={{ background: avatarColor(m.name) }}
+                    style={{ background: avatarColor(m.name), cursor: onViewMember ? 'pointer' : undefined }}
+                    onClick={(): void => { if (onViewMember) onViewMember(m.id); }}
                   >
                     {initials(m.name)}
                   </span>
-                  <div className="member-info">
+                  <div
+                    className="member-info"
+                    style={{ cursor: onViewMember ? 'pointer' : undefined }}
+                    onClick={(): void => { if (onViewMember) onViewMember(m.id); }}
+                  >
                     <span className="member-name-lg">{m.name}</span>
                     <span className="member-role-tag">Member</span>
                   </div>
