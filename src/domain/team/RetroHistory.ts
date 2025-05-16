@@ -35,3 +35,34 @@ export function getAllActionItems(
 ): readonly FlatActionItem[] {
   return history.completed.flatMap((r) => r.actionItems);
 }
+
+export function clearOwnerFromHistory(
+  history: RetroHistoryState,
+  ownerName: string,
+): RetroHistoryState {
+  return {
+    completed: history.completed.map((r) => ({
+      ...r,
+      actionItems: r.actionItems.map((a) =>
+        a.ownerName?.toLowerCase() === ownerName.toLowerCase()
+          ? { ...a, ownerName: null }
+          : a,
+      ),
+    })),
+  };
+}
+
+export function reassignActionItem(
+  history: RetroHistoryState,
+  noteId: string,
+  ownerName: string | null,
+): RetroHistoryState {
+  return {
+    completed: history.completed.map((r) => ({
+      ...r,
+      actionItems: r.actionItems.map((a) =>
+        a.noteId === noteId ? { ...a, ownerName } : a,
+      ),
+    })),
+  };
+}

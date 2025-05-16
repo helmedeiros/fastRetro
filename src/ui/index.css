@@ -1065,6 +1065,136 @@ form button {
   font-variant-numeric: tabular-nums;
 }
 
+/* === Owner Picker === */
+
+.owner-picker {
+  position: relative;
+  display: inline-block;
+}
+
+.owner-picker-trigger {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+}
+
+.owner-picker-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.owner-picker-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px dashed var(--fr-border);
+  color: var(--fr-text-muted);
+  font-size: 0.75rem;
+}
+
+.owner-picker-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 200;
+  margin-top: 0.5rem;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  min-width: 220px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.owner-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fr-text-muted);
+}
+
+.owner-picker-opt {
+  all: unset;
+  cursor: pointer;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--fr-text-muted);
+  border: 1px solid var(--fr-border);
+}
+
+.owner-picker-opt.active {
+  background: var(--fr-accent);
+  border-color: var(--fr-accent);
+  color: #1a1a2e;
+}
+
+.owner-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.owner-picker-list li {
+  border: none !important;
+  padding: 0 !important;
+}
+
+.owner-picker-member {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.4rem 0.25rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.owner-picker-member:hover {
+  background: var(--fr-surface-alt);
+}
+
+.owner-picker-member.selected {
+  color: var(--fr-accent);
+  font-weight: 600;
+}
+
+.owner-picker-member-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.owner-picker-check {
+  margin-left: auto;
+  color: var(--fr-accent);
+}
+
 /* === Member Profile === */
 
 .member-profile {

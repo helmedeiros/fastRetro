@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import type { TeamMember } from '../../domain/team/Team';
 import type { FlatActionItem } from '../../domain/team/RetroHistory';
+import { OwnerPicker } from '../components/OwnerPicker';
 
 export interface TeamDashboardPageProps {
   members: readonly TeamMember[];
@@ -13,6 +14,7 @@ export interface TeamDashboardPageProps {
   onStartRetro: () => void;
   onResumeRetro: () => void;
   onViewMember?: (memberId: string) => void;
+  onReassignAction?: (noteId: string, ownerName: string | null) => void;
 }
 
 const AVATAR_COLORS = [
@@ -45,6 +47,7 @@ export function TeamDashboardPage({
   onStartRetro,
   onResumeRetro,
   onViewMember,
+  onReassignAction,
 }: TeamDashboardPageProps): JSX.Element {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +173,13 @@ export function TeamDashboardPage({
                       {new Date(item.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
                     </div>
                   </div>
-                  {item.ownerName !== null && (
+                  {onReassignAction !== undefined ? (
+                    <OwnerPicker
+                      ownerName={item.ownerName}
+                      members={members}
+                      onAssign={(name): void => { onReassignAction(item.noteId, name); }}
+                    />
+                  ) : item.ownerName !== null ? (
                     <span
                       className="action-owner"
                       style={{ background: avatarColor(item.ownerName) }}
@@ -178,7 +187,7 @@ export function TeamDashboardPage({
                     >
                       {initials(item.ownerName)}
                     </span>
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>

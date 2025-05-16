@@ -10,6 +10,7 @@ import { AddTeamMember } from '../../application/usecases/AddTeamMember';
 import { RemoveTeamMember } from '../../application/usecases/RemoveTeamMember';
 import { StartNewRetro } from '../../application/usecases/StartNewRetro';
 import { ReturnToDashboard } from '../../application/usecases/ReturnToDashboard';
+import { ReassignActionItem } from '../../application/usecases/ReassignActionItem';
 import type { RetroState, RetroMeta } from '../../domain/retro/Retro';
 import { getCloseSummary, type CloseSummary } from '../../domain/retro/Retro';
 
@@ -26,6 +27,7 @@ export interface UseTeamDashboard {
   returnToDashboard: () => void;
   viewCompletedRetro: (retroId: string) => void;
   backToDashboard: () => void;
+  reassignActionItem: (noteId: string, ownerName: string | null) => void;
 }
 
 export function useTeamDashboard(
@@ -49,6 +51,7 @@ export function useTeamDashboard(
       removeMember: new RemoveTeamMember(teamRepo),
       startRetro: new StartNewRetro(teamRepo, picker),
       returnToDashboard: new ReturnToDashboard(teamRepo, ids, clock),
+      reassignActionItem: new ReassignActionItem(teamRepo),
     }),
     [teamRepo, ids, picker, clock],
   );
@@ -96,6 +99,14 @@ export function useTeamDashboard(
     setViewingCompletedRetroId(null);
   }, []);
 
+  const reassignActionItemCb = useCallback(
+    (noteId: string, ownerName: string | null) => {
+      services.reassignActionItem.execute(noteId, ownerName);
+      refresh();
+    },
+    [services, refresh],
+  );
+
   const allActionItems = useMemo(() => getAllActionItems(history), [history]);
 
   const viewingCompletedSummary = useMemo(() => {
@@ -118,5 +129,6 @@ export function useTeamDashboard(
     returnToDashboard,
     viewCompletedRetro,
     backToDashboard,
+    reassignActionItem: reassignActionItemCb,
   };
 }

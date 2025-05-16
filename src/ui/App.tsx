@@ -277,6 +277,7 @@ export function App({
           onStartRetro={handleStartRetro}
           onResumeRetro={resumeRetro}
           onViewMember={setViewingMemberId}
+          onReassignAction={dashboard.reassignActionItem}
         />
       ) : (
         <RetrospectivesPage
