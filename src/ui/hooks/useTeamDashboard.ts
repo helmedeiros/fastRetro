@@ -11,6 +11,9 @@ import { RemoveTeamMember } from '../../application/usecases/RemoveTeamMember';
 import { StartNewRetro } from '../../application/usecases/StartNewRetro';
 import { ReturnToDashboard } from '../../application/usecases/ReturnToDashboard';
 import { ReassignActionItem } from '../../application/usecases/ReassignActionItem';
+import { AddAgreement } from '../../application/usecases/AddAgreement';
+import { RemoveAgreement } from '../../application/usecases/RemoveAgreement';
+import { PromoteToAgreement } from '../../application/usecases/PromoteToAgreement';
 import type { RetroState, RetroMeta } from '../../domain/retro/Retro';
 import { getCloseSummary, type CloseSummary } from '../../domain/retro/Retro';
 
@@ -28,6 +31,9 @@ export interface UseTeamDashboard {
   viewCompletedRetro: (retroId: string) => void;
   backToDashboard: () => void;
   reassignActionItem: (noteId: string, ownerName: string | null) => void;
+  addAgreement: (text: string) => void;
+  removeAgreement: (id: string) => void;
+  promoteToAgreement: (noteId: string) => void;
 }
 
 export function useTeamDashboard(
@@ -52,6 +58,9 @@ export function useTeamDashboard(
       startRetro: new StartNewRetro(teamRepo, picker),
       returnToDashboard: new ReturnToDashboard(teamRepo, ids, clock),
       reassignActionItem: new ReassignActionItem(teamRepo),
+      addAgreement: new AddAgreement(teamRepo, ids, clock),
+      removeAgreement: new RemoveAgreement(teamRepo),
+      promoteToAgreement: new PromoteToAgreement(teamRepo, ids, clock),
     }),
     [teamRepo, ids, picker, clock],
   );
@@ -130,5 +139,17 @@ export function useTeamDashboard(
     viewCompletedRetro,
     backToDashboard,
     reassignActionItem: reassignActionItemCb,
+    addAgreement: useCallback(
+      (text: string) => { services.addAgreement.execute(text); refresh(); },
+      [services, refresh],
+    ),
+    removeAgreement: useCallback(
+      (id: string) => { services.removeAgreement.execute(id); refresh(); },
+      [services, refresh],
+    ),
+    promoteToAgreement: useCallback(
+      (noteId: string) => { services.promoteToAgreement.execute(noteId); refresh(); },
+      [services, refresh],
+    ),
   };
 }

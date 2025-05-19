@@ -31,9 +31,10 @@ function renderApp(teamRepo?: InMemoryTeamRepository) {
 
 function addMemberAndStartRetro() {
   // Add member on dashboard
-  const nameInput = screen.getByLabelText(/name/i);
+  const membersSection = screen.getByRole('region', { name: /members/i });
+  const nameInput = within(membersSection).getByLabelText(/name/i);
   fireEvent.change(nameInput, { target: { value: 'Alice' } });
-  fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
+  fireEvent.click(within(membersSection).getByRole('button', { name: /^add$/i }));
   // Click start → setup page
   fireEvent.click(
     screen.getByRole('button', { name: /start retrospective/i }),

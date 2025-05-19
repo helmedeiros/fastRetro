@@ -3,6 +3,8 @@ import {
   createTeam,
   addMember,
   removeMember,
+  addAgreement,
+  removeAgreement,
 } from '../../src/domain/team/Team';
 
 describe('Team', () => {
@@ -38,5 +40,27 @@ describe('Team', () => {
 
   it('throws when removing a non-existent member', () => {
     expect(() => removeMember(createTeam(), 'nope')).toThrow(/not found/);
+  });
+
+  it('starts with no agreements', () => {
+    expect(createTeam().agreements).toEqual([]);
+  });
+
+  it('adds an agreement', () => {
+    const team = addAgreement(createTeam(), 'a1', 'Timebox meetings', '2025-05-01');
+    expect(team.agreements).toHaveLength(1);
+    expect(team.agreements[0]).toEqual({ id: 'a1', text: 'Timebox meetings', createdAt: '2025-05-01' });
+  });
+
+  it('throws on empty agreement text', () => {
+    expect(() => addAgreement(createTeam(), 'a1', '  ', '2025-05-01')).toThrow(/empty/);
+  });
+
+  it('removes an agreement', () => {
+    let team = addAgreement(createTeam(), 'a1', 'Rule 1', '2025-05-01');
+    team = addAgreement(team, 'a2', 'Rule 2', '2025-05-01');
+    team = removeAgreement(team, 'a1');
+    expect(team.agreements).toHaveLength(1);
+    expect(team.agreements[0].id).toBe('a2');
   });
 });

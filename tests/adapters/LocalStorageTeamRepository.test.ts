@@ -50,6 +50,7 @@ describe('LocalStorageTeamRepository', () => {
           { id: 'm1', name: 'Alice' },
           { id: 'm2', name: 'Bob' },
         ],
+        agreements: [],
       });
       // Create fresh instance to test from storage
       const repo2 = new LocalStorageTeamRepository(storage);

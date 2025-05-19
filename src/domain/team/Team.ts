@@ -3,12 +3,19 @@ export interface TeamMember {
   readonly name: string;
 }
 
+export interface Agreement {
+  readonly id: string;
+  readonly text: string;
+  readonly createdAt: string;
+}
+
 export interface TeamState {
   readonly members: readonly TeamMember[];
+  readonly agreements: readonly Agreement[];
 }
 
 export function createTeam(): TeamState {
-  return { members: [] };
+  return { members: [], agreements: [] };
 }
 
 export function addMember(
@@ -35,4 +42,27 @@ export function removeMember(state: TeamState, id: string): TeamState {
     throw new Error(`Member with id "${id}" not found`);
   }
   return { ...state, members: next };
+}
+
+export function addAgreement(
+  state: TeamState,
+  id: string,
+  text: string,
+  createdAt: string,
+): TeamState {
+  const trimmed = text.trim();
+  if (trimmed.length === 0) {
+    throw new Error('Agreement text must not be empty');
+  }
+  return {
+    ...state,
+    agreements: [...state.agreements, { id, text: trimmed, createdAt }],
+  };
+}
+
+export function removeAgreement(state: TeamState, id: string): TeamState {
+  return {
+    ...state,
+    agreements: state.agreements.filter((a) => a.id !== id),
+  };
 }

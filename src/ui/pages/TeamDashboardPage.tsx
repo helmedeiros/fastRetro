@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import type { TeamMember } from '../../domain/team/Team';
+import type { TeamMember, Agreement } from '../../domain/team/Team';
 import type { FlatActionItem } from '../../domain/team/RetroHistory';
 import { OwnerPicker } from '../components/OwnerPicker';
 
@@ -15,6 +15,10 @@ export interface TeamDashboardPageProps {
   onResumeRetro: () => void;
   onViewMember?: (memberId: string) => void;
   onReassignAction?: (noteId: string, ownerName: string | null) => void;
+  agreements?: readonly Agreement[];
+  onAddAgreement?: (text: string) => void;
+  onRemoveAgreement?: (id: string) => void;
+  onPromoteToAgreement?: (noteId: string) => void;
 }
 
 const AVATAR_COLORS = [
@@ -48,7 +52,12 @@ export function TeamDashboardPage({
   onResumeRetro,
   onViewMember,
   onReassignAction,
+  agreements = [],
+  onAddAgreement,
+  onRemoveAgreement,
+  onPromoteToAgreement,
 }: TeamDashboardPageProps): JSX.Element {
+  const [agreementText, setAgreementText] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -188,6 +197,78 @@ export function TeamDashboardPage({
                       {initials(item.ownerName)}
                     </span>
                   ) : null}
+                  {onPromoteToAgreement !== undefined && (
+                    <button
+                      type="button"
+                      className="promote-btn"
+                      title="Promote to agreement"
+                      onClick={(): void => { onPromoteToAgreement(item.noteId); }}
+                    >
+                      &#128204;
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section aria-label="Team agreements" className="agreements-section">
+          <h2>Team Agreements</h2>
+          {onAddAgreement !== undefined && (
+            <div className="brainstorm-input-row">
+              <span className="brainstorm-input-plus">&#128204;</span>
+              <input
+                type="text"
+                value={agreementText}
+                onChange={(e): void => { setAgreementText(e.target.value); }}
+                onKeyDown={(e): void => {
+                  if (e.key === 'Enter' && agreementText.trim().length > 0) {
+                    onAddAgreement(agreementText.trim());
+                    setAgreementText('');
+                  }
+                }}
+                placeholder="Add agreement..."
+                aria-label="New agreement text"
+              />
+              <button
+                type="button"
+                className="brainstorm-input-add"
+                disabled={agreementText.trim().length === 0}
+                onClick={(): void => {
+                  if (agreementText.trim().length > 0 && onAddAgreement) {
+                    onAddAgreement(agreementText.trim());
+                    setAgreementText('');
+                  }
+                }}
+              >
+                Add
+              </button>
+            </div>
+          )}
+          {agreements.length === 0 ? (
+            <p className="empty-state">No agreements yet</p>
+          ) : (
+            <div className="agreements-list">
+              {agreements.map((a) => (
+                <div key={a.id} className="agreement-row">
+                  <span className="agreement-icon">&#128204;</span>
+                  <div className="agreement-content">
+                    <span className="agreement-text">{a.text}</span>
+                    <span className="agreement-date">
+                      {new Date(a.createdAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    </span>
+                  </div>
+                  {onRemoveAgreement !== undefined && (
+                    <button
+                      type="button"
+                      className="agreement-remove"
+                      onClick={(): void => { onRemoveAgreement(a.id); }}
+                      aria-label={`Remove agreement ${a.text}`}
+                    >
+                      &times;
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

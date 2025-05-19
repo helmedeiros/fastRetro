@@ -13,9 +13,10 @@ let counter = 0;
 const ids = { next: () => `id-${String(++counter)}` };
 
 function addMember(name: string): void {
-  const input = screen.getByLabelText(/name/i) as HTMLInputElement;
+  const membersSection = screen.getByRole('region', { name: /members/i });
+  const input = within(membersSection).getByLabelText(/name/i) as HTMLInputElement;
   fireEvent.change(input, { target: { value: name } });
-  fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
+  fireEvent.click(within(membersSection).getByRole('button', { name: /^add$/i }));
 }
 
 describe('Team members (via Dashboard)', () => {

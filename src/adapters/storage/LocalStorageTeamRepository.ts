@@ -14,9 +14,16 @@ export const HISTORY_STORAGE_KEY = 'fastretro:history:v10';
 export const ACTIVE_RETRO_STORAGE_KEY = 'fastretro:active:v10';
 const MIGRATED_KEY = 'fastretro:migrated:v10';
 
+interface PersistedAgreementV10 {
+  readonly id: string;
+  readonly text: string;
+  readonly createdAt: string;
+}
+
 interface PersistedTeamV10 {
   readonly version: 10;
   readonly members: readonly { readonly id: string; readonly name: string }[];
+  readonly agreements?: readonly PersistedAgreementV10[];
 }
 
 interface PersistedFlatActionItem {
@@ -116,7 +123,14 @@ export class LocalStorageTeamRepository implements TeamRepository {
     try {
       const parsed = JSON.parse(raw);
       if (!isPersistedTeamV10(parsed)) return createTeam();
-      return { members: parsed.members.map((m) => ({ id: m.id, name: m.name })) };
+      return {
+        members: parsed.members.map((m) => ({ id: m.id, name: m.name })),
+        agreements: (parsed.agreements ?? []).map((a) => ({
+          id: a.id,
+          text: a.text,
+          createdAt: a.createdAt,
+        })),
+      };
     } catch {
       return createTeam();
     }
@@ -126,6 +140,11 @@ export class LocalStorageTeamRepository implements TeamRepository {
     this.saveTeamRaw({
       version: 10,
       members: state.members.map((m) => ({ id: m.id, name: m.name })),
+      agreements: state.agreements.map((a) => ({
+        id: a.id,
+        text: a.text,
+        createdAt: a.createdAt,
+      })),
     });
   }
 
