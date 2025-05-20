@@ -58,6 +58,9 @@ export function TeamDashboardPage({
   onPromoteToAgreement,
 }: TeamDashboardPageProps): JSX.Element {
   const [agreementText, setAgreementText] = useState('');
+  const [actionPage, setActionPage] = useState(0);
+  const [agreementPage, setAgreementPage] = useState(0);
+  const PAGE_SIZE = 6;
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -158,122 +161,175 @@ export function TeamDashboardPage({
           </section>
         </aside>
 
-        <section aria-label="Action items">
-          <h2>Team Actions</h2>
-          {allActionItems.length === 0 ? (
-            <p className="empty-state">
-              No action items yet.<br />
-              Complete a retrospective to see them here.
-            </p>
-          ) : (
-            <div>
-              {allActionItems.map((item) => (
-                <div
-                  key={item.noteId}
-                  className="action-item-row"
-                  data-testid={`dashboard-action-${item.noteId}`}
-                >
-                  <span className="check-icon">&#10003;</span>
-                  <div className="action-content">
-                    <div className="action-text">{item.text}</div>
-                    <div className="action-meta">
-                      {item.parentText}
-                      {' \u00B7 '}
-                      {new Date(item.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
+        <div className="dashboard-main-content">
+          <section aria-label="Action items" className="dashboard-card-section">
+            <h2>Team Actions</h2>
+            {allActionItems.length === 0 ? (
+              <div className="dashboard-empty-card">
+                <span className="dashboard-empty-icon">&#10003;</span>
+                <p className="dashboard-empty-title">There is no Action Item available!</p>
+                <p className="dashboard-empty-sub">Complete a retrospective to create action items.</p>
+              </div>
+            ) : (
+              <>
+                <div>
+                  {allActionItems.slice(actionPage * PAGE_SIZE, (actionPage + 1) * PAGE_SIZE).map((item) => (
+                    <div
+                      key={item.noteId}
+                      className="action-item-row"
+                      data-testid={`dashboard-action-${item.noteId}`}
+                    >
+                      <span className="check-icon">&#10003;</span>
+                      <div className="action-content">
+                        <div className="action-text">{item.text}</div>
+                        <div className="action-meta">
+                          {item.parentText}
+                          {' \u00B7 '}
+                          {new Date(item.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
+                        </div>
+                      </div>
+                      {onReassignAction !== undefined ? (
+                        <OwnerPicker
+                          ownerName={item.ownerName}
+                          members={members}
+                          onAssign={(ownerName): void => { onReassignAction(item.noteId, ownerName); }}
+                        />
+                      ) : item.ownerName !== null ? (
+                        <span
+                          className="action-owner"
+                          style={{ background: avatarColor(item.ownerName) }}
+                          title={item.ownerName}
+                        >
+                          {initials(item.ownerName)}
+                        </span>
+                      ) : null}
+                      {onPromoteToAgreement !== undefined && (
+                        <button
+                          type="button"
+                          className="promote-btn"
+                          title="Promote to agreement"
+                          onClick={(): void => { onPromoteToAgreement(item.noteId); }}
+                        >
+                          &#128204;
+                        </button>
+                      )}
                     </div>
-                  </div>
-                  {onReassignAction !== undefined ? (
-                    <OwnerPicker
-                      ownerName={item.ownerName}
-                      members={members}
-                      onAssign={(name): void => { onReassignAction(item.noteId, name); }}
-                    />
-                  ) : item.ownerName !== null ? (
-                    <span
-                      className="action-owner"
-                      style={{ background: avatarColor(item.ownerName) }}
-                      title={item.ownerName}
-                    >
-                      {initials(item.ownerName)}
-                    </span>
-                  ) : null}
-                  {onPromoteToAgreement !== undefined && (
+                  ))}
+                </div>
+                {allActionItems.length > PAGE_SIZE && (
+                  <div className="pagination">
                     <button
                       type="button"
-                      className="promote-btn"
-                      title="Promote to agreement"
-                      onClick={(): void => { onPromoteToAgreement(item.noteId); }}
+                      disabled={actionPage === 0}
+                      onClick={(): void => { setActionPage(actionPage - 1); }}
                     >
-                      &#128204;
+                      &#8592; Prev
                     </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+                    <span className="pagination-info">
+                      {`${String(actionPage + 1)} / ${String(Math.ceil(allActionItems.length / PAGE_SIZE))}`}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={(actionPage + 1) * PAGE_SIZE >= allActionItems.length}
+                      onClick={(): void => { setActionPage(actionPage + 1); }}
+                    >
+                      Next &#8594;
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
 
-        <section aria-label="Team agreements" className="agreements-section">
-          <h2>Team Agreements</h2>
-          {onAddAgreement !== undefined && (
-            <div className="brainstorm-input-row">
-              <span className="brainstorm-input-plus">&#128204;</span>
-              <input
-                type="text"
-                value={agreementText}
-                onChange={(e): void => { setAgreementText(e.target.value); }}
-                onKeyDown={(e): void => {
-                  if (e.key === 'Enter' && agreementText.trim().length > 0) {
-                    onAddAgreement(agreementText.trim());
-                    setAgreementText('');
-                  }
-                }}
-                placeholder="Add agreement..."
-                aria-label="New agreement text"
-              />
-              <button
-                type="button"
-                className="brainstorm-input-add"
-                disabled={agreementText.trim().length === 0}
-                onClick={(): void => {
-                  if (agreementText.trim().length > 0 && onAddAgreement) {
-                    onAddAgreement(agreementText.trim());
-                    setAgreementText('');
-                  }
-                }}
-              >
-                Add
-              </button>
-            </div>
-          )}
-          {agreements.length === 0 ? (
-            <p className="empty-state">No agreements yet</p>
-          ) : (
-            <div className="agreements-list">
-              {agreements.map((a) => (
-                <div key={a.id} className="agreement-row">
-                  <span className="agreement-icon">&#128204;</span>
-                  <div className="agreement-content">
-                    <span className="agreement-text">{a.text}</span>
-                    <span className="agreement-date">
-                      {new Date(a.createdAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
-                    </span>
-                  </div>
-                  {onRemoveAgreement !== undefined && (
+          <section aria-label="Team agreements" className="dashboard-card-section">
+            <h2>Team Agreements</h2>
+            {onAddAgreement !== undefined && (
+              <div className="brainstorm-input-row">
+                <span className="brainstorm-input-plus">&#128204;</span>
+                <input
+                  type="text"
+                  value={agreementText}
+                  onChange={(e): void => { setAgreementText(e.target.value); }}
+                  onKeyDown={(e): void => {
+                    if (e.key === 'Enter' && agreementText.trim().length > 0) {
+                      onAddAgreement(agreementText.trim());
+                      setAgreementText('');
+                    }
+                  }}
+                  placeholder="Add agreement..."
+                  aria-label="New agreement text"
+                />
+                <button
+                  type="button"
+                  className="brainstorm-input-add"
+                  disabled={agreementText.trim().length === 0}
+                  onClick={(): void => {
+                    if (agreementText.trim().length > 0 && onAddAgreement) {
+                      onAddAgreement(agreementText.trim());
+                      setAgreementText('');
+                    }
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+            )}
+            {agreements.length === 0 ? (
+              <div className="dashboard-empty-card">
+                <span className="dashboard-empty-icon">&#128204;</span>
+                <p className="dashboard-empty-title">There is no Team Agreement available!</p>
+                <p className="dashboard-empty-sub">Create an agreement or promote an action item.</p>
+              </div>
+            ) : (
+              <>
+                <div className="agreements-list">
+                  {agreements.slice(agreementPage * PAGE_SIZE, (agreementPage + 1) * PAGE_SIZE).map((a) => (
+                    <div key={a.id} className="agreement-row">
+                      <span className="agreement-icon">&#128204;</span>
+                      <div className="agreement-content">
+                        <span className="agreement-text">{a.text}</span>
+                        <span className="agreement-date">
+                          {new Date(a.createdAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+                        </span>
+                      </div>
+                      {onRemoveAgreement !== undefined && (
+                        <button
+                          type="button"
+                          className="agreement-remove"
+                          onClick={(): void => { onRemoveAgreement(a.id); }}
+                          aria-label={`Remove agreement ${a.text}`}
+                        >
+                          &times;
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {agreements.length > PAGE_SIZE && (
+                  <div className="pagination">
                     <button
                       type="button"
-                      className="agreement-remove"
-                      onClick={(): void => { onRemoveAgreement(a.id); }}
-                      aria-label={`Remove agreement ${a.text}`}
+                      disabled={agreementPage === 0}
+                      onClick={(): void => { setAgreementPage(agreementPage - 1); }}
                     >
-                      &times;
+                      &#8592; Prev
                     </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+                    <span className="pagination-info">
+                      {`${String(agreementPage + 1)} / ${String(Math.ceil(agreements.length / PAGE_SIZE))}`}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={(agreementPage + 1) * PAGE_SIZE >= agreements.length}
+                      onClick={(): void => { setAgreementPage(agreementPage + 1); }}
+                    >
+                      Next &#8594;
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        </div>
       </div>
     </section>
   );

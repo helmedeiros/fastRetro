@@ -1793,6 +1793,85 @@ section > button.primary {
   font-size: 0.9rem;
 }
 
+/* Dashboard main content (stacked sections) */
+.dashboard-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard-card-section {
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.dashboard-card-section h2 {
+  margin-bottom: 1rem;
+}
+
+/* Empty card state */
+.dashboard-empty-card {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.dashboard-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--fr-surface-alt);
+  border: 1px solid var(--fr-border);
+  font-size: 1.2rem;
+  color: var(--fr-text-muted);
+  margin-bottom: 1rem;
+}
+
+.dashboard-empty-title {
+  color: var(--fr-text);
+  font-size: 1rem;
+  margin: 0 0 0.25rem;
+}
+
+.dashboard-empty-sub {
+  color: var(--fr-accent);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--fr-border);
+}
+
+.pagination button {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.75rem;
+  background: transparent;
+  border-color: var(--fr-border);
+  color: var(--fr-text-muted);
+}
+
+.pagination button:hover:not(:disabled) {
+  color: var(--fr-accent);
+  border-color: var(--fr-accent);
+}
+
+.pagination-info {
+  font-size: 0.8rem;
+  color: var(--fr-text-muted);
+}
+
 /* --- Responsive --- */
 
 @media (max-width: 600px) {
