@@ -278,6 +278,7 @@ export function App({
           onResumeRetro={resumeRetro}
           onViewMember={setViewingMemberId}
           onReassignAction={dashboard.reassignActionItem}
+          onAddActionItem={dashboard.addActionItem}
           agreements={dashboard.team.agreements}
           onAddAgreement={dashboard.addAgreement}
           onRemoveAgreement={dashboard.removeAgreement}

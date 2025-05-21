@@ -3,6 +3,9 @@ import {
   createHistory,
   addCompletedRetro,
   getAllActionItems,
+  addManualActionItem,
+  clearOwnerFromHistory,
+  reassignActionItem,
   CompletedRetro,
 } from '../../src/domain/team/RetroHistory';
 import { createRetro } from '../../src/domain/retro/Retro';
@@ -60,5 +63,59 @@ describe('RetroHistory', () => {
 
   it('returns empty when no retros', () => {
     expect(getAllActionItems(createHistory())).toEqual([]);
+  });
+
+  it('addManualActionItem creates a manual entry', () => {
+    let history = createHistory();
+    history = addManualActionItem(history, {
+      noteId: 'n1',
+      text: 'Manual task',
+      parentText: 'Manual',
+      ownerName: null,
+      completedAt: '2025-05-20T00:00:00Z',
+    });
+    const items = getAllActionItems(history);
+    expect(items).toHaveLength(1);
+    expect(items[0].text).toBe('Manual task');
+  });
+
+  it('clearOwnerFromHistory removes owner by name', () => {
+    let history = createHistory();
+    history = addManualActionItem(history, {
+      noteId: 'n1', text: 'Task', parentText: 'P', ownerName: 'Alice', completedAt: '2025-01-01',
+    });
+    history = clearOwnerFromHistory(history, 'Alice');
+    expect(getAllActionItems(history)[0].ownerName).toBeNull();
+  });
+
+  it('reassignActionItem updates owner by noteId', () => {
+    let history = createHistory();
+    history = addManualActionItem(history, {
+      noteId: 'n1', text: 'Task', parentText: 'P', ownerName: null, completedAt: '2025-01-01',
+    });
+    history = reassignActionItem(history, 'n1', 'Bob');
+    expect(getAllActionItems(history)[0].ownerName).toBe('Bob');
+  });
+
+  it('addManualActionItem appends to existing manual entry', () => {
+    let history = createHistory();
+    history = addManualActionItem(history, {
+      noteId: 'n1',
+      text: 'First',
+      parentText: 'Manual',
+      ownerName: null,
+      completedAt: '2025-05-20T00:00:00Z',
+    });
+    history = addManualActionItem(history, {
+      noteId: 'n2',
+      text: 'Second',
+      parentText: 'Manual',
+      ownerName: null,
+      completedAt: '2025-05-20T00:00:00Z',
+    });
+    const items = getAllActionItems(history);
+    expect(items).toHaveLength(2);
+    expect(items[0].text).toBe('Second');
+    expect(items[1].text).toBe('First');
   });
 });

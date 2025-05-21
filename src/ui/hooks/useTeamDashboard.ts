@@ -12,6 +12,7 @@ import { StartNewRetro } from '../../application/usecases/StartNewRetro';
 import { ReturnToDashboard } from '../../application/usecases/ReturnToDashboard';
 import { ReassignActionItem } from '../../application/usecases/ReassignActionItem';
 import { AddAgreement } from '../../application/usecases/AddAgreement';
+import { AddManualActionItem } from '../../application/usecases/AddManualActionItem';
 import { RemoveAgreement } from '../../application/usecases/RemoveAgreement';
 import { PromoteToAgreement } from '../../application/usecases/PromoteToAgreement';
 import type { RetroState, RetroMeta } from '../../domain/retro/Retro';
@@ -31,6 +32,7 @@ export interface UseTeamDashboard {
   viewCompletedRetro: (retroId: string) => void;
   backToDashboard: () => void;
   reassignActionItem: (noteId: string, ownerName: string | null) => void;
+  addActionItem: (text: string) => void;
   addAgreement: (text: string) => void;
   removeAgreement: (id: string) => void;
   promoteToAgreement: (noteId: string) => void;
@@ -58,6 +60,7 @@ export function useTeamDashboard(
       startRetro: new StartNewRetro(teamRepo, picker),
       returnToDashboard: new ReturnToDashboard(teamRepo, ids, clock),
       reassignActionItem: new ReassignActionItem(teamRepo),
+      addManualActionItem: new AddManualActionItem(teamRepo, ids, clock),
       addAgreement: new AddAgreement(teamRepo, ids, clock),
       removeAgreement: new RemoveAgreement(teamRepo),
       promoteToAgreement: new PromoteToAgreement(teamRepo, ids, clock),
@@ -139,6 +142,10 @@ export function useTeamDashboard(
     viewCompletedRetro,
     backToDashboard,
     reassignActionItem: reassignActionItemCb,
+    addActionItem: useCallback(
+      (text: string) => { services.addManualActionItem.execute(text); refresh(); },
+      [services, refresh],
+    ),
     addAgreement: useCallback(
       (text: string) => { services.addAgreement.execute(text); refresh(); },
       [services, refresh],

@@ -15,6 +15,7 @@ export interface TeamDashboardPageProps {
   onResumeRetro: () => void;
   onViewMember?: (memberId: string) => void;
   onReassignAction?: (noteId: string, ownerName: string | null) => void;
+  onAddActionItem?: (text: string) => void;
   agreements?: readonly Agreement[];
   onAddAgreement?: (text: string) => void;
   onRemoveAgreement?: (id: string) => void;
@@ -52,12 +53,14 @@ export function TeamDashboardPage({
   onResumeRetro,
   onViewMember,
   onReassignAction,
+  onAddActionItem,
   agreements = [],
   onAddAgreement,
   onRemoveAgreement,
   onPromoteToAgreement,
 }: TeamDashboardPageProps): JSX.Element {
   const [agreementText, setAgreementText] = useState('');
+  const [actionText, setActionText] = useState('');
   const [actionPage, setActionPage] = useState(0);
   const [agreementPage, setAgreementPage] = useState(0);
   const PAGE_SIZE = 6;
@@ -164,6 +167,37 @@ export function TeamDashboardPage({
         <div className="dashboard-main-content">
           <section aria-label="Action items" className="dashboard-card-section">
             <h2>Team Actions</h2>
+            {onAddActionItem !== undefined && (
+              <div className="brainstorm-input-row">
+                <span className="brainstorm-input-plus">&#10003;</span>
+                <input
+                  type="text"
+                  value={actionText}
+                  onChange={(e): void => { setActionText(e.target.value); }}
+                  onKeyDown={(e): void => {
+                    if (e.key === 'Enter' && actionText.trim().length > 0) {
+                      onAddActionItem(actionText.trim());
+                      setActionText('');
+                    }
+                  }}
+                  placeholder="Add action..."
+                  aria-label="New action item text"
+                />
+                <button
+                  type="button"
+                  className="brainstorm-input-add"
+                  disabled={actionText.trim().length === 0}
+                  onClick={(): void => {
+                    if (actionText.trim().length > 0 && onAddActionItem) {
+                      onAddActionItem(actionText.trim());
+                      setActionText('');
+                    }
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+            )}
             {allActionItems.length === 0 ? (
               <div className="dashboard-empty-card">
                 <span className="dashboard-empty-icon">&#10003;</span>

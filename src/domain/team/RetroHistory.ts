@@ -52,6 +52,29 @@ export function clearOwnerFromHistory(
   };
 }
 
+export function addManualActionItem(
+  history: RetroHistoryState,
+  item: FlatActionItem,
+): RetroHistoryState {
+  const manualId = '__manual__';
+  const existing = history.completed.find((r) => r.id === manualId);
+  if (existing !== undefined) {
+    return {
+      completed: history.completed.map((r) =>
+        r.id === manualId
+          ? { ...r, actionItems: [item, ...r.actionItems] }
+          : r,
+      ),
+    };
+  }
+  return {
+    completed: [
+      { id: manualId, completedAt: item.completedAt, actionItems: [item], fullState: null as unknown as RetroState },
+      ...history.completed,
+    ],
+  };
+}
+
 export function reassignActionItem(
   history: RetroHistoryState,
   noteId: string,
