@@ -63,7 +63,7 @@ export function TeamDashboardPage({
   const [actionText, setActionText] = useState('');
   const [actionPage, setActionPage] = useState(0);
   const [agreementPage, setAgreementPage] = useState(0);
-  const PAGE_SIZE = 6;
+  const PAGE_SIZE = 4;
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
 

@@ -2,7 +2,7 @@ import type { TeamRepository } from '../../domain/ports/TeamRepository';
 import type { IdGenerator } from '../../domain/ports/IdGenerator';
 import type { Clock } from '../../domain/ports/Clock';
 import { addAgreement } from '../../domain/team/Team';
-import { getAllActionItems } from '../../domain/team/RetroHistory';
+import { getAllActionItems, removeActionItem } from '../../domain/team/RetroHistory';
 
 export class PromoteToAgreement {
   constructor(
@@ -20,5 +20,6 @@ export class PromoteToAgreement {
     this.repo.saveTeam(
       addAgreement(this.repo.loadTeam(), this.ids.next(), item.text, createdAt),
     );
+    this.repo.saveHistory(removeActionItem(history, noteId));
   }
 }

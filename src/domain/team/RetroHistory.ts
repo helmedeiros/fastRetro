@@ -75,6 +75,18 @@ export function addManualActionItem(
   };
 }
 
+export function removeActionItem(
+  history: RetroHistoryState,
+  noteId: string,
+): RetroHistoryState {
+  return {
+    completed: history.completed.map((r) => ({
+      ...r,
+      actionItems: r.actionItems.filter((a) => a.noteId !== noteId),
+    })),
+  };
+}
+
 export function reassignActionItem(
   history: RetroHistoryState,
   noteId: string,
