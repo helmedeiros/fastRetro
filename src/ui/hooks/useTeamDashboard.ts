@@ -15,6 +15,7 @@ import { AddAgreement } from '../../application/usecases/AddAgreement';
 import { AddManualActionItem } from '../../application/usecases/AddManualActionItem';
 import { RemoveAgreement } from '../../application/usecases/RemoveAgreement';
 import { PromoteToAgreement } from '../../application/usecases/PromoteToAgreement';
+import { DemoteAgreement } from '../../application/usecases/DemoteAgreement';
 import type { RetroState, RetroMeta } from '../../domain/retro/Retro';
 import { getCloseSummary, type CloseSummary } from '../../domain/retro/Retro';
 
@@ -36,6 +37,7 @@ export interface UseTeamDashboard {
   addAgreement: (text: string) => void;
   removeAgreement: (id: string) => void;
   promoteToAgreement: (noteId: string) => void;
+  demoteAgreement: (agreementId: string) => void;
 }
 
 export function useTeamDashboard(
@@ -64,6 +66,7 @@ export function useTeamDashboard(
       addAgreement: new AddAgreement(teamRepo, ids, clock),
       removeAgreement: new RemoveAgreement(teamRepo),
       promoteToAgreement: new PromoteToAgreement(teamRepo, ids, clock),
+      demoteAgreement: new DemoteAgreement(teamRepo, ids, clock),
     }),
     [teamRepo, ids, picker, clock],
   );
@@ -156,6 +159,10 @@ export function useTeamDashboard(
     ),
     promoteToAgreement: useCallback(
       (noteId: string) => { services.promoteToAgreement.execute(noteId); refresh(); },
+      [services, refresh],
+    ),
+    demoteAgreement: useCallback(
+      (agreementId: string) => { services.demoteAgreement.execute(agreementId); refresh(); },
       [services, refresh],
     ),
   };

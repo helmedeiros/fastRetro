@@ -1124,6 +1124,25 @@ form button {
   color: var(--fr-danger);
 }
 
+.demote-btn {
+  all: unset;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--fr-text-muted);
+  opacity: 0;
+  transition: opacity 0.15s;
+  padding: 0.2rem;
+}
+
+.agreement-row:hover .demote-btn {
+  opacity: 0.6;
+}
+
+.demote-btn:hover {
+  opacity: 1 !important;
+  color: var(--fr-accent);
+}
+
 /* Promote button on action items */
 .promote-btn {
   all: unset;

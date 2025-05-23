@@ -20,6 +20,7 @@ export interface TeamDashboardPageProps {
   onAddAgreement?: (text: string) => void;
   onRemoveAgreement?: (id: string) => void;
   onPromoteToAgreement?: (noteId: string) => void;
+  onDemoteAgreement?: (agreementId: string) => void;
 }
 
 const AVATAR_COLORS = [
@@ -58,6 +59,7 @@ export function TeamDashboardPage({
   onAddAgreement,
   onRemoveAgreement,
   onPromoteToAgreement,
+  onDemoteAgreement,
 }: TeamDashboardPageProps): JSX.Element {
   const [agreementText, setAgreementText] = useState('');
   const [actionText, setActionText] = useState('');
@@ -326,6 +328,16 @@ export function TeamDashboardPage({
                           {new Date(a.createdAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
                         </span>
                       </div>
+                      {onDemoteAgreement !== undefined && (
+                        <button
+                          type="button"
+                          className="demote-btn"
+                          title="Convert to action item"
+                          onClick={(): void => { onDemoteAgreement(a.id); }}
+                        >
+                          &#10003;
+                        </button>
+                      )}
                       {onRemoveAgreement !== undefined && (
                         <button
                           type="button"
