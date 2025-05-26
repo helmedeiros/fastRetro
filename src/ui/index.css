@@ -1079,32 +1079,64 @@ form button {
 
 .agreement-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: var(--fr-surface);
+  background: var(--fr-surface-alt);
   border: 1px solid var(--fr-border);
   border-radius: 8px;
+  margin-bottom: 0.5rem;
+  transition: border-color 0.15s;
+}
+
+.agreement-row:hover {
+  border-color: var(--fr-accent);
 }
 
 .agreement-icon {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(94, 196, 200, 0.15);
+  border: 2px solid var(--fr-accent);
   flex-shrink: 0;
-  margin-top: 0.1rem;
+}
+
+.agreement-icon-inner {
+  font-size: 0.85rem;
+  color: var(--fr-accent);
 }
 
 .agreement-content {
   flex: 1;
+  min-width: 0;
 }
 
 .agreement-text {
   display: block;
   font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--fr-text);
 }
 
 .agreement-date {
   font-size: 0.75rem;
   color: var(--fr-text-muted);
+  margin-top: 0.15rem;
+}
+
+.agreement-actions {
+  display: flex;
+  gap: 0.4rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.agreement-row:hover .agreement-actions {
+  opacity: 1;
 }
 
 .agreement-remove {
@@ -1112,12 +1144,7 @@ form button {
   cursor: pointer;
   color: var(--fr-text-muted);
   font-size: 1rem;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.agreement-row:hover .agreement-remove {
-  opacity: 1;
+  padding: 0.2rem;
 }
 
 .agreement-remove:hover {
@@ -1129,17 +1156,10 @@ form button {
   cursor: pointer;
   font-size: 0.85rem;
   color: var(--fr-text-muted);
-  opacity: 0;
-  transition: opacity 0.15s;
   padding: 0.2rem;
 }
 
-.agreement-row:hover .demote-btn {
-  opacity: 0.6;
-}
-
 .demote-btn:hover {
-  opacity: 1 !important;
   color: var(--fr-accent);
 }
 

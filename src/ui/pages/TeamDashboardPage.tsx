@@ -321,33 +321,37 @@ export function TeamDashboardPage({
                 <div className="agreements-list">
                   {agreements.slice(agreementPage * PAGE_SIZE, (agreementPage + 1) * PAGE_SIZE).map((a) => (
                     <div key={a.id} className="agreement-row">
-                      <span className="agreement-icon">&#128204;</span>
+                      <span className="agreement-icon">
+                        <span className="agreement-icon-inner">&#9998;</span>
+                      </span>
                       <div className="agreement-content">
                         <span className="agreement-text">{a.text}</span>
                         <span className="agreement-date">
                           {new Date(a.createdAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
                         </span>
                       </div>
-                      {onDemoteAgreement !== undefined && (
-                        <button
-                          type="button"
-                          className="demote-btn"
-                          title="Convert to action item"
-                          onClick={(): void => { onDemoteAgreement(a.id); }}
-                        >
-                          &#10003;
-                        </button>
-                      )}
-                      {onRemoveAgreement !== undefined && (
-                        <button
-                          type="button"
-                          className="agreement-remove"
-                          onClick={(): void => { onRemoveAgreement(a.id); }}
-                          aria-label={`Remove agreement ${a.text}`}
-                        >
-                          &times;
-                        </button>
-                      )}
+                      <div className="agreement-actions">
+                        {onDemoteAgreement !== undefined && (
+                          <button
+                            type="button"
+                            className="demote-btn"
+                            title="Convert to action item"
+                            onClick={(): void => { onDemoteAgreement(a.id); }}
+                          >
+                            &#10003;
+                          </button>
+                        )}
+                        {onRemoveAgreement !== undefined && (
+                          <button
+                            type="button"
+                            className="agreement-remove"
+                            onClick={(): void => { onRemoveAgreement(a.id); }}
+                            aria-label={`Remove agreement ${a.text}`}
+                          >
+                            &times;
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
