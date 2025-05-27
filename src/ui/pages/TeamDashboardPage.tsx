@@ -246,7 +246,7 @@ export function TeamDashboardPage({
                           title="Promote to agreement"
                           onClick={(): void => { onPromoteToAgreement(item.noteId); }}
                         >
-                          &#128204;
+                          &#9998;
                         </button>
                       )}
                     </div>
@@ -281,7 +281,7 @@ export function TeamDashboardPage({
             <h2>Team Agreements</h2>
             {onAddAgreement !== undefined && (
               <div className="brainstorm-input-row">
-                <span className="brainstorm-input-plus">&#128204;</span>
+                <span className="brainstorm-input-plus">&#9998;</span>
                 <input
                   type="text"
                   value={agreementText}
@@ -312,7 +312,7 @@ export function TeamDashboardPage({
             )}
             {agreements.length === 0 ? (
               <div className="dashboard-empty-card">
-                <span className="dashboard-empty-icon">&#128204;</span>
+                <span className="dashboard-empty-icon">&#9998;</span>
                 <p className="dashboard-empty-title">There is no Team Agreement available!</p>
                 <p className="dashboard-empty-sub">Create an agreement or promote an action item.</p>
               </div>
