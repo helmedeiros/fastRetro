@@ -395,25 +395,31 @@ form button {
 /* Action items list */
 .action-item-row {
   padding: 0.75rem 1rem;
-  background: var(--fr-surface);
+  background: var(--fr-surface-alt);
   border-radius: 8px;
   border: 1px solid var(--fr-border);
   margin-bottom: 0.5rem;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
+  transition: border-color 0.15s;
+}
+
+.action-item-row:hover {
+  border-color: var(--fr-accent);
 }
 
 .action-item-row .check-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+  background: rgba(94, 196, 200, 0.15);
   border: 2px solid var(--fr-accent);
   color: var(--fr-accent);
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   flex-shrink: 0;
   margin-top: 0.1rem;
 }
