@@ -3,6 +3,16 @@ import type { TeamMember, Agreement } from '../../domain/team/Team';
 import type { FlatActionItem } from '../../domain/team/RetroHistory';
 import { OwnerPicker } from '../components/OwnerPicker';
 
+function HandshakeIcon(): JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.5 11.5L17 8l-4 1-3-3-6 6 3.5 3.5" />
+      <path d="M3.5 15.5l4 4 4-1 3 3 6-6-3.5-3.5" />
+      <path d="M12 8l-1 1" />
+    </svg>
+  );
+}
+
 export interface TeamDashboardPageProps {
   members: readonly TeamMember[];
   allActionItems: readonly FlatActionItem[];
@@ -246,7 +256,7 @@ export function TeamDashboardPage({
                           title="Promote to agreement"
                           onClick={(): void => { onPromoteToAgreement(item.noteId); }}
                         >
-                          &#129309;
+                          <HandshakeIcon />
                         </button>
                       )}
                     </div>
@@ -281,7 +291,7 @@ export function TeamDashboardPage({
             <h2>Team Agreements</h2>
             {onAddAgreement !== undefined && (
               <div className="brainstorm-input-row">
-                <span className="brainstorm-input-plus">&#129309;</span>
+                <span className="brainstorm-input-plus"><HandshakeIcon /></span>
                 <input
                   type="text"
                   value={agreementText}
@@ -312,7 +322,7 @@ export function TeamDashboardPage({
             )}
             {agreements.length === 0 ? (
               <div className="dashboard-empty-card">
-                <span className="dashboard-empty-icon">&#129309;</span>
+                <span className="dashboard-empty-icon"><HandshakeIcon /></span>
                 <p className="dashboard-empty-title">There is no Team Agreement available!</p>
                 <p className="dashboard-empty-sub">Create an agreement or promote an action item.</p>
               </div>
@@ -322,7 +332,7 @@ export function TeamDashboardPage({
                   {agreements.slice(agreementPage * PAGE_SIZE, (agreementPage + 1) * PAGE_SIZE).map((a) => (
                     <div key={a.id} className="agreement-row">
                       <span className="agreement-icon">
-                        <span className="agreement-icon-inner">&#129309;</span>
+                        <span className="agreement-icon-inner"><HandshakeIcon /></span>
                       </span>
                       <div className="agreement-content">
                         <span className="agreement-text">{a.text}</span>
