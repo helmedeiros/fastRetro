@@ -6,9 +6,10 @@ import { OwnerPicker } from '../components/OwnerPicker';
 function HandshakeIcon(): JSX.Element {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20.5 11.5L17 8l-4 1-3-3-6 6 3.5 3.5" />
-      <path d="M3.5 15.5l4 4 4-1 3 3 6-6-3.5-3.5" />
-      <path d="M12 8l-1 1" />
+      <circle cx="9" cy="7" r="3" />
+      <path d="M9 13c-4 0-6 2-6 4v1h12v-1c0-2-2-4-6-4z" />
+      <circle cx="17" cy="8" r="2.5" />
+      <path d="M21 18v-1c0-1.5-1.2-3-3.5-3.5" />
     </svg>
   );
 }
