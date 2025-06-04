@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { TeamMember, Agreement } from '../../domain/team/Team';
 import type { FlatActionItem } from '../../domain/team/RetroHistory';
 import { OwnerPicker } from '../components/OwnerPicker';
+import { CarouselModal, type CarouselItem } from '../components/CarouselModal';
 
 function HandshakeIcon(): JSX.Element {
   return (
@@ -74,6 +75,7 @@ export function TeamDashboardPage({
 }: TeamDashboardPageProps): JSX.Element {
   const [agreementText, setAgreementText] = useState('');
   const [actionText, setActionText] = useState('');
+  const [carousel, setCarousel] = useState<{ type: 'actions' | 'agreements'; index: number } | null>(null);
   const [actionPage, setActionPage] = useState(0);
   const [agreementPage, setAgreementPage] = useState(0);
   const PAGE_SIZE = 4;
@@ -220,11 +222,13 @@ export function TeamDashboardPage({
             ) : (
               <>
                 <div>
-                  {allActionItems.slice(actionPage * PAGE_SIZE, (actionPage + 1) * PAGE_SIZE).map((item) => (
+                  {allActionItems.slice(actionPage * PAGE_SIZE, (actionPage + 1) * PAGE_SIZE).map((item, idx) => (
                     <div
                       key={item.noteId}
                       className="action-item-row"
                       data-testid={`dashboard-action-${item.noteId}`}
+                      style={{ cursor: 'pointer' }}
+                      onClick={(): void => { setCarousel({ type: 'actions', index: actionPage * PAGE_SIZE + idx }); }}
                     >
                       <span className="check-icon">&#10003;</span>
                       <div className="action-content">
@@ -330,8 +334,13 @@ export function TeamDashboardPage({
             ) : (
               <>
                 <div className="agreements-list">
-                  {agreements.slice(agreementPage * PAGE_SIZE, (agreementPage + 1) * PAGE_SIZE).map((a) => (
-                    <div key={a.id} className="agreement-row">
+                  {agreements.slice(agreementPage * PAGE_SIZE, (agreementPage + 1) * PAGE_SIZE).map((a, idx) => (
+                    <div
+                      key={a.id}
+                      className="agreement-row"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(): void => { setCarousel({ type: 'agreements', index: agreementPage * PAGE_SIZE + idx }); }}
+                    >
                       <span className="agreement-icon">
                         <span className="agreement-icon-inner"><HandshakeIcon /></span>
                       </span>
@@ -392,6 +401,31 @@ export function TeamDashboardPage({
           </section>
         </div>
       </div>
+      {carousel !== null && carousel.type === 'actions' && (
+        <CarouselModal
+          items={allActionItems.map((item): CarouselItem => ({
+            id: item.noteId,
+            icon: <span>&#10003;</span>,
+            title: item.text,
+            meta: `${item.parentText} \u00B7 ${new Date(item.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}`,
+            detail: item.ownerName !== null ? `Assigned to ${item.ownerName}` : 'Unassigned',
+          }))}
+          initialIndex={carousel.index}
+          onClose={(): void => { setCarousel(null); }}
+        />
+      )}
+      {carousel !== null && carousel.type === 'agreements' && (
+        <CarouselModal
+          items={agreements.map((a): CarouselItem => ({
+            id: a.id,
+            icon: <HandshakeIcon />,
+            title: a.text,
+            meta: new Date(a.createdAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }),
+          }))}
+          initialIndex={carousel.index}
+          onClose={(): void => { setCarousel(null); }}
+        />
+      )}
     </section>
   );
 }
