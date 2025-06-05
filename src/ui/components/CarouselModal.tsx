@@ -6,6 +6,9 @@ export interface CarouselItem {
   title: string;
   meta: string;
   detail?: string;
+  inspiredBy?: string;
+  assignedTo?: string | null;
+  onInspiredByClick?: () => void;
 }
 
 export interface CarouselModalProps {
@@ -58,10 +61,37 @@ export function CarouselModal({
                 <span className="carousel-card-icon">{item.icon}</span>
                 <h3 className="carousel-card-title">{item.title}</h3>
               </div>
-              {item.detail !== undefined && (
+              {item.inspiredBy !== undefined && (
+                <div className="carousel-field">
+                  <span className="carousel-field-label">Inspired by</span>
+                  {item.onInspiredByClick !== undefined ? (
+                    <button
+                      type="button"
+                      className="carousel-field-link"
+                      onClick={item.onInspiredByClick}
+                    >
+                      {item.inspiredBy}
+                    </button>
+                  ) : (
+                    <span className="carousel-field-value">{item.inspiredBy}</span>
+                  )}
+                </div>
+              )}
+              <div className="carousel-field">
+                <span className="carousel-field-label">Added</span>
+                <span className="carousel-field-value carousel-field-accent">{item.meta}</span>
+              </div>
+              {item.assignedTo !== undefined && (
+                <div className="carousel-field">
+                  <span className="carousel-field-label">Assigned to</span>
+                  <span className="carousel-field-value">
+                    {item.assignedTo !== null ? item.assignedTo : 'Unassigned'}
+                  </span>
+                </div>
+              )}
+              {item.detail !== undefined && item.inspiredBy === undefined && (
                 <p className="carousel-card-detail">{item.detail}</p>
               )}
-              <p className="carousel-card-meta">{item.meta}</p>
             </div>
           ))}
         </div>

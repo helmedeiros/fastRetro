@@ -407,8 +407,9 @@ export function TeamDashboardPage({
             id: item.noteId,
             icon: <span>&#10003;</span>,
             title: item.text,
-            meta: `${item.parentText} \u00B7 ${new Date(item.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}`,
-            detail: item.ownerName !== null ? `Assigned to ${item.ownerName}` : 'Unassigned',
+            inspiredBy: item.parentText !== 'Manual' ? item.parentText : undefined,
+            meta: new Date(item.completedAt).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }),
+            assignedTo: item.ownerName,
           }))}
           initialIndex={carousel.index}
           onClose={(): void => { setCarousel(null); }}
