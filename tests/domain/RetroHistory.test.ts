@@ -7,6 +7,7 @@ import {
   clearOwnerFromHistory,
   reassignActionItem,
   removeActionItem,
+  editActionItemText,
   CompletedRetro,
 } from '../../src/domain/team/RetroHistory';
 import { createRetro } from '../../src/domain/retro/Retro';
@@ -96,6 +97,15 @@ describe('RetroHistory', () => {
     });
     history = reassignActionItem(history, 'n1', 'Bob');
     expect(getAllActionItems(history)[0].ownerName).toBe('Bob');
+  });
+
+  it('editActionItemText updates text by noteId', () => {
+    let history = createHistory();
+    history = addManualActionItem(history, {
+      noteId: 'n1', text: 'Old text', parentText: 'P', ownerName: null, completedAt: '2025-01-01',
+    });
+    history = editActionItemText(history, 'n1', 'New text');
+    expect(getAllActionItems(history)[0].text).toBe('New text');
   });
 
   it('removeActionItem removes by noteId', () => {

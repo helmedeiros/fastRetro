@@ -4,6 +4,7 @@ import {
   addMember,
   removeMember,
   addAgreement,
+  editAgreement,
   removeAgreement,
 } from '../../src/domain/team/Team';
 
@@ -54,6 +55,12 @@ describe('Team', () => {
 
   it('throws on empty agreement text', () => {
     expect(() => addAgreement(createTeam(), 'a1', '  ', '2025-05-01')).toThrow(/empty/);
+  });
+
+  it('edits an agreement text', () => {
+    let team = addAgreement(createTeam(), 'a1', 'Old', '2025-05-01');
+    team = editAgreement(team, 'a1', 'Updated');
+    expect(team.agreements[0].text).toBe('Updated');
   });
 
   it('removes an agreement', () => {

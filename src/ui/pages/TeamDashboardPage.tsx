@@ -33,6 +33,9 @@ export interface TeamDashboardPageProps {
   onRemoveAgreement?: (id: string) => void;
   onPromoteToAgreement?: (noteId: string) => void;
   onDemoteAgreement?: (agreementId: string) => void;
+  onEditActionItemText?: (noteId: string, newText: string) => void;
+  onEditAgreementText?: (agreementId: string, newText: string) => void;
+  onDeleteActionItem?: (noteId: string) => void;
 }
 
 const AVATAR_COLORS = [
@@ -72,6 +75,9 @@ export function TeamDashboardPage({
   onRemoveAgreement,
   onPromoteToAgreement,
   onDemoteAgreement,
+  onEditActionItemText,
+  onEditAgreementText,
+  onDeleteActionItem,
 }: TeamDashboardPageProps): JSX.Element {
   const [agreementText, setAgreementText] = useState('');
   const [actionText, setActionText] = useState('');
@@ -413,6 +419,14 @@ export function TeamDashboardPage({
           }))}
           initialIndex={carousel.index}
           onClose={(): void => { setCarousel(null); }}
+          actions={{
+            onDelete: onDeleteActionItem !== undefined ? (id): void => { onDeleteActionItem(id); setCarousel(null); } : undefined,
+            onPromote: onPromoteToAgreement !== undefined ? (id): void => { onPromoteToAgreement(id); setCarousel(null); } : undefined,
+            onAssign: onReassignAction !== undefined ? (id, name): void => { onReassignAction(id, name); } : undefined,
+            onEditTitle: onEditActionItemText,
+            promoteLabel: 'To Agreement',
+            members: members.map((m) => ({ id: m.id, name: m.name })),
+          }}
         />
       )}
       {carousel !== null && carousel.type === 'agreements' && (
@@ -425,6 +439,12 @@ export function TeamDashboardPage({
           }))}
           initialIndex={carousel.index}
           onClose={(): void => { setCarousel(null); }}
+          actions={{
+            onDelete: onRemoveAgreement !== undefined ? (id): void => { onRemoveAgreement(id); setCarousel(null); } : undefined,
+            onPromote: onDemoteAgreement !== undefined ? (id): void => { onDemoteAgreement(id); setCarousel(null); } : undefined,
+            onEditTitle: onEditAgreementText,
+            promoteLabel: 'To Action Item',
+          }}
         />
       )}
     </section>

@@ -1344,6 +1344,91 @@ form button {
   text-decoration: underline;
 }
 
+.carousel-edit-btn {
+  all: unset;
+  cursor: pointer;
+  color: var(--fr-accent);
+  font-size: 0.85rem;
+  margin-left: 0.4rem;
+  opacity: 0.5;
+}
+
+.carousel-edit-btn:hover {
+  opacity: 1;
+}
+
+.carousel-edit-row {
+  flex: 1;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.carousel-edit-input {
+  flex: 1;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  background: var(--fr-surface-alt);
+  border: 1px solid var(--fr-accent);
+  border-radius: 6px;
+  color: var(--fr-text);
+  padding: 0.3em 0.5em;
+}
+
+.carousel-edit-save {
+  all: unset;
+  cursor: pointer;
+  color: var(--fr-accent);
+  font-size: 1rem;
+}
+
+.carousel-assign-select {
+  font: inherit;
+  font-size: 0.85rem;
+  background: var(--fr-surface-alt);
+  border: 1px solid var(--fr-border);
+  border-radius: 6px;
+  color: var(--fr-text);
+  padding: 0.3em 0.5em;
+  max-width: 100%;
+}
+
+.carousel-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+
+.carousel-action-btn {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--fr-accent);
+  color: var(--fr-accent);
+  cursor: pointer;
+}
+
+.carousel-action-btn:hover {
+  background: var(--fr-accent-bg);
+}
+
+.carousel-delete-btn {
+  all: unset;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--fr-danger);
+  opacity: 0.6;
+  margin-left: auto;
+}
+
+.carousel-delete-btn:hover {
+  opacity: 1;
+}
+
 @media (max-width: 600px) {
   .carousel-card {
     flex: 0 0 85vw;

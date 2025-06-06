@@ -60,6 +60,15 @@ export function addAgreement(
   };
 }
 
+export function editAgreement(state: TeamState, id: string, text: string): TeamState {
+  return {
+    ...state,
+    agreements: state.agreements.map((a) =>
+      a.id === id ? { ...a, text: text.trim() } : a,
+    ),
+  };
+}
+
 export function removeAgreement(state: TeamState, id: string): TeamState {
   return {
     ...state,

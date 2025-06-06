@@ -284,6 +284,9 @@ export function App({
           onRemoveAgreement={dashboard.removeAgreement}
           onPromoteToAgreement={dashboard.promoteToAgreement}
           onDemoteAgreement={dashboard.demoteAgreement}
+          onEditActionItemText={dashboard.editActionItemText}
+          onEditAgreementText={dashboard.editAgreementText}
+          onDeleteActionItem={dashboard.deleteActionItem}
         />
       ) : (
         <RetrospectivesPage

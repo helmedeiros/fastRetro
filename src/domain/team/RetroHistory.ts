@@ -87,6 +87,21 @@ export function removeActionItem(
   };
 }
 
+export function editActionItemText(
+  history: RetroHistoryState,
+  noteId: string,
+  newText: string,
+): RetroHistoryState {
+  return {
+    completed: history.completed.map((r) => ({
+      ...r,
+      actionItems: r.actionItems.map((a) =>
+        a.noteId === noteId ? { ...a, text: newText } : a,
+      ),
+    })),
+  };
+}
+
 export function reassignActionItem(
   history: RetroHistoryState,
   noteId: string,
