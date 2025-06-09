@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
+import { OwnerPicker } from './OwnerPicker';
 
 export interface CarouselItem {
   id: string;
@@ -104,28 +105,18 @@ function CardContent({
         <span className="carousel-field-value carousel-field-accent">{item.meta}</span>
       </div>
 
-      {item.assignedTo !== undefined && actions?.members !== undefined && actions.onAssign !== undefined && (
+      {item.assignedTo !== undefined && (
         <div className="carousel-field">
           <span className="carousel-field-label">Assigned to</span>
-          <select
-            className="carousel-assign-select"
-            value={item.assignedTo ?? ''}
-            onChange={(e): void => {
-              actions.onAssign?.(item.id, e.target.value === '' ? null : e.target.value);
-            }}
-          >
-            <option value="">Unassigned</option>
-            {actions.members.map((m) => (
-              <option key={m.id} value={m.name}>{m.name}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {item.assignedTo !== undefined && (actions?.members === undefined || actions.onAssign === undefined) && (
-        <div className="carousel-field">
-          <span className="carousel-field-label">Assigned to</span>
-          <span className="carousel-field-value">{item.assignedTo ?? 'Unassigned'}</span>
+          {actions?.members !== undefined && actions.onAssign !== undefined ? (
+            <OwnerPicker
+              ownerName={item.assignedTo}
+              members={actions.members}
+              onAssign={(name): void => { actions.onAssign?.(item.id, name); }}
+            />
+          ) : (
+            <span className="carousel-field-value">{item.assignedTo ?? 'Unassigned'}</span>
+          )}
         </div>
       )}
 
