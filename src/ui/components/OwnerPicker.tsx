@@ -32,7 +32,9 @@ export function OwnerPicker({
   onAssign,
 }: OwnerPickerProps): JSX.Element {
   const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -49,8 +51,15 @@ export function OwnerPicker({
     <div className="owner-picker" ref={ref}>
       <button
         type="button"
+        ref={triggerRef}
         className="owner-picker-trigger"
-        onClick={(): void => { setOpen(!open); }}
+        onClick={(): void => {
+          if (!open && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            setPos({ top: rect.bottom + 4, left: Math.max(8, rect.right - 220) });
+          }
+          setOpen(!open);
+        }}
         title={ownerName ?? 'Unassigned'}
       >
         {ownerName !== null ? (
@@ -65,7 +74,7 @@ export function OwnerPicker({
         )}
       </button>
       {open && (
-        <div className="owner-picker-dropdown">
+        <div className="owner-picker-dropdown" style={{ top: pos.top, left: pos.left }}>
           <div className="owner-picker-header">
             <span>Assign to</span>
             <button

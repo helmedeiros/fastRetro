@@ -1473,16 +1473,16 @@ form button {
 }
 
 .owner-picker-dropdown {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  z-index: 200;
+  position: fixed;
+  z-index: 600;
   margin-top: 0.5rem;
   background: var(--fr-surface);
   border: 1px solid var(--fr-border);
   border-radius: 10px;
   padding: 0.75rem;
   min-width: 220px;
+  max-height: 300px;
+  overflow-y: auto;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
