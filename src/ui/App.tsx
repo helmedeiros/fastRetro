@@ -287,6 +287,7 @@ export function App({
           onEditActionItemText={dashboard.editActionItemText}
           onEditAgreementText={dashboard.editAgreementText}
           onDeleteActionItem={dashboard.deleteActionItem}
+          onToggleActionItemDone={dashboard.toggleActionItemDone}
         />
       ) : (
         <RetrospectivesPage

@@ -5,7 +5,7 @@ import type { Picker } from '../../domain/ports/Picker';
 import type { Clock } from '../../domain/ports/Clock';
 import type { TeamState } from '../../domain/team/Team';
 import type { RetroHistoryState } from '../../domain/team/RetroHistory';
-import { getAllActionItems, editActionItemText as editActionItemTextDomain, removeActionItem as removeActionItemDomain, type FlatActionItem } from '../../domain/team/RetroHistory';
+import { getAllActionItems, editActionItemText as editActionItemTextDomain, removeActionItem as removeActionItemDomain, toggleActionItemDone as toggleActionItemDoneDomain, type FlatActionItem } from '../../domain/team/RetroHistory';
 import { editAgreement } from '../../domain/team/Team';
 import { AddTeamMember } from '../../application/usecases/AddTeamMember';
 import { RemoveTeamMember } from '../../application/usecases/RemoveTeamMember';
@@ -42,6 +42,7 @@ export interface UseTeamDashboard {
   editActionItemText: (noteId: string, newText: string) => void;
   editAgreementText: (agreementId: string, newText: string) => void;
   deleteActionItem: (noteId: string) => void;
+  toggleActionItemDone: (noteId: string) => void;
 }
 
 export function useTeamDashboard(
@@ -186,6 +187,13 @@ export function useTeamDashboard(
     deleteActionItem: useCallback(
       (noteId: string) => {
         teamRepo.saveHistory(removeActionItemDomain(teamRepo.loadHistory(), noteId));
+        refresh();
+      },
+      [teamRepo, refresh],
+    ),
+    toggleActionItemDone: useCallback(
+      (noteId: string) => {
+        teamRepo.saveHistory(toggleActionItemDoneDomain(teamRepo.loadHistory(), noteId));
         refresh();
       },
       [teamRepo, refresh],

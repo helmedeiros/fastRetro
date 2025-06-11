@@ -6,6 +6,7 @@ export interface FlatActionItem {
   readonly parentText: string;
   readonly ownerName: string | null;
   readonly completedAt: string;
+  readonly done?: boolean;
 }
 
 export interface CompletedRetro {
@@ -83,6 +84,20 @@ export function removeActionItem(
     completed: history.completed.map((r) => ({
       ...r,
       actionItems: r.actionItems.filter((a) => a.noteId !== noteId),
+    })),
+  };
+}
+
+export function toggleActionItemDone(
+  history: RetroHistoryState,
+  noteId: string,
+): RetroHistoryState {
+  return {
+    completed: history.completed.map((r) => ({
+      ...r,
+      actionItems: r.actionItems.map((a) =>
+        a.noteId === noteId ? { ...a, done: !(a.done ?? false) } : a,
+      ),
     })),
   };
 }

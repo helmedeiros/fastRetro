@@ -36,6 +36,7 @@ export interface TeamDashboardPageProps {
   onEditActionItemText?: (noteId: string, newText: string) => void;
   onEditAgreementText?: (agreementId: string, newText: string) => void;
   onDeleteActionItem?: (noteId: string) => void;
+  onToggleActionItemDone?: (noteId: string) => void;
 }
 
 const AVATAR_COLORS = [
@@ -78,6 +79,7 @@ export function TeamDashboardPage({
   onEditActionItemText,
   onEditAgreementText,
   onDeleteActionItem,
+  onToggleActionItemDone,
 }: TeamDashboardPageProps): JSX.Element {
   const [agreementText, setAgreementText] = useState('');
   const [actionText, setActionText] = useState('');
@@ -231,12 +233,22 @@ export function TeamDashboardPage({
                   {allActionItems.slice(actionPage * PAGE_SIZE, (actionPage + 1) * PAGE_SIZE).map((item, idx) => (
                     <div
                       key={item.noteId}
-                      className="action-item-row"
+                      className={`action-item-row${item.done ? ' action-done' : ''}`}
                       data-testid={`dashboard-action-${item.noteId}`}
                       style={{ cursor: 'pointer' }}
                       onClick={(): void => { setCarousel({ type: 'actions', index: actionPage * PAGE_SIZE + idx }); }}
                     >
-                      <span className="check-icon">&#10003;</span>
+                      <button
+                        type="button"
+                        className={`check-icon${item.done ? ' check-done' : ''}`}
+                        title={item.done ? 'Mark incomplete' : 'Mark complete'}
+                        onClick={(e): void => {
+                          e.stopPropagation();
+                          if (onToggleActionItemDone) onToggleActionItemDone(item.noteId);
+                        }}
+                      >
+                        &#10003;
+                      </button>
                       <div className="action-content">
                         <div className="action-text">{item.text}</div>
                         <div className="action-meta">
@@ -411,6 +423,7 @@ export function TeamDashboardPage({
         <CarouselModal
           items={allActionItems.map((item): CarouselItem => ({
             id: item.noteId,
+            done: item.done ?? false,
             icon: <span>&#10003;</span>,
             title: item.text,
             inspiredBy: item.parentText !== 'Manual' ? item.parentText : undefined,
@@ -424,6 +437,7 @@ export function TeamDashboardPage({
             onPromote: onPromoteToAgreement !== undefined ? (id): void => { onPromoteToAgreement(id); setCarousel(null); } : undefined,
             onAssign: onReassignAction !== undefined ? (id, name): void => { onReassignAction(id, name); } : undefined,
             onEditTitle: onEditActionItemText,
+            onToggleDone: onToggleActionItemDone,
             promoteLabel: 'To Agreement',
             members: members.map((m) => ({ id: m.id, name: m.name })),
           }}

@@ -10,6 +10,7 @@ export interface CarouselItem {
   inspiredBy?: string;
   assignedTo?: string | null;
   onInspiredByClick?: () => void;
+  done?: boolean;
 }
 
 export interface CarouselActions {
@@ -17,6 +18,7 @@ export interface CarouselActions {
   onPromote?: (id: string) => void;
   onAssign?: (id: string, ownerName: string | null) => void;
   onEditTitle?: (id: string, newText: string) => void;
+  onToggleDone?: (id: string) => void;
   promoteLabel?: string;
   members?: readonly { id: string; name: string }[];
 }
@@ -39,9 +41,20 @@ function CardContent({
   const [editText, setEditText] = useState(item.title);
 
   return (
-    <div className="carousel-card">
+    <div className={`carousel-card${item.done ? ' carousel-card-completed' : ''}`}>
       <div className="carousel-card-header">
-        <span className="carousel-card-icon">{item.icon}</span>
+        {actions?.onToggleDone !== undefined ? (
+          <button
+            type="button"
+            className={`carousel-card-icon carousel-icon-btn${item.done ? ' check-done' : ''}`}
+            title={item.done ? 'Mark incomplete' : 'Mark complete'}
+            onClick={(): void => { actions.onToggleDone?.(item.id); }}
+          >
+            {item.icon}
+          </button>
+        ) : (
+          <span className={`carousel-card-icon${item.done ? ' check-done' : ''}`}>{item.icon}</span>
+        )}
         {editing ? (
           <div className="carousel-edit-row">
             <input
