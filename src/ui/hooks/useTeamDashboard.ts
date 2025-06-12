@@ -127,7 +127,10 @@ export function useTeamDashboard(
     [services, refresh],
   );
 
-  const allActionItems = useMemo(() => getAllActionItems(history), [history]);
+  const allActionItems = useMemo(
+    () => getAllActionItems(history).filter((a) => !(a.done ?? false)),
+    [history],
+  );
 
   const viewingCompletedSummary = useMemo(() => {
     if (viewingCompletedRetroId === null) return null;
