@@ -430,6 +430,66 @@ form button {
   color: #6ec76e;
 }
 
+/* Completed flash bar */
+.completed-flash {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #3a6e3a;
+  border: 1px solid #5a9a5a;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  animation: flash-in 0.3s ease-out;
+}
+
+@keyframes flash-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.completed-flash-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #2a5a2a;
+  border: 2px solid #6ec76e;
+  color: #6ec76e;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.completed-flash-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #e0f0e0;
+}
+
+.completed-flash-date {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #c0e0c0;
+  white-space: nowrap;
+}
+
+.completed-flash-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  border: 2px solid #5a9a5a;
+}
+
 .carousel-icon-btn {
   cursor: pointer;
 }

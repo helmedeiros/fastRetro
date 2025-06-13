@@ -84,6 +84,7 @@ export function TeamDashboardPage({
   const [agreementText, setAgreementText] = useState('');
   const [actionText, setActionText] = useState('');
   const [carousel, setCarousel] = useState<{ type: 'actions' | 'agreements'; index: number } | null>(null);
+  const [completedFlash, setCompletedFlash] = useState<{ text: string; ownerName: string | null } | null>(null);
   const [actionPage, setActionPage] = useState(0);
   const [agreementPage, setAgreementPage] = useState(0);
   const PAGE_SIZE = 4;
@@ -221,6 +222,23 @@ export function TeamDashboardPage({
                 </button>
               </div>
             )}
+            {completedFlash !== null && (
+              <div className="completed-flash">
+                <span className="completed-flash-icon">&#10003;</span>
+                <span className="completed-flash-text">{completedFlash.text}</span>
+                <span className="completed-flash-date">
+                  COMPLETED {new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
+                </span>
+                {completedFlash.ownerName !== null && (
+                  <span
+                    className="completed-flash-avatar"
+                    style={{ background: avatarColor(completedFlash.ownerName) }}
+                  >
+                    {initials(completedFlash.ownerName)}
+                  </span>
+                )}
+              </div>
+            )}
             {allActionItems.length === 0 ? (
               <div className="dashboard-empty-card">
                 <span className="dashboard-empty-icon">&#10003;</span>
@@ -244,7 +262,13 @@ export function TeamDashboardPage({
                         title={item.done ? 'Mark incomplete' : 'Mark complete'}
                         onClick={(e): void => {
                           e.stopPropagation();
-                          if (onToggleActionItemDone) onToggleActionItemDone(item.noteId);
+                          if (onToggleActionItemDone) {
+                            if (!(item.done ?? false)) {
+                              setCompletedFlash({ text: item.text, ownerName: item.ownerName });
+                              setTimeout(() => { setCompletedFlash(null); }, 3000);
+                            }
+                            onToggleActionItemDone(item.noteId);
+                          }
                         }}
                       >
                         &#10003;
