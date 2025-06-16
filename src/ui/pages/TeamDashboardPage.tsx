@@ -84,10 +84,13 @@ export function TeamDashboardPage({
   const [agreementText, setAgreementText] = useState('');
   const [actionText, setActionText] = useState('');
   const [carousel, setCarousel] = useState<{ type: 'actions' | 'agreements'; index: number } | null>(null);
-  const [completedFlash, setCompletedFlash] = useState<{ text: string; ownerName: string | null } | null>(null);
+  const [recentlyCompleted, setRecentlyCompleted] = useState<Set<string>>(new Set());
   const [actionPage, setActionPage] = useState(0);
   const [agreementPage, setAgreementPage] = useState(0);
   const PAGE_SIZE = 4;
+  const visibleActionItems = allActionItems.filter(
+    (a) => !(a.done ?? false) || recentlyCompleted.has(a.noteId),
+  );
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -222,24 +225,7 @@ export function TeamDashboardPage({
                 </button>
               </div>
             )}
-            {completedFlash !== null && (
-              <div className="completed-flash">
-                <span className="completed-flash-icon">&#10003;</span>
-                <span className="completed-flash-text">{completedFlash.text}</span>
-                <span className="completed-flash-date">
-                  COMPLETED {new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
-                </span>
-                {completedFlash.ownerName !== null && (
-                  <span
-                    className="completed-flash-avatar"
-                    style={{ background: avatarColor(completedFlash.ownerName) }}
-                  >
-                    {initials(completedFlash.ownerName)}
-                  </span>
-                )}
-              </div>
-            )}
-            {allActionItems.length === 0 ? (
+            {visibleActionItems.length === 0 ? (
               <div className="dashboard-empty-card">
                 <span className="dashboard-empty-icon">&#10003;</span>
                 <p className="dashboard-empty-title">There is no Action Item available!</p>
@@ -248,7 +234,7 @@ export function TeamDashboardPage({
             ) : (
               <>
                 <div>
-                  {allActionItems.slice(actionPage * PAGE_SIZE, (actionPage + 1) * PAGE_SIZE).map((item, idx) => (
+                  {visibleActionItems.slice(actionPage * PAGE_SIZE, (actionPage + 1) * PAGE_SIZE).map((item, idx) => (
                     <div
                       key={item.noteId}
                       className={`action-item-row${item.done ? ' action-done' : ''}`}
@@ -264,8 +250,14 @@ export function TeamDashboardPage({
                           e.stopPropagation();
                           if (onToggleActionItemDone) {
                             if (!(item.done ?? false)) {
-                              setCompletedFlash({ text: item.text, ownerName: item.ownerName });
-                              setTimeout(() => { setCompletedFlash(null); }, 3000);
+                              setRecentlyCompleted((prev) => new Set([...prev, item.noteId]));
+                              setTimeout(() => {
+                                setRecentlyCompleted((prev) => {
+                                  const next = new Set(prev);
+                                  next.delete(item.noteId);
+                                  return next;
+                                });
+                              }, 2500);
                             }
                             onToggleActionItemDone(item.noteId);
                           }
@@ -309,7 +301,7 @@ export function TeamDashboardPage({
                     </div>
                   ))}
                 </div>
-                {allActionItems.length > PAGE_SIZE && (
+                {visibleActionItems.length > PAGE_SIZE && (
                   <div className="pagination">
                     <button
                       type="button"
@@ -319,11 +311,11 @@ export function TeamDashboardPage({
                       &#8592; Prev
                     </button>
                     <span className="pagination-info">
-                      {`${String(actionPage + 1)} / ${String(Math.ceil(allActionItems.length / PAGE_SIZE))}`}
+                      {`${String(actionPage + 1)} / ${String(Math.ceil(visibleActionItems.length / PAGE_SIZE))}`}
                     </span>
                     <button
                       type="button"
-                      disabled={(actionPage + 1) * PAGE_SIZE >= allActionItems.length}
+                      disabled={(actionPage + 1) * PAGE_SIZE >= visibleActionItems.length}
                       onClick={(): void => { setActionPage(actionPage + 1); }}
                     >
                       Next &#8594;

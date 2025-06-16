@@ -128,7 +128,7 @@ export function useTeamDashboard(
   );
 
   const allActionItems = useMemo(
-    () => getAllActionItems(history).filter((a) => !(a.done ?? false)),
+    () => getAllActionItems(history),
     [history],
   );
 
