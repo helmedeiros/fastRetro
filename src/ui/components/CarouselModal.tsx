@@ -33,27 +33,41 @@ export interface CarouselModalProps {
 function CardContent({
   item,
   actions,
+  onAutoClose,
 }: {
   item: CarouselItem;
   actions?: CarouselActions;
+  onAutoClose?: () => void;
 }): JSX.Element {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(item.title);
+  const [localDone, setLocalDone] = useState(item.done ?? false);
+
+  const handleToggleDone = (): void => {
+    const newDone = !localDone;
+    setLocalDone(newDone);
+    actions?.onToggleDone?.(item.id);
+    if (newDone && onAutoClose) {
+      setTimeout(() => { onAutoClose(); }, 20000);
+    }
+  };
+
+  const isDone = localDone;
 
   return (
-    <div className={`carousel-card${item.done ? ' carousel-card-completed' : ''}`}>
+    <div className={`carousel-card${isDone ? ' carousel-card-completed' : ''}`}>
       <div className="carousel-card-header">
         {actions?.onToggleDone !== undefined ? (
           <button
             type="button"
-            className={`carousel-card-icon carousel-icon-btn${item.done ? ' check-done' : ''}`}
-            title={item.done ? 'Mark incomplete' : 'Mark complete'}
-            onClick={(): void => { actions.onToggleDone?.(item.id); }}
+            className={`carousel-card-icon carousel-icon-btn${isDone ? ' carousel-icon-done' : ''}`}
+            title={isDone ? 'Mark incomplete' : 'Mark complete'}
+            onClick={handleToggleDone}
           >
             {item.icon}
           </button>
         ) : (
-          <span className={`carousel-card-icon${item.done ? ' check-done' : ''}`}>{item.icon}</span>
+          <span className={`carousel-card-icon${isDone ? ' carousel-icon-done' : ''}`}>{item.icon}</span>
         )}
         {editing ? (
           <div className="carousel-edit-row">
@@ -194,7 +208,7 @@ export function CarouselModal({
         </div>
         <div className="carousel-scroll" ref={scrollRef}>
           {items.map((item) => (
-            <CardContent key={item.id} item={item} actions={actions} />
+            <CardContent key={item.id} item={item} actions={actions} onAutoClose={onClose} />
           ))}
         </div>
       </div>
