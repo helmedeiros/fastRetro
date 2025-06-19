@@ -537,6 +537,7 @@ form button {
 
 .carousel-card-completed .carousel-card-title {
   color: #c0e0c0;
+  text-decoration: line-through;
 }
 
 .action-item-row .check-icon {
