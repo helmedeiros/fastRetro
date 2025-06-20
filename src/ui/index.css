@@ -416,6 +416,7 @@ form button {
 
 .action-item-row.action-done .action-text {
   color: #e0f0e0;
+  text-decoration: line-through;
 }
 
 .action-item-row.action-done .action-meta {

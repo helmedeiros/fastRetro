@@ -447,7 +447,23 @@ export function TeamDashboardPage({
             assignedTo: item.ownerName,
           }))}
           initialIndex={carousel.index}
-          onClose={(): void => { setCarousel(null); }}
+          onClose={(): void => {
+            // Find items that are now done and show them green for 20s
+            const doneIds = allActionItems
+              .filter((a) => (a.done ?? false) && !recentlyCompleted.has(a.noteId))
+              .map((a) => a.noteId);
+            if (doneIds.length > 0) {
+              setRecentlyCompleted((prev) => new Set([...prev, ...doneIds]));
+              setTimeout(() => {
+                setRecentlyCompleted((prev) => {
+                  const next = new Set(prev);
+                  doneIds.forEach((id) => next.delete(id));
+                  return next;
+                });
+              }, 20000);
+            }
+            setCarousel(null);
+          }}
           actions={{
             onDelete: onDeleteActionItem !== undefined ? (id): void => { onDeleteActionItem(id); setCarousel(null); } : undefined,
             onPromote: onPromoteToAgreement !== undefined ? (id): void => { onPromoteToAgreement(id); setCarousel(null); } : undefined,
