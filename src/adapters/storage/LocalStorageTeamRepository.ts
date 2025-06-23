@@ -32,6 +32,7 @@ interface PersistedFlatActionItem {
   readonly parentText: string;
   readonly ownerName: string | null;
   readonly completedAt: string;
+  readonly done?: boolean;
 }
 
 interface PersistedCompletedRetro {
@@ -173,6 +174,7 @@ export class LocalStorageTeamRepository implements TeamRepository {
             parentText: a.parentText,
             ownerName: a.ownerName,
             completedAt: a.completedAt,
+            done: a.done ?? false,
           })),
           fullState,
         };
@@ -198,6 +200,7 @@ export class LocalStorageTeamRepository implements TeamRepository {
           parentText: a.parentText,
           ownerName: a.ownerName,
           completedAt: a.completedAt,
+          done: a.done ?? false,
         })),
         fullStateJson,
       };
