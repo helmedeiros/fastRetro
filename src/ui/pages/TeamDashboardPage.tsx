@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, type FormEvent } from 'react';
 import type { TeamMember, Agreement } from '../../domain/team/Team';
 import type { FlatActionItem } from '../../domain/team/RetroHistory';
 import { OwnerPicker } from '../components/OwnerPicker';
@@ -86,6 +86,7 @@ export function TeamDashboardPage({
   const [carousel, setCarousel] = useState<{ type: 'actions' | 'agreements'; index: number } | null>(null);
   const [recentlyCompleted, setRecentlyCompleted] = useState<Set<string>>(new Set());
   const [actionPage, setActionPage] = useState(0);
+  const doneBeforeCarouselRef = useRef<Set<string>>(new Set());
   const [agreementPage, setAgreementPage] = useState(0);
   const PAGE_SIZE = 4;
   const visibleActionItems = allActionItems.filter(
@@ -240,7 +241,10 @@ export function TeamDashboardPage({
                       className={`action-item-row${item.done ? ' action-done' : ''}`}
                       data-testid={`dashboard-action-${item.noteId}`}
                       style={{ cursor: 'pointer' }}
-                      onClick={(): void => { setCarousel({ type: 'actions', index: actionPage * PAGE_SIZE + idx }); }}
+                      onClick={(): void => {
+                        doneBeforeCarouselRef.current = new Set(allActionItems.filter((a) => a.done ?? false).map((a) => a.noteId));
+                        setCarousel({ type: 'actions', index: actionPage * PAGE_SIZE + idx });
+                      }}
                     >
                       <button
                         type="button"
@@ -437,7 +441,7 @@ export function TeamDashboardPage({
       </div>
       {carousel !== null && carousel.type === 'actions' && (
         <CarouselModal
-          items={allActionItems.map((item): CarouselItem => ({
+          items={visibleActionItems.map((item): CarouselItem => ({
             id: item.noteId,
             done: item.done ?? false,
             icon: <span>&#10003;</span>,
@@ -448,9 +452,9 @@ export function TeamDashboardPage({
           }))}
           initialIndex={carousel.index}
           onClose={(): void => {
-            // Find items that are now done and show them green for 20s
+            // Find items newly marked done during this carousel session
             const doneIds = allActionItems
-              .filter((a) => (a.done ?? false) && !recentlyCompleted.has(a.noteId))
+              .filter((a) => (a.done ?? false) && !doneBeforeCarouselRef.current.has(a.noteId) && !recentlyCompleted.has(a.noteId))
               .map((a) => a.noteId);
             if (doneIds.length > 0) {
               setRecentlyCompleted((prev) => new Set([...prev, ...doneIds]));
