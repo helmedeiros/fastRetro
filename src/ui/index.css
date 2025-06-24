@@ -558,6 +558,9 @@ form button {
   font-size: 0.85rem;
   flex-shrink: 0;
   margin-top: 0.1rem;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .action-item-row .action-content {

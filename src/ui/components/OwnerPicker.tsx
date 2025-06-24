@@ -53,7 +53,8 @@ export function OwnerPicker({
         type="button"
         ref={triggerRef}
         className="owner-picker-trigger"
-        onClick={(): void => {
+        onClick={(e): void => {
+          e.stopPropagation();
           if (!open && triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
             setPos({ top: rect.bottom + 4, left: Math.max(8, rect.right - 220) });

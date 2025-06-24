@@ -297,7 +297,7 @@ export function TeamDashboardPage({
                           type="button"
                           className="promote-btn"
                           title="Promote to agreement"
-                          onClick={(): void => { onPromoteToAgreement(item.noteId); }}
+                          onClick={(e): void => { e.stopPropagation(); onPromoteToAgreement(item.noteId); }}
                         >
                           <HandshakeIcon />
                         </button>
