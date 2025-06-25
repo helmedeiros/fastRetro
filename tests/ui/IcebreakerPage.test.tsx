@@ -71,7 +71,7 @@ describe('IcebreakerPage', () => {
     expect(onNext).toHaveBeenCalledTimes(1);
   });
 
-  it('disables SPIN at the last participant and shows no remaining pills', () => {
+  it('shows Continue to brainstorm at the last participant and no remaining pills', () => {
     render(
       <IcebreakerPage
         timer={createTimer(10 * 60 * 1000)}
@@ -85,7 +85,8 @@ describe('IcebreakerPage', () => {
         onContinueToBrainstorm={noop}
       />,
     );
-    expect(screen.getByRole('button', { name: /spin/i })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /spin/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /continue to brainstorm/i })).toBeInTheDocument();
     expect(screen.getByTestId('icebreaker-speaker')).toHaveTextContent('Carol');
     const list = screen.getByRole('list', { name: /icebreaker rotation/i });
     expect(within(list).queryByText('Alice')).not.toBeInTheDocument();
@@ -115,7 +116,7 @@ describe('IcebreakerPage', () => {
     render(
       <IcebreakerPage
         timer={createTimer(10 * 60 * 1000)}
-        icebreaker={baseState(0)}
+        icebreaker={baseState(2)}
         participants={participants}
         onStartTimer={noop}
         onPauseTimer={noop}

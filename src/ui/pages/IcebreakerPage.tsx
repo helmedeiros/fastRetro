@@ -141,19 +141,21 @@ export function IcebreakerPage({
       </ul>
 
       <div className="icebreaker-actions">
-        <button
-          type="button"
-          className="spin-btn"
-          onClick={handleSpin}
-          disabled={atEnd || spinning}
-        >
-          {spinning ? 'Spinning...' : 'SPIN'}
-        </button>
+        {atEnd && !spinning ? (
+          <button type="button" className="primary" onClick={onContinueToBrainstorm}>
+            Continue to brainstorm
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="spin-btn"
+            onClick={handleSpin}
+            disabled={spinning}
+          >
+            {spinning ? 'Spinning...' : 'SPIN'}
+          </button>
+        )}
       </div>
-
-      <button type="button" className="primary" onClick={onContinueToBrainstorm}>
-        Continue to brainstorm
-      </button>
     </section>
   );
 }
