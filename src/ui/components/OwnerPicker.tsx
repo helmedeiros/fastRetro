@@ -75,7 +75,7 @@ export function OwnerPicker({
         )}
       </button>
       {open && (
-        <div className="owner-picker-dropdown" style={{ top: pos.top, left: pos.left }}>
+        <div className="owner-picker-dropdown" style={{ top: pos.top, left: pos.left }} onClick={(e): void => { e.stopPropagation(); }}>
           <div className="owner-picker-header">
             <span>Assign to</span>
             <button
