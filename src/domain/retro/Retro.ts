@@ -224,8 +224,8 @@ export function advanceIcebreakerParticipant(state: RetroState): RetroState {
 }
 
 export function startBrainstorm(state: RetroState): RetroState {
-  if (state.stage !== 'icebreaker') {
-    throw new Error('Brainstorm can only start from the icebreaker stage');
+  if (state.stage === 'setup') {
+    throw new Error('Brainstorm can only start after the icebreaker stage');
   }
   return {
     ...state,
@@ -283,8 +283,8 @@ export function moveCard(
 }
 
 export function startGroup(state: RetroState): RetroState {
-  if (state.stage !== 'brainstorm') {
-    throw new Error('Group can only start from the brainstorm stage');
+  if (state.stage === 'setup') {
+    throw new Error('Group can only start after the icebreaker stage');
   }
   return {
     ...state,
@@ -394,8 +394,8 @@ export function ungroupCard(
 }
 
 export function startVote(state: RetroState): RetroState {
-  if (state.stage !== 'group') {
-    throw new Error('Vote can only start from the group stage');
+  if (state.stage === 'setup') {
+    throw new Error('Vote can only start after the icebreaker stage');
   }
   return {
     ...state,
@@ -501,8 +501,8 @@ export function castVote(
 }
 
 export function startDiscuss(state: RetroState): RetroState {
-  if (state.stage !== 'vote') {
-    throw new Error('Discuss can only start from the vote stage');
+  if (state.stage === 'setup') {
+    throw new Error('Discuss can only start after the icebreaker stage');
   }
   const votables = getVotables(state);
   const insertionIndex = new Map<string, number>();
@@ -646,8 +646,8 @@ export function resetRetroTimer(state: RetroState): RetroState {
 }
 
 export function startReview(state: RetroState): RetroState {
-  if (state.stage !== 'discuss') {
-    throw new Error('Review can only start from the discuss stage');
+  if (state.stage === 'setup') {
+    throw new Error('Review can only start after the icebreaker stage');
   }
   return {
     ...state,
@@ -682,8 +682,8 @@ export function assignActionOwner(
 }
 
 export function startClose(state: RetroState): RetroState {
-  if (state.stage !== 'review') {
-    throw new Error('Close can only start from the review stage');
+  if (state.stage === 'setup') {
+    throw new Error('Close can only start after the icebreaker stage');
   }
   return { ...state, stage: 'close', timer: null };
 }
