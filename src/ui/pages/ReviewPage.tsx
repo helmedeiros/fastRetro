@@ -12,7 +12,6 @@ export interface ReviewPageProps {
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onAssignOwner: (noteId: string, participantId: string | null) => void;
-  onContinueToClose: () => void;
 }
 
 export function ReviewPage({
@@ -24,7 +23,6 @@ export function ReviewPage({
   onResumeTimer,
   onResetTimer,
   onAssignOwner,
-  onContinueToClose,
 }: ReviewPageProps): JSX.Element {
   return (
     <section aria-label="Review">
@@ -79,9 +77,6 @@ export function ReviewPage({
           })}
         </ul>
       </section>
-      <button type="button" className="primary" onClick={onContinueToClose}>
-        Continue to close
-      </button>
     </section>
   );
 }

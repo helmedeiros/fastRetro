@@ -76,7 +76,6 @@ function Harness(): JSX.Element {
       onRemoveNote={(id): void => {
         setNotes((n) => n.filter((x) => x.id !== id));
       }}
-      onContinueToReview={noop}
     />
   );
 }

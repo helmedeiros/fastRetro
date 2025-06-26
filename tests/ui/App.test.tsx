@@ -48,6 +48,11 @@ function addMemberAndStartRetro() {
   );
 }
 
+function navigateTo(stage: string): void {
+  const nav = screen.getByRole('navigation', { name: /retro stages/i });
+  fireEvent.click(within(nav).getByRole('button', { name: new RegExp(stage, 'i') }));
+}
+
 describe('App', () => {
   it('renders the fastRetro heading', () => {
     renderApp();
@@ -91,32 +96,22 @@ describe('App', () => {
     expect(screen.getByTestId('time-remaining')).toHaveTextContent('5m 00s');
   });
 
-  it('transitions from brainstorm to group', () => {
+  it('transitions from brainstorm to group via stage nav', () => {
     renderApp();
     addMemberAndStartRetro();
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to brainstorm/i }),
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to group/i }),
-    );
+    navigateTo('brainstorm');
+    navigateTo('group');
     expect(
       screen.getByRole('heading', { name: /^group$/i }),
     ).toBeInTheDocument();
   });
 
-  it('transitions from group to vote', () => {
+  it('transitions from group to vote via stage nav', () => {
     renderApp();
     addMemberAndStartRetro();
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to brainstorm/i }),
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to group/i }),
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to vote/i }),
-    );
+    navigateTo('brainstorm');
+    navigateTo('group');
+    navigateTo('vote');
     expect(
       screen.getByRole('heading', { name: /^vote$/i }),
     ).toBeInTheDocument();
@@ -125,9 +120,7 @@ describe('App', () => {
   it('transitions through full flow to close with Return to Dashboard', () => {
     renderApp();
     addMemberAndStartRetro();
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to brainstorm/i }),
-    );
+    navigateTo('brainstorm');
     const startCol = screen.getByRole('region', { name: /start column/i });
     fireEvent.change(within(startCol).getByLabelText(/start card text/i), {
       target: { value: 'ship faster' },
@@ -135,18 +128,12 @@ describe('App', () => {
     fireEvent.click(
       within(startCol).getByRole('button', { name: /add start card/i }),
     );
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to group/i }),
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to vote/i }),
-    );
+    navigateTo('group');
+    navigateTo('vote');
     fireEvent.click(
       screen.getByRole('button', { name: /vote for ship faster/i }),
     );
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to discuss/i }),
-    );
+    navigateTo('discuss');
     fireEvent.click(screen.getByRole('button', { name: /next segment/i }));
     const actionsSection = screen.getByRole('region', {
       name: /actions notes/i,
@@ -160,12 +147,8 @@ describe('App', () => {
         name: /add actions note/i,
       }),
     );
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to review/i }),
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: /continue to close/i }),
-    );
+    navigateTo('review');
+    navigateTo('close');
     expect(
       screen.getByRole('heading', { name: /retro complete/i }),
     ).toBeInTheDocument();

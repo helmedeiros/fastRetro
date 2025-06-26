@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import type { RetroStage } from '../domain/retro/Retro';
 import type { Clock } from '../domain/ports/Clock';
 import type { Downloader } from '../domain/ports/Downloader';
 import type { IdGenerator } from '../domain/ports/IdGenerator';
@@ -79,6 +80,20 @@ export function App({
     setForceDashboard(false);
   }, [retro]);
 
+  const navigateStage = useCallback((stage: RetroStage) => {
+    const nav: Record<RetroStage, (() => void) | undefined> = {
+      setup: undefined,
+      icebreaker: retro.startIcebreaker,
+      brainstorm: retro.startBrainstorm,
+      group: retro.startGroup,
+      vote: retro.startVote,
+      discuss: retro.startDiscuss,
+      review: retro.startReview,
+      close: retro.startClose,
+    };
+    nav[stage]?.();
+  }, [retro]);
+
   const logo = (
     <h1>
       <button
@@ -110,7 +125,7 @@ export function App({
     return (
       <main className="container">
         {logo}
-        <StageNav currentStage="close" />
+        <StageNav currentStage="close" onNavigate={navigateStage} />
         <ClosePage
           summary={retro.closeSummary}
           onExport={retro.exportJson}
@@ -128,7 +143,7 @@ export function App({
     return (
       <main className="container">
         {logo}
-        <StageNav currentStage={retroStage} />
+        <StageNav currentStage={retroStage} onNavigate={navigateStage} />
         {retro.stage === 'icebreaker' &&
           retro.timer !== null &&
           retro.icebreaker !== null ? (
@@ -156,7 +171,6 @@ export function App({
             onAddCard={retro.addCard}
             onRemoveCard={retro.removeCard}
             onMoveCard={retro.moveCard}
-            onContinueToGroup={retro.startGroup}
           />
         ) : retro.stage === 'group' && retro.timer !== null ? (
           <GroupPage
@@ -170,7 +184,6 @@ export function App({
             onCreateGroup={retro.createGroupByDrop}
             onRenameGroup={retro.renameGroup}
             onUngroupCard={retro.ungroupCard}
-            onContinueToVote={retro.startVote}
           />
         ) : retro.stage === 'vote' && retro.timer !== null ? (
           <VotePage
@@ -185,7 +198,6 @@ export function App({
             onResetTimer={retro.resetTimer}
             onSetVoteBudget={retro.setVoteBudget}
             onCastVote={retro.castVote}
-            onContinueToDiscuss={retro.startDiscuss}
           />
         ) : retro.stage === 'discuss' &&
           retro.timer !== null &&
@@ -204,7 +216,6 @@ export function App({
             onNextSegment={retro.advanceDiscussSegment}
             onAddNote={retro.addDiscussNote}
             onRemoveNote={retro.removeDiscussNote}
-            onContinueToReview={retro.startReview}
           />
         ) : retro.stage === 'review' && retro.timer !== null ? (
           <ReviewPage
@@ -216,7 +227,6 @@ export function App({
             onResumeTimer={retro.resumeTimer}
             onResetTimer={retro.resetTimer}
             onAssignOwner={retro.assignActionOwner}
-            onContinueToClose={retro.startClose}
           />
         ) : null}
       </main>

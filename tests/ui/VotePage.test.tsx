@@ -53,7 +53,6 @@ function Harness({ initialBudget = 3 }: HarnessProps): JSX.Element {
         if (budget - used(pid) <= 0) return;
         setVotes([...votes, { participantId: pid, cardId: cid }]);
       }}
-      onContinueToDiscuss={noop}
     />
   );
 }

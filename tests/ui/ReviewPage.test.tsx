@@ -29,12 +29,10 @@ const actionItems: ActionItem[] = [
   },
 ];
 
-function renderPage(overrides: Partial<Parameters<typeof ReviewPage>[0]> = {}): {
+function renderPage(): {
   onAssignOwner: ReturnType<typeof vi.fn>;
-  onContinueToClose: ReturnType<typeof vi.fn>;
 } {
   const onAssignOwner = vi.fn();
-  const onContinueToClose = vi.fn();
   render(
     <ReviewPage
       timer={timer}
@@ -45,11 +43,9 @@ function renderPage(overrides: Partial<Parameters<typeof ReviewPage>[0]> = {}): 
       onResumeTimer={vi.fn()}
       onResetTimer={vi.fn()}
       onAssignOwner={onAssignOwner}
-      onContinueToClose={onContinueToClose}
-      {...overrides}
     />,
   );
-  return { onAssignOwner, onContinueToClose };
+  return { onAssignOwner };
 }
 
 describe('ReviewPage', () => {
@@ -80,11 +76,5 @@ describe('ReviewPage', () => {
     const select = screen.getByLabelText(/owner for timebox meetings/i);
     fireEvent.change(select, { target: { value: '' } });
     expect(onAssignOwner).toHaveBeenCalledWith('n-2', null);
-  });
-
-  it('fires onContinueToClose when continue button clicked', () => {
-    const { onContinueToClose } = renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /continue to close/i }));
-    expect(onContinueToClose).toHaveBeenCalled();
   });
 });

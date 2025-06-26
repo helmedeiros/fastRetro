@@ -17,7 +17,6 @@ export interface VotePageProps {
   onResetTimer: () => void;
   onSetVoteBudget: (budget: number) => void;
   onCastVote: (participantId: string, cardId: string) => void;
-  onContinueToDiscuss: () => void;
 }
 
 interface ColumnProps {
@@ -96,7 +95,6 @@ export function VotePage({
   onResetTimer,
   onSetVoteBudget,
   onCastVote,
-  onContinueToDiscuss,
 }: VotePageProps): JSX.Element {
   const [activeId, setActiveId] = useState<string | null>(
     participants[0]?.id ?? null,
@@ -170,9 +168,6 @@ export function VotePage({
           onCastVote={onCastVote}
         />
       </div>
-      <button type="button" className="primary" onClick={onContinueToDiscuss}>
-        Continue to discuss
-      </button>
     </section>
   );
 }

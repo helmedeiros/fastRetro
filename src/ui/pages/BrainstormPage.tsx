@@ -14,7 +14,6 @@ export interface BrainstormPageProps {
   onAddCard: (columnId: ColumnId, text: string) => void;
   onRemoveCard: (cardId: string) => void;
   onMoveCard?: (cardId: string, targetColumnId: ColumnId, targetIndex: number) => void;
-  onContinueToGroup: () => void;
 }
 
 interface ColumnProps {
@@ -152,7 +151,6 @@ export function BrainstormPage({
   onAddCard,
   onRemoveCard,
   onMoveCard,
-  onContinueToGroup,
 }: BrainstormPageProps): JSX.Element {
   const startCards = cards.filter((c) => c.columnId === 'start');
   const stopCards = cards.filter((c) => c.columnId === 'stop');
@@ -191,9 +189,6 @@ export function BrainstormPage({
           onDrop={handleDrop('start')}
         />
       </div>
-      <button type="button" className="primary" onClick={onContinueToGroup}>
-        Continue to group
-      </button>
     </section>
   );
 }

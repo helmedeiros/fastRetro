@@ -15,7 +15,6 @@ export interface GroupPageProps {
   onCreateGroup: (sourceCardId: string, targetCardId: string) => void;
   onRenameGroup: (groupId: string, name: string) => void;
   onUngroupCard: (cardId: string) => void;
-  onContinueToVote: () => void;
 }
 
 interface ColumnProps {
@@ -205,7 +204,6 @@ export function GroupPage({
   onCreateGroup,
   onRenameGroup,
   onUngroupCard,
-  onContinueToVote,
 }: GroupPageProps): JSX.Element {
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
@@ -246,9 +244,6 @@ export function GroupPage({
           onUngroupCard={onUngroupCard}
         />
       </div>
-      <button type="button" className="primary" onClick={onContinueToVote}>
-        Continue to vote
-      </button>
     </section>
   );
 }

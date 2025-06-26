@@ -12,19 +12,22 @@ const STAGES: { key: RetroStage; label: string }[] = [
 
 export interface StageNavProps {
   currentStage: RetroStage;
+  onNavigate?: (stage: RetroStage) => void;
 }
 
-export function StageNav({ currentStage }: StageNavProps): JSX.Element {
+export function StageNav({ currentStage, onNavigate }: StageNavProps): JSX.Element {
   return (
     <nav className="stage-nav" aria-label="Retro stages">
       {STAGES.map((s) => (
-        <span
+        <button
           key={s.key}
+          type="button"
           className={`stage-nav-item${s.key === currentStage ? ' active' : ''}`}
           aria-current={s.key === currentStage ? 'step' : undefined}
+          onClick={(): void => { onNavigate?.(s.key); }}
         >
           {s.label.toUpperCase()}
-        </span>
+        </button>
       ))}
     </nav>
   );

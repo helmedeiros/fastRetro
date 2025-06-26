@@ -21,7 +21,6 @@ export interface DiscussPageProps {
   onNextSegment: () => void;
   onAddNote: (parentCardId: string, lane: DiscussLane, text: string) => void;
   onRemoveNote: (noteId: string) => void;
-  onContinueToReview: () => void;
 }
 
 interface LaneProps {
@@ -108,7 +107,6 @@ export function DiscussPage({
   onNextSegment,
   onAddNote,
   onRemoveNote,
-  onContinueToReview,
 }: DiscussPageProps): JSX.Element {
   const total = discuss.order.length;
   const activeCardId = discuss.order[discuss.currentIndex];
@@ -201,9 +199,6 @@ export function DiscussPage({
           </div>
         </section>
       )}
-      <button type="button" className="primary" onClick={onContinueToReview}>
-        Continue to review
-      </button>
     </section>
   );
 }
