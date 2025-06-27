@@ -2,12 +2,14 @@ import { useState } from 'react';
 import type { Card, ColumnId } from '../../domain/retro/Card';
 import type { Group } from '../../domain/retro/Group';
 import type { Timer } from '../../domain/retro/Timer';
+import { getTemplate } from '../../domain/retro/FacilitationTemplate';
 import { PresentTimer } from '../components/PresentTimer';
 
 export interface GroupPageProps {
   timer: Timer;
   cards: readonly Card[];
   groups: readonly Group[];
+  templateId?: string;
   onStartTimer: () => void;
   onPauseTimer: () => void;
   onResumeTimer: () => void;
@@ -204,7 +206,9 @@ export function GroupPage({
   onCreateGroup,
   onRenameGroup,
   onUngroupCard,
+  templateId,
 }: GroupPageProps): JSX.Element {
+  const template = getTemplate(templateId ?? 'start-stop');
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   return (
@@ -221,8 +225,8 @@ export function GroupPage({
       <div className="columns">
         <Column
           columnId="stop"
-          title="Stop"
-          description="What factors are slowing us down or holding us back?"
+          title={template.columns.stop.title}
+          description={template.columns.stop.description}
           cards={cards}
           groups={groups}
           selectedCardId={selectedCardId}
@@ -233,8 +237,8 @@ export function GroupPage({
         />
         <Column
           columnId="start"
-          title="Start"
-          description="What factors are driving us forward and enabling our success?"
+          title={template.columns.start.title}
+          description={template.columns.start.description}
           cards={cards}
           groups={groups}
           selectedCardId={selectedCardId}

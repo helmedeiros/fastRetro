@@ -67,6 +67,7 @@ export interface RetroMeta {
   readonly name: string;
   readonly date: string;
   readonly context: string;
+  readonly templateId: string;
 }
 
 export interface RetroState {
@@ -107,7 +108,7 @@ export type Votable =
 export function createRetro(meta?: RetroMeta): RetroState {
   return {
     stage: 'setup',
-    meta: meta ?? { name: '', date: '', context: '' },
+    meta: meta ?? { name: '', date: '', context: '', templateId: 'start-stop' },
     participants: [],
     timer: null,
     icebreaker: null,

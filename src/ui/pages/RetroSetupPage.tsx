@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { RetroMeta } from '../../domain/retro/Retro';
+import { TEMPLATES, DEFAULT_TEMPLATE_ID } from '../../domain/retro/FacilitationTemplate';
 
 export interface RetroSetupPageProps {
   onStart: (meta: RetroMeta) => void;
@@ -16,6 +17,7 @@ export function RetroSetupPage({
   const [name, setName] = useState('');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [context, setContext] = useState(DEFAULT_CONTEXT);
+  const [templateId, setTemplateId] = useState(DEFAULT_TEMPLATE_ID);
 
   const canStart = name.trim().length > 0;
 
@@ -56,6 +58,26 @@ export function RetroSetupPage({
         />
       </div>
 
+      <fieldset className="template-selector">
+        <legend>Facilitation Design</legend>
+        <div className="template-grid">
+          {TEMPLATES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`template-card${t.id === templateId ? ' template-selected' : ''}`}
+              onClick={(): void => { setTemplateId(t.id); }}
+              aria-pressed={t.id === templateId}
+            >
+              <span className="template-name">{t.name}</span>
+              <span className="template-columns">
+                {t.columns.stop.title} &middot; {t.columns.start.title}
+              </span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
       <div className="retro-setup-actions">
         <button type="button" onClick={onCancel}>
           Cancel
@@ -69,6 +91,7 @@ export function RetroSetupPage({
               name: name.trim(),
               date,
               context: context.trim(),
+              templateId,
             });
           }}
         >

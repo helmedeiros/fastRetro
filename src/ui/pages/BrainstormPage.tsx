@@ -2,11 +2,13 @@ import { useState, type DragEvent } from 'react';
 import type { Card, ColumnId } from '../../domain/retro/Card';
 import { MAX_CARD_LENGTH } from '../../domain/retro/Card';
 import type { Timer } from '../../domain/retro/Timer';
+import { getTemplate } from '../../domain/retro/FacilitationTemplate';
 import { PresentTimer } from '../components/PresentTimer';
 
 export interface BrainstormPageProps {
   timer: Timer;
   cards: readonly Card[];
+  templateId?: string;
   onStartTimer: () => void;
   onPauseTimer: () => void;
   onResumeTimer: () => void;
@@ -151,7 +153,9 @@ export function BrainstormPage({
   onAddCard,
   onRemoveCard,
   onMoveCard,
+  templateId,
 }: BrainstormPageProps): JSX.Element {
+  const template = getTemplate(templateId ?? 'start-stop');
   const startCards = cards.filter((c) => c.columnId === 'start');
   const stopCards = cards.filter((c) => c.columnId === 'stop');
 
@@ -172,8 +176,8 @@ export function BrainstormPage({
       <div className="columns">
         <Column
           columnId="stop"
-          title="Stop"
-          description="What factors are slowing us down or holding us back?"
+          title={template.columns.stop.title}
+          description={template.columns.stop.description}
           cards={stopCards}
           onAddCard={onAddCard}
           onRemoveCard={onRemoveCard}
@@ -181,8 +185,8 @@ export function BrainstormPage({
         />
         <Column
           columnId="start"
-          title="Start"
-          description="What factors are driving us forward and enabling our success?"
+          title={template.columns.start.title}
+          description={template.columns.start.description}
           cards={startCards}
           onAddCard={onAddCard}
           onRemoveCard={onRemoveCard}

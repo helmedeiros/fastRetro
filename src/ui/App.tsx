@@ -164,6 +164,7 @@ export function App({
           <BrainstormPage
             timer={retro.timer}
             cards={retro.cards}
+            templateId={retro.meta.templateId}
             onStartTimer={retro.startTimer}
             onPauseTimer={retro.pauseTimer}
             onResumeTimer={retro.resumeTimer}
@@ -177,6 +178,7 @@ export function App({
             timer={retro.timer}
             cards={retro.cards}
             groups={retro.groups}
+            templateId={retro.meta.templateId}
             onStartTimer={retro.startTimer}
             onPauseTimer={retro.pauseTimer}
             onResumeTimer={retro.resumeTimer}

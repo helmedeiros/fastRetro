@@ -71,6 +71,7 @@ interface PersistedMetaV9 {
   readonly name?: string;
   readonly date?: string;
   readonly context?: string;
+  readonly templateId?: string;
 }
 
 interface PersistedRetroStateV9 {
@@ -312,6 +313,7 @@ export class LocalStorageRetroRepository implements RetroRepository {
       name: parsed.retro.meta?.name ?? '',
       date: parsed.retro.meta?.date ?? '',
       context: parsed.retro.meta?.context ?? '',
+      templateId: parsed.retro.meta?.templateId ?? 'start-stop',
     };
     return {
       stage: parsed.retro.stage,
@@ -338,6 +340,7 @@ export class LocalStorageRetroRepository implements RetroRepository {
           name: state.meta.name,
           date: state.meta.date,
           context: state.meta.context,
+          templateId: state.meta.templateId,
         },
         participants: state.participants.map((p) => ({
           id: p.id,

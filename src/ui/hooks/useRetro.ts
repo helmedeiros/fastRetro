@@ -48,13 +48,14 @@ import type { RetroRepository } from '../../domain/ports/RetroRepository';
 import type { Card, ColumnId } from '../../domain/retro/Card';
 import type { Group } from '../../domain/retro/Group';
 import type { Participant } from '../../domain/retro/Participant';
-import type { RetroStage, RetroState } from '../../domain/retro/Retro';
+import type { RetroStage, RetroMeta, RetroState } from '../../domain/retro/Retro';
 import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
 import type { Timer } from '../../domain/retro/Timer';
 import type { Vote } from '../../domain/retro/Vote';
 
 export interface UseRetro {
   stage: RetroStage;
+  meta: RetroMeta;
   participants: readonly Participant[];
   timer: Timer | null;
   icebreaker: IcebreakerState | null;
@@ -374,6 +375,7 @@ export function useRetro(
 
   return {
     stage: state.stage,
+    meta: state.meta,
     participants: state.participants,
     timer: state.timer,
     icebreaker: state.icebreaker,
