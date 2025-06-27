@@ -1,5 +1,6 @@
 import type { RetroHistoryState } from '../../domain/team/RetroHistory';
 import type { RetroState } from '../../domain/retro/Retro';
+import { getTemplate } from '../../domain/retro/FacilitationTemplate';
 
 export interface RetrospectivesPageProps {
   activeRetro: RetroState | null;
@@ -37,15 +38,17 @@ export function RetrospectivesPage({
             <span className="label">Start Retrospective</span>
           </button>
 
-          {hasActive && (
+          {hasActive && (() => {
+            const t = getTemplate(activeRetro?.meta?.templateId ?? 'start-stop');
+            return (
             <button
               type="button"
               className="retro-card"
               onClick={onResumeRetro}
             >
               <div className="retro-card-columns">
-                <span className="retro-col retro-col-stop">Stop</span>
-                <span className="retro-col retro-col-start">Start</span>
+                <span className="retro-col retro-col-stop">{t.columns.stop.title}</span>
+                <span className="retro-col retro-col-start">{t.columns.start.title}</span>
               </div>
               <div className="retro-card-info">
                 <span className="retro-card-name">{activeRetro?.meta?.name || 'Current Retro'}</span>
@@ -58,7 +61,8 @@ export function RetrospectivesPage({
                 </span>
               </div>
             </button>
-          )}
+            );
+          })()}
         </div>
       </section>
 
@@ -67,6 +71,7 @@ export function RetrospectivesPage({
           <h2>Closed retrospectives</h2>
           <div className="retro-grid">
             {history.completed.map((r) => {
+              const t = getTemplate(r.fullState.meta?.templateId ?? 'start-stop');
               const startCards = r.fullState.cards.filter((c) => c.columnId === 'start').length;
               const stopCards = r.fullState.cards.filter((c) => c.columnId === 'stop').length;
               return (
@@ -77,8 +82,8 @@ export function RetrospectivesPage({
                   onClick={(): void => { onViewCompletedRetro(r.id); }}
                 >
                   <div className="retro-card-columns">
-                    <span className="retro-col retro-col-stop">Stop</span>
-                    <span className="retro-col retro-col-start">Start</span>
+                    <span className="retro-col retro-col-stop">{t.columns.stop.title}</span>
+                    <span className="retro-col retro-col-start">{t.columns.start.title}</span>
                   </div>
                   <div className="retro-card-info">
                     <span className="retro-card-name">
