@@ -191,6 +191,7 @@ export function App({
           <VotePage
             timer={retro.timer}
             participants={retro.participants}
+            templateId={retro.meta.templateId}
             cards={retro.cards}
             votes={retro.votes}
             voteBudget={retro.voteBudget}

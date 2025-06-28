@@ -1,6 +1,6 @@
 export const MAX_CARD_LENGTH = 140;
 
-export type ColumnId = 'start' | 'stop';
+export type ColumnId = string;
 
 export interface Card {
   readonly id: string;

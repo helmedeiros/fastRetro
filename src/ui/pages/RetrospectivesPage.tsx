@@ -47,8 +47,9 @@ export function RetrospectivesPage({
               onClick={onResumeRetro}
             >
               <div className="retro-card-columns">
-                <span className="retro-col retro-col-stop">{t.columns.stop.title}</span>
-                <span className="retro-col retro-col-start">{t.columns.start.title}</span>
+                {t.columns.map((col) => (
+                  <span key={col.id} className="retro-col">{col.title}</span>
+                ))}
               </div>
               <div className="retro-card-info">
                 <span className="retro-card-name">{activeRetro?.meta?.name || 'Current Retro'}</span>
@@ -72,8 +73,7 @@ export function RetrospectivesPage({
           <div className="retro-grid">
             {history.completed.map((r) => {
               const t = getTemplate(r.fullState.meta?.templateId ?? 'start-stop');
-              const startCards = r.fullState.cards.filter((c) => c.columnId === 'start').length;
-              const stopCards = r.fullState.cards.filter((c) => c.columnId === 'stop').length;
+              const totalCards = r.fullState.cards.length;
               return (
                 <button
                   key={r.id}
@@ -82,8 +82,9 @@ export function RetrospectivesPage({
                   onClick={(): void => { onViewCompletedRetro(r.id); }}
                 >
                   <div className="retro-card-columns">
-                    <span className="retro-col retro-col-stop">{t.columns.stop.title}</span>
-                    <span className="retro-col retro-col-start">{t.columns.start.title}</span>
+                    {t.columns.map((col) => (
+                      <span key={col.id} className="retro-col">{col.title}</span>
+                    ))}
                   </div>
                   <div className="retro-card-info">
                     <span className="retro-card-name">
@@ -100,7 +101,7 @@ export function RetrospectivesPage({
                       {' \u00B7 '}
                       {`${String(r.fullState.participants.length)} participants`}
                       {' \u00B7 '}
-                      {`${String(stopCards + startCards)} cards`}
+                      {`${String(totalCards)} cards`}
                       {' \u00B7 '}
                       {`${String(r.actionItems.length)} actions`}
                     </span>

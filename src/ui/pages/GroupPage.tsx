@@ -42,13 +42,11 @@ function groupOfCard(
 function GroupItem({
   group,
   cards,
-  columnId,
   onRename,
   onUngroup,
 }: {
   group: Group;
   cards: readonly Card[];
-  columnId: ColumnId;
   onRename: (groupId: string, name: string) => void;
   onUngroup: (cardId: string) => void;
 }): JSX.Element {
@@ -107,7 +105,7 @@ function GroupItem({
         {groupCards.map((c) => (
           <li
             key={c.id}
-            className={`brainstorm-card brainstorm-col-${columnId === 'stop' ? 'stop' : 'start'}-card`}
+            className="brainstorm-card"
           >
             <span className="brainstorm-card-text">{c.text}</span>
             <button
@@ -158,7 +156,6 @@ function Column({
                 key={g.id}
                 group={g}
                 cards={cards}
-                columnId={columnId}
                 onRename={onRenameGroup}
                 onUngroup={onUngroupCard}
               />
@@ -223,30 +220,21 @@ export function GroupPage({
       />
       <p className="stage-instruction">Select two cards in the same column to group them together.</p>
       <div className="columns">
-        <Column
-          columnId="stop"
-          title={template.columns.stop.title}
-          description={template.columns.stop.description}
-          cards={cards}
-          groups={groups}
-          selectedCardId={selectedCardId}
-          onSelectCard={setSelectedCardId}
-          onCreateGroup={onCreateGroup}
-          onRenameGroup={onRenameGroup}
-          onUngroupCard={onUngroupCard}
-        />
-        <Column
-          columnId="start"
-          title={template.columns.start.title}
-          description={template.columns.start.description}
-          cards={cards}
-          groups={groups}
-          selectedCardId={selectedCardId}
-          onSelectCard={setSelectedCardId}
-          onCreateGroup={onCreateGroup}
-          onRenameGroup={onRenameGroup}
-          onUngroupCard={onUngroupCard}
-        />
+        {template.columns.map((col) => (
+          <Column
+            key={col.id}
+            columnId={col.id}
+            title={col.title}
+            description={col.description}
+            cards={cards}
+            groups={groups}
+            selectedCardId={selectedCardId}
+            onSelectCard={setSelectedCardId}
+            onCreateGroup={onCreateGroup}
+            onRenameGroup={onRenameGroup}
+            onUngroupCard={onUngroupCard}
+          />
+        ))}
       </div>
     </section>
   );

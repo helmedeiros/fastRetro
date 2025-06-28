@@ -156,8 +156,6 @@ export function BrainstormPage({
   templateId,
 }: BrainstormPageProps): JSX.Element {
   const template = getTemplate(templateId ?? 'start-stop');
-  const startCards = cards.filter((c) => c.columnId === 'start');
-  const stopCards = cards.filter((c) => c.columnId === 'stop');
 
   const handleDrop = (targetColumnId: ColumnId) => (cardId: string, targetIndex: number): void => {
     if (onMoveCard) onMoveCard(cardId, targetColumnId, targetIndex);
@@ -174,24 +172,18 @@ export function BrainstormPage({
         onReset={onResetTimer}
       />
       <div className="columns">
-        <Column
-          columnId="stop"
-          title={template.columns.stop.title}
-          description={template.columns.stop.description}
-          cards={stopCards}
-          onAddCard={onAddCard}
-          onRemoveCard={onRemoveCard}
-          onDrop={handleDrop('stop')}
-        />
-        <Column
-          columnId="start"
-          title={template.columns.start.title}
-          description={template.columns.start.description}
-          cards={startCards}
-          onAddCard={onAddCard}
-          onRemoveCard={onRemoveCard}
-          onDrop={handleDrop('start')}
-        />
+        {template.columns.map((col) => (
+          <Column
+            key={col.id}
+            columnId={col.id}
+            title={col.title}
+            description={col.description}
+            cards={cards.filter((c) => c.columnId === col.id)}
+            onAddCard={onAddCard}
+            onRemoveCard={onRemoveCard}
+            onDrop={handleDrop(col.id)}
+          />
+        ))}
       </div>
     </section>
   );

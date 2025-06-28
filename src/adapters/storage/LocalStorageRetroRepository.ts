@@ -114,7 +114,7 @@ function isStage(value: unknown): value is RetroStage {
 }
 
 function isColumnId(value: unknown): value is ColumnId {
-  return value === 'start' || value === 'stop';
+  return typeof value === 'string' && value.length > 0;
 }
 
 function isLane(value: unknown): value is DiscussLane {

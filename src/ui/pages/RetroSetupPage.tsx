@@ -71,7 +71,7 @@ export function RetroSetupPage({
             >
               <span className="template-name">{t.name}</span>
               <span className="template-columns">
-                {t.columns.stop.title} &middot; {t.columns.start.title}
+                {t.columns.map((c) => c.title).join(' \u00B7 ')}
               </span>
             </button>
           ))}

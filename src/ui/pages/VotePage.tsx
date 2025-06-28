@@ -3,6 +3,7 @@ import type { Card, ColumnId } from '../../domain/retro/Card';
 import type { Participant } from '../../domain/retro/Participant';
 import type { Timer } from '../../domain/retro/Timer';
 import type { Vote } from '../../domain/retro/Vote';
+import { getTemplate } from '../../domain/retro/FacilitationTemplate';
 import { PresentTimer } from '../components/PresentTimer';
 
 export interface VotePageProps {
@@ -11,6 +12,7 @@ export interface VotePageProps {
   cards: readonly Card[];
   votes: readonly Vote[];
   voteBudget: number;
+  templateId?: string;
   onStartTimer: () => void;
   onPauseTimer: () => void;
   onResumeTimer: () => void;
@@ -95,7 +97,9 @@ export function VotePage({
   onResetTimer,
   onSetVoteBudget,
   onCastVote,
+  templateId,
 }: VotePageProps): JSX.Element {
+  const template = getTemplate(templateId ?? 'start-stop');
   const [activeId, setActiveId] = useState<string | null>(
     participants[0]?.id ?? null,
   );
@@ -149,24 +153,18 @@ export function VotePage({
         </div>
       </div>
       <div className="columns">
-        <Column
-          columnId="stop"
-          title="Stop"
-          description="What factors are slowing us down?"
-          cards={cards}
-          votes={votes}
-          activeParticipantId={activeId}
-          onCastVote={onCastVote}
-        />
-        <Column
-          columnId="start"
-          title="Start"
-          description="What factors are driving us forward?"
-          cards={cards}
-          votes={votes}
-          activeParticipantId={activeId}
-          onCastVote={onCastVote}
-        />
+        {template.columns.map((col) => (
+          <Column
+            key={col.id}
+            columnId={col.id}
+            title={col.title}
+            description={col.description}
+            cards={cards}
+            votes={votes}
+            activeParticipantId={activeId}
+            onCastVote={onCastVote}
+          />
+        ))}
       </div>
     </section>
   );
