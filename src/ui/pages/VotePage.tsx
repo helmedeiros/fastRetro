@@ -25,6 +25,7 @@ interface ColumnProps {
   columnId: ColumnId;
   title: string;
   description: string;
+  color: string;
   cards: readonly Card[];
   votes: readonly Vote[];
   activeParticipantId: string | null;
@@ -39,13 +40,14 @@ function Column({
   columnId,
   title,
   description,
+  color,
   cards,
   votes,
   activeParticipantId,
   onCastVote,
 }: ColumnProps): JSX.Element {
   return (
-    <section aria-label={`${title} column`} className={`brainstorm-column brainstorm-col-${columnId}`}>
+    <section aria-label={`${title} column`} className="brainstorm-column" style={{ '--col-color': color } as React.CSSProperties}>
       <h3>{title}</h3>
       <p className="column-desc">{description}</p>
       <ul aria-label={`${title} cards`} className="brainstorm-card-list">
@@ -159,6 +161,7 @@ export function VotePage({
             columnId={col.id}
             title={col.title}
             description={col.description}
+            color={col.color}
             cards={cards}
             votes={votes}
             activeParticipantId={activeId}

@@ -22,6 +22,7 @@ interface ColumnProps {
   columnId: ColumnId;
   title: string;
   description: string;
+  color: string;
   cards: readonly Card[];
   onAddCard: (columnId: ColumnId, text: string) => void;
   onRemoveCard: (cardId: string) => void;
@@ -32,6 +33,7 @@ function Column({
   columnId,
   title,
   description,
+  color,
   cards,
   onAddCard,
   onRemoveCard,
@@ -76,7 +78,8 @@ function Column({
   return (
     <section
       aria-label={`${title} column`}
-      className={`brainstorm-column brainstorm-col-${columnId}`}
+      className="brainstorm-column"
+      style={{ '--col-color': color } as React.CSSProperties}
       onDragOver={handleColumnDragOver}
       onDrop={handleColumnDrop}
       onDragLeave={(): void => { setDropTarget(null); }}
@@ -178,6 +181,7 @@ export function BrainstormPage({
             columnId={col.id}
             title={col.title}
             description={col.description}
+            color={col.color}
             cards={cards.filter((c) => c.columnId === col.id)}
             onAddCard={onAddCard}
             onRemoveCard={onRemoveCard}

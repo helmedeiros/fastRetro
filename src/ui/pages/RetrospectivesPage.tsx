@@ -48,7 +48,7 @@ export function RetrospectivesPage({
             >
               <div className="retro-card-columns">
                 {t.columns.map((col) => (
-                  <span key={col.id} className="retro-col">{col.title}</span>
+                  <span key={col.id} className="retro-col" style={{ '--col-color': col.color } as React.CSSProperties}>{col.title}</span>
                 ))}
               </div>
               <div className="retro-card-info">
@@ -83,7 +83,7 @@ export function RetrospectivesPage({
                 >
                   <div className="retro-card-columns">
                     {t.columns.map((col) => (
-                      <span key={col.id} className="retro-col">{col.title}</span>
+                      <span key={col.id} className="retro-col" style={{ '--col-color': col.color } as React.CSSProperties}>{col.title}</span>
                     ))}
                   </div>
                   <div className="retro-card-info">

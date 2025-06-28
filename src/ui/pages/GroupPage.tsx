@@ -23,6 +23,7 @@ interface ColumnProps {
   columnId: ColumnId;
   title: string;
   description: string;
+  color: string;
   cards: readonly Card[];
   groups: readonly Group[];
   selectedCardId: string | null;
@@ -127,6 +128,7 @@ function Column({
   columnId,
   title,
   description,
+  color,
   cards,
   groups,
   selectedCardId,
@@ -143,7 +145,7 @@ function Column({
   );
 
   return (
-    <section aria-label={`${title} column`} className={`brainstorm-column brainstorm-col-${columnId}`}>
+    <section aria-label={`${title} column`} className="brainstorm-column" style={{ '--col-color': color } as React.CSSProperties}>
       <h3>{title}</h3>
       <p className="column-desc">{description}</p>
       {columnGroups.length > 0 && (
@@ -226,6 +228,7 @@ export function GroupPage({
             columnId={col.id}
             title={col.title}
             description={col.description}
+            color={col.color}
             cards={cards}
             groups={groups}
             selectedCardId={selectedCardId}

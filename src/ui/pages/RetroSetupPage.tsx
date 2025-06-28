@@ -71,7 +71,12 @@ export function RetroSetupPage({
             >
               <span className="template-name">{t.name}</span>
               <span className="template-columns">
-                {t.columns.map((c) => c.title).join(' \u00B7 ')}
+                {t.columns.map((c, i) => (
+                  <span key={c.id}>
+                    {i > 0 && ' \u00B7 '}
+                    <span style={{ color: c.color }}>{c.title}</span>
+                  </span>
+                ))}
               </span>
             </button>
           ))}

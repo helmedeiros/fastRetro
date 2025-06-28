@@ -681,14 +681,9 @@ form button {
   border-bottom: 3px solid;
 }
 
-.retro-col:nth-child(odd) {
-  color: #e06060;
-  border-color: #8b3a3a;
-}
-
-.retro-col:nth-child(even) {
-  color: #6ec76e;
-  border-color: #3a6e3a;
+.retro-col {
+  color: var(--col-color, var(--fr-text-muted));
+  border-color: color-mix(in srgb, var(--col-color, var(--fr-border)) 50%, transparent);
 }
 
 .retro-card-info {
@@ -1127,12 +1122,8 @@ form button {
   margin: 0 !important;
 }
 
-.brainstorm-column:nth-child(odd) .brainstorm-card {
-  background: #5c3a3a;
-}
-
-.brainstorm-column:nth-child(even) .brainstorm-card {
-  background: #3a5c3a;
+.brainstorm-column .brainstorm-card {
+  background: color-mix(in srgb, var(--col-color, #5ec4c8) 25%, #1e2a32);
 }
 
 .brainstorm-card:active {
