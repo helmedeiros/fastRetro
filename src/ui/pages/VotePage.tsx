@@ -110,7 +110,6 @@ export function VotePage({
 
   return (
     <section aria-label="Vote">
-      <h2>Vote</h2>
       <PresentTimer
         timer={timer}
         onStart={onStartTimer}

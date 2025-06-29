@@ -79,7 +79,7 @@ describe('App', () => {
     renderApp();
     addMemberAndStartRetro();
     expect(
-      screen.getByRole('heading', { name: /icebreaker/i }),
+      screen.getByRole('region', { name: /icebreaker/i }),
     ).toBeInTheDocument();
     expect(screen.getByTestId('time-remaining')).toHaveTextContent('10m 00s');
   });
@@ -91,7 +91,7 @@ describe('App', () => {
       screen.getByRole('button', { name: /continue to brainstorm/i }),
     );
     expect(
-      screen.getByRole('heading', { name: /brainstorm/i }),
+      screen.getByRole('region', { name: /brainstorm/i }),
     ).toBeInTheDocument();
     expect(screen.getByTestId('time-remaining')).toHaveTextContent('5m 00s');
   });
@@ -102,7 +102,7 @@ describe('App', () => {
     navigateTo('brainstorm');
     navigateTo('group');
     expect(
-      screen.getByRole('heading', { name: /^group$/i }),
+      screen.getByRole('region', { name: /^group$/i }),
     ).toBeInTheDocument();
   });
 
@@ -113,7 +113,7 @@ describe('App', () => {
     navigateTo('group');
     navigateTo('vote');
     expect(
-      screen.getByRole('heading', { name: /^vote$/i }),
+      screen.getByRole('region', { name: /^vote$/i }),
     ).toBeInTheDocument();
   });
 

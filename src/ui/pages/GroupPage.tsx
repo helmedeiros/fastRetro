@@ -212,7 +212,6 @@ export function GroupPage({
 
   return (
     <section aria-label="Group">
-      <h2>Group</h2>
       <PresentTimer
         timer={timer}
         onStart={onStartTimer}

@@ -166,7 +166,6 @@ export function BrainstormPage({
 
   return (
     <section aria-label="Brainstorm">
-      <h2>Brainstorm</h2>
       <PresentTimer
         timer={timer}
         onStart={onStartTimer}

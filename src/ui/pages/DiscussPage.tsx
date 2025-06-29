@@ -124,7 +124,6 @@ export function DiscussPage({
 
   return (
     <section aria-label="Discuss">
-      <h2>Discuss</h2>
       <PresentTimer
         timer={timer}
         onStart={onStartTimer}

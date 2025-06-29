@@ -26,7 +26,6 @@ export function ReviewPage({
 }: ReviewPageProps): JSX.Element {
   return (
     <section aria-label="Review">
-      <h2>Review</h2>
       <PresentTimer
         timer={timer}
         onStart={onStartTimer}

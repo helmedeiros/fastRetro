@@ -85,7 +85,6 @@ export function IcebreakerPage({
 
   return (
     <section aria-label="Icebreaker">
-      <h2>Icebreaker</h2>
       <PresentTimer
         timer={timer}
         onStart={onStartTimer}
