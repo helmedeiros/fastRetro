@@ -1011,38 +1011,26 @@ form button {
 
 /* === Card colors (Brainstorm, Group, Vote) === */
 
-.columns > [aria-label*='Stop column'],
-.columns > [aria-label*='stop column'] {
-  --card-bg: #5c3a3a;
-  --card-border: #7a4a4a;
-}
-
-.columns > [aria-label*='Start column'],
-.columns > [aria-label*='start column'] {
-  --card-bg: #3a5c3a;
-  --card-border: #4a7a4a;
-}
-
 .columns > section li {
-  background: var(--card-bg, var(--fr-surface));
-  border: 1px solid var(--card-border, var(--fr-border));
+  background: color-mix(in srgb, var(--col-color, #5ec4c8) 20%, var(--fr-surface));
+  border: 1px solid color-mix(in srgb, var(--col-color, var(--fr-border)) 30%, var(--fr-border));
   border-radius: 6px;
   padding: 0.6rem 0.75rem;
   margin-bottom: 0.4rem;
 }
 
 .columns > section li:last-child {
-  border-bottom: 1px solid var(--card-border, var(--fr-border));
+  border-bottom: 1px solid color-mix(in srgb, var(--col-color, var(--fr-border)) 30%, var(--fr-border));
 }
 
 /* === Brainstorm layout === */
 
 .brainstorm-column {
-  min-height: 300px;
+  min-height: 200px;
 }
 
 .brainstorm-column h3 {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: var(--fr-text);
   text-transform: none;
   letter-spacing: normal;
@@ -1050,9 +1038,9 @@ form button {
 }
 
 .column-desc {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--fr-text-muted);
-  margin: 0 0 1rem;
+  margin: 0 0 0.75rem;
 }
 
 /* Inline card input */
@@ -1162,18 +1150,12 @@ form button {
   color: var(--fr-danger);
 }
 
-/* --- Two-column boards (Brainstorm, Group, Vote, Discuss) --- */
+/* --- Multi-column boards (Brainstorm, Group, Vote, Discuss) --- */
 
 .columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-@media (max-width: 600px) {
-  .columns {
-    grid-template-columns: 1fr;
-  }
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
 }
 
 .columns > section {
@@ -1181,6 +1163,9 @@ form button {
   border: 1px solid var(--fr-border);
   border-radius: 8px;
   padding: 1rem;
+  flex: 1 1 0;
+  min-width: 200px;
+  max-width: 320px;
 }
 
 /* --- Timer (corner dropdown) --- */
