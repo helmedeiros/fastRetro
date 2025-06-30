@@ -275,12 +275,11 @@ export function moveCard(
   if (card === undefined) return state;
   const movedCard = { ...card, columnId: targetColumnId };
   const without = state.cards.filter((c) => c.id !== cardId);
-  const startCards = without.filter((c) => c.columnId === 'start');
-  const stopCards = without.filter((c) => c.columnId === 'stop');
-  const target = targetColumnId === 'start' ? startCards : stopCards;
-  const clampedIdx = Math.max(0, Math.min(targetIndex, target.length));
-  target.splice(clampedIdx, 0, movedCard);
-  return { ...state, cards: [...startCards, ...stopCards] };
+  const targetCards = without.filter((c) => c.columnId === targetColumnId);
+  const otherCards = without.filter((c) => c.columnId !== targetColumnId);
+  const clampedIdx = Math.max(0, Math.min(targetIndex, targetCards.length));
+  targetCards.splice(clampedIdx, 0, movedCard);
+  return { ...state, cards: [...otherCards, ...targetCards] };
 }
 
 export function startGroup(state: RetroState): RetroState {
