@@ -164,6 +164,7 @@ export function App({
           <BrainstormPage
             timer={retro.timer}
             cards={retro.cards}
+            groups={retro.groups}
             templateId={retro.meta.templateId}
             onStartTimer={retro.startTimer}
             onPauseTimer={retro.pauseTimer}
@@ -172,6 +173,9 @@ export function App({
             onAddCard={retro.addCard}
             onRemoveCard={retro.removeCard}
             onMoveCard={retro.moveCard}
+            onCreateGroup={retro.createGroupByDrop}
+            onRenameGroup={retro.renameGroup}
+            onUngroupCard={retro.ungroupCard}
           />
         ) : retro.stage === 'group' && retro.timer !== null ? (
           <GroupPage

@@ -1150,6 +1150,83 @@ form button {
   color: var(--fr-danger);
 }
 
+/* --- Brainstorm Groups --- */
+
+.brainstorm-group {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--fr-border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.brainstorm-group-header {
+  margin-bottom: 0.4rem;
+}
+
+.brainstorm-group-name {
+  font-size: 0.8rem;
+  color: var(--fr-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.brainstorm-group-name:hover {
+  color: var(--fr-text);
+}
+
+.brainstorm-group-edit-icon {
+  font-size: 0.7rem;
+  color: var(--fr-accent);
+}
+
+.brainstorm-group-edit {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.brainstorm-group-input {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--fr-accent);
+  border-radius: 4px;
+  background: var(--fr-surface);
+  color: var(--fr-text);
+}
+
+.brainstorm-group-save,
+.brainstorm-group-cancel {
+  all: unset;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  background: var(--fr-accent);
+  color: var(--fr-bg);
+}
+
+.brainstorm-group-cancel {
+  background: var(--fr-text-muted);
+}
+
+.brainstorm-group-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.brainstorm-group-cards .brainstorm-card {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+}
+
 /* --- Multi-column boards (Brainstorm, Group, Vote, Discuss) --- */
 
 .columns {

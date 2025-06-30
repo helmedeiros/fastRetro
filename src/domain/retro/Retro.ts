@@ -318,8 +318,8 @@ export function createGroupByDrop(
   targetCardId: string,
   ids: IdGenerator,
 ): RetroState {
-  if (state.stage !== 'group') {
-    throw new Error('Groups can only be formed during the group stage');
+  if (state.stage !== 'brainstorm' && state.stage !== 'group') {
+    throw new Error('Groups can only be formed during the brainstorm or group stage');
   }
   if (sourceCardId === targetCardId) return state;
   const source = requireCard(state, sourceCardId);
