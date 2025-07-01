@@ -211,32 +211,34 @@ function Column({
                   </button>
                 </div>
               ) : (
-                <span
-                  className="brainstorm-group-name"
-                  onClick={(): void => {
-                    setGroupNameDraft(g.name);
-                    setEditingGroupId(g.id);
-                  }}
-                >
-                  {g.name || 'Group title...'}
-                  {onRenameGroup !== undefined && <span className="brainstorm-group-edit-icon">&#9998;</span>}
-                </span>
+                <div className="brainstorm-group-title-row">
+                  <span
+                    className="brainstorm-group-name"
+                    onClick={(): void => {
+                      setGroupNameDraft(g.name);
+                      setEditingGroupId(g.id);
+                    }}
+                  >
+                    {g.name || 'Group title...'}
+                    {onRenameGroup !== undefined && <span className="brainstorm-group-edit-icon">&#9998;</span>}
+                  </span>
+                  {onUngroupCard !== undefined && (
+                    <button
+                      type="button"
+                      className="brainstorm-group-dissolve"
+                      title="Dissolve group"
+                      onClick={(): void => { g.cardIds.forEach((cid) => { onUngroupCard(cid); }); }}
+                    >
+                      &times;
+                    </button>
+                  )}
+                </div>
               )}
             </div>
             <ul className="brainstorm-group-cards">
               {groupCards.map((c) => (
                 <li key={c.id} className="brainstorm-card">
                   <span className="brainstorm-card-text">{c.text}</span>
-                  {onUngroupCard !== undefined && (
-                    <button
-                      type="button"
-                      className="brainstorm-card-remove"
-                      onClick={(): void => { onUngroupCard(c.id); }}
-                      aria-label={`Ungroup card ${c.text}`}
-                    >
-                      &times;
-                    </button>
-                  )}
                 </li>
               ))}
             </ul>
