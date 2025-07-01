@@ -102,7 +102,7 @@ describe('App', () => {
     navigateTo('brainstorm');
     navigateTo('group');
     expect(
-      screen.getByRole('region', { name: /^group$/i }),
+      screen.getByRole('region', { name: /brainstorm/i }),
     ).toBeInTheDocument();
   });
 

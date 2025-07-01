@@ -252,8 +252,8 @@ export function removeCardFromBrainstorm(
   state: RetroState,
   cardId: string,
 ): RetroState {
-  if (state.stage !== 'brainstorm') {
-    throw new Error('Cards can only be removed during brainstorm');
+  if (state.stage !== 'brainstorm' && state.stage !== 'group') {
+    throw new Error('Cards can only be removed during brainstorm or group');
   }
   const next = state.cards.filter((c) => c.id !== cardId);
   if (next.length === state.cards.length) {
@@ -268,8 +268,8 @@ export function moveCard(
   targetColumnId: ColumnId,
   targetIndex: number,
 ): RetroState {
-  if (state.stage !== 'brainstorm') {
-    throw new Error('Cards can only be moved during brainstorm');
+  if (state.stage !== 'brainstorm' && state.stage !== 'group') {
+    throw new Error('Cards can only be moved during brainstorm or group');
   }
   const card = state.cards.find((c) => c.id === cardId);
   if (card === undefined) return state;

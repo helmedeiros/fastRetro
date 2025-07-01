@@ -15,8 +15,8 @@ export interface BrainstormPageProps {
   onPauseTimer: () => void;
   onResumeTimer: () => void;
   onResetTimer: () => void;
-  onAddCard: (columnId: ColumnId, text: string) => void;
-  onRemoveCard: (cardId: string) => void;
+  onAddCard?: (columnId: ColumnId, text: string) => void;
+  onRemoveCard?: (cardId: string) => void;
   onMoveCard?: (cardId: string, targetColumnId: ColumnId, targetIndex: number) => void;
   onCreateGroup?: (sourceCardId: string, targetCardId: string) => void;
   onRenameGroup?: (groupId: string, name: string) => void;
@@ -30,8 +30,8 @@ interface ColumnProps {
   color: string;
   cards: readonly Card[];
   groups: readonly Group[];
-  onAddCard: (columnId: ColumnId, text: string) => void;
-  onRemoveCard: (cardId: string) => void;
+  onAddCard?: (columnId: ColumnId, text: string) => void;
+  onRemoveCard?: (cardId: string) => void;
   onDrop: (cardId: string, targetIndex: number) => void;
   onCreateGroup?: (sourceCardId: string, targetCardId: string) => void;
   onRenameGroup?: (groupId: string, name: string) => void;
@@ -63,7 +63,7 @@ function Column({
 
   const submit = (): void => {
     const trimmed = text.trim();
-    if (trimmed.length === 0 || trimmed.length > MAX_CARD_LENGTH) return;
+    if (trimmed.length === 0 || trimmed.length > MAX_CARD_LENGTH || !onAddCard) return;
     onAddCard(columnId, trimmed);
     setText('');
   };
@@ -106,7 +106,7 @@ function Column({
       <h3>{title}</h3>
       <p className="column-desc">{description}</p>
 
-      <div className="brainstorm-input-row">
+      {onAddCard !== undefined && <div className="brainstorm-input-row">
         <span className="brainstorm-input-plus">+</span>
         <input
           type="text"
@@ -133,7 +133,7 @@ function Column({
         >
           Add
         </button>
-      </div>
+      </div>}
 
       <ul aria-label={`${title} cards`} className="brainstorm-card-list">
         {ungroupedCards.map((c, i) => (
@@ -154,14 +154,14 @@ function Column({
             onDrop={(e): void => { handleCardDrop(e, c.id); }}
           >
             <span className="brainstorm-card-text">{c.text}</span>
-            <button
+            {onRemoveCard !== undefined && <button
               type="button"
               className="brainstorm-card-remove"
               onClick={(): void => { onRemoveCard(c.id); }}
               aria-label={`Remove card ${c.text}`}
             >
               &times;
-            </button>
+            </button>}
           </li>
         ))}
       </ul>
