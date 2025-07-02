@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Card, ColumnId } from '../../domain/retro/Card';
+import type { Group } from '../../domain/retro/Group';
 import type { Participant } from '../../domain/retro/Participant';
 import type { Timer } from '../../domain/retro/Timer';
 import type { Vote } from '../../domain/retro/Vote';
@@ -10,6 +11,7 @@ export interface VotePageProps {
   timer: Timer;
   participants: readonly Participant[];
   cards: readonly Card[];
+  groups?: readonly Group[];
   votes: readonly Vote[];
   voteBudget: number;
   templateId?: string;
@@ -21,19 +23,63 @@ export interface VotePageProps {
   onCastVote: (participantId: string, cardId: string) => void;
 }
 
+function countFor(votes: readonly Vote[], votableId: string): number {
+  return votes.filter((v) => v.cardId === votableId).length;
+}
+
+function VoteButton({
+  votableId,
+  label,
+  votes,
+  activeParticipantId,
+  onCastVote,
+  children,
+}: {
+  votableId: string;
+  label: string;
+  votes: readonly Vote[];
+  activeParticipantId: string | null;
+  onCastVote: (participantId: string, votableId: string) => void;
+  children?: React.ReactNode;
+}): JSX.Element {
+  const count = countFor(votes, votableId);
+  return (
+    <button
+      type="button"
+      className="brainstorm-card brainstorm-card-btn vote-card-btn"
+      aria-label={`Vote for ${label}`}
+      disabled={activeParticipantId === null}
+      onClick={(): void => {
+        if (activeParticipantId === null) return;
+        onCastVote(activeParticipantId, votableId);
+      }}
+    >
+      <span className="brainstorm-card-text">{label}</span>
+      {count > 0 && (
+        <span className="vote-badge" data-testid={`vote-count-${votableId}`}>
+          +{String(count)}
+        </span>
+      )}
+      {count === 0 && (
+        <span className="vote-add" data-testid={`vote-count-${votableId}`}>
+          +
+        </span>
+      )}
+      {children}
+    </button>
+  );
+}
+
 interface ColumnProps {
   columnId: ColumnId;
   title: string;
   description: string;
   color: string;
   cards: readonly Card[];
+  groups: readonly Group[];
   votes: readonly Vote[];
   activeParticipantId: string | null;
-  onCastVote: (participantId: string, cardId: string) => void;
-}
-
-function countFor(votes: readonly Vote[], cardId: string): number {
-  return votes.filter((v) => v.cardId === cardId).length;
+  onCastVote: (participantId: string, votableId: string) => void;
 }
 
 function Column({
@@ -42,47 +88,59 @@ function Column({
   description,
   color,
   cards,
+  groups,
   votes,
   activeParticipantId,
   onCastVote,
 }: ColumnProps): JSX.Element {
+  const columnCards = cards.filter((c) => c.columnId === columnId);
+  const columnGroups = groups.filter((g) => g.columnId === columnId);
+  const groupedCardIds = new Set(columnGroups.flatMap((g) => g.cardIds));
+  const ungroupedCards = columnCards.filter((c) => !groupedCardIds.has(c.id));
+
   return (
     <section aria-label={`${title} column`} className="brainstorm-column" style={{ '--col-color': color } as React.CSSProperties}>
       <h3>{title}</h3>
       <p className="column-desc">{description}</p>
+
       <ul aria-label={`${title} cards`} className="brainstorm-card-list">
-        {cards
-          .filter((c) => c.columnId === columnId)
-          .map((c) => {
-            const count = countFor(votes, c.id);
-            return (
-              <li key={c.id} data-testid={`vote-card-${c.id}`}>
-                <button
-                  type="button"
-                  className="brainstorm-card brainstorm-card-btn vote-card-btn"
-                  aria-label={`Vote for ${c.text}`}
-                  disabled={activeParticipantId === null}
-                  onClick={(): void => {
-                    if (activeParticipantId === null) return;
-                    onCastVote(activeParticipantId, c.id);
-                  }}
-                >
-                  <span className="brainstorm-card-text">{c.text}</span>
-                  {count > 0 && (
-                    <span className="vote-badge" data-testid={`vote-count-${c.id}`}>
-                      +{String(count)}
-                    </span>
-                  )}
-                  {count === 0 && (
-                    <span className="vote-add" data-testid={`vote-count-${c.id}`}>
-                      +
-                    </span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
+        {ungroupedCards.map((c) => (
+          <li key={c.id} data-testid={`vote-card-${c.id}`}>
+            <VoteButton
+              votableId={c.id}
+              label={c.text}
+              votes={votes}
+              activeParticipantId={activeParticipantId}
+              onCastVote={onCastVote}
+            />
+          </li>
+        ))}
       </ul>
+
+      {columnGroups.map((g) => {
+        const groupCards = g.cardIds
+          .map((cid) => cards.find((c) => c.id === cid))
+          .filter((c): c is Card => c !== undefined);
+        return (
+          <div key={g.id} className="brainstorm-group" data-testid={`vote-group-${g.id}`}>
+            <VoteButton
+              votableId={g.id}
+              label={g.name || groupCards.map((c) => c.text).join(' + ')}
+              votes={votes}
+              activeParticipantId={activeParticipantId}
+              onCastVote={onCastVote}
+            >
+              <ul className="brainstorm-group-cards vote-group-cards">
+                {groupCards.map((c) => (
+                  <li key={c.id} className="brainstorm-card vote-group-child">
+                    <span className="brainstorm-card-text">{c.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </VoteButton>
+          </div>
+        );
+      })}
     </section>
   );
 }
@@ -91,6 +149,7 @@ export function VotePage({
   timer,
   participants,
   cards,
+  groups = [],
   votes,
   voteBudget,
   onStartTimer,
@@ -164,6 +223,7 @@ export function VotePage({
             description={col.description}
             color={col.color}
             cards={cards}
+            groups={groups}
             votes={votes}
             activeParticipantId={activeId}
             onCastVote={onCastVote}

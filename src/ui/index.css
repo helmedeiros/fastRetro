@@ -2188,8 +2188,26 @@ form button {
 
 .vote-card-btn {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+}
+
+.vote-group-cards {
+  width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vote-group-child {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.5rem;
+  opacity: 0.8;
+  pointer-events: none;
 }
 
 .vote-badge {

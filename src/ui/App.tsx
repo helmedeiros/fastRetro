@@ -197,6 +197,7 @@ export function App({
             participants={retro.participants}
             templateId={retro.meta.templateId}
             cards={retro.cards}
+            groups={retro.groups}
             votes={retro.votes}
             voteBudget={retro.voteBudget}
             onStartTimer={retro.startTimer}
