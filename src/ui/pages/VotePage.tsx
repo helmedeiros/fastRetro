@@ -117,8 +117,8 @@ export function VotePage({
         onResume={onResumeTimer}
         onReset={onResetTimer}
       />
-      <p className="stage-instruction">Vote on the items you want to discuss. Click a card to vote.</p>
-      <div className="vote-controls">
+      <div className="vote-instruction-row">
+        <p className="stage-instruction">Vote on the items you want to discuss. Click a card to vote.</p>
         <div className="vote-budget-row">
           <label htmlFor="vote-budget-input">Votes per person</label>
           <input
@@ -134,6 +134,8 @@ export function VotePage({
             }}
           />
         </div>
+      </div>
+      <div className="vote-controls">
         <div role="group" aria-label="Active voter" className="voter-pills">
           {participants.map((p) => {
             const remaining = voteBudget - usedBy(p.id);

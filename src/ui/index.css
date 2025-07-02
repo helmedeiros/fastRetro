@@ -2117,6 +2117,18 @@ form button {
 
 /* === Vote page === */
 
+.vote-instruction-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.vote-instruction-row .stage-instruction {
+  margin: 0;
+}
+
 .vote-controls {
   margin-bottom: 1.5rem;
 }
@@ -2124,8 +2136,8 @@ form button {
 .vote-budget-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .vote-budget-row label {
