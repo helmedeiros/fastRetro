@@ -2270,8 +2270,8 @@ form button {
 .discuss-carousel-card {
   flex: 0 0 280px;
   scroll-snap-align: center;
-  background: var(--fr-surface);
-  border: 2px solid var(--fr-border);
+  background: color-mix(in srgb, var(--col-color, var(--fr-surface)) 20%, var(--fr-surface));
+  border: 2px solid color-mix(in srgb, var(--col-color, var(--fr-border)) 40%, var(--fr-border));
   border-radius: 10px;
   padding: 1rem;
   opacity: 0.5;
@@ -2281,7 +2281,7 @@ form button {
 
 .discuss-carousel-card.discuss-carousel-active {
   opacity: 1;
-  border-color: var(--fr-accent);
+  border-color: var(--col-color, var(--fr-accent));
   transform: scale(1.02);
 }
 

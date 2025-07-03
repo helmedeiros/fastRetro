@@ -6,6 +6,7 @@ import type { Timer } from '../../domain/retro/Timer';
 import type { Vote } from '../../domain/retro/Vote';
 import type { DiscussState } from '../../domain/retro/Retro';
 import type { DiscussLane, DiscussNote } from '../../domain/retro/DiscussNote';
+import { getTemplate } from '../../domain/retro/FacilitationTemplate';
 import { PresentTimer } from '../components/PresentTimer';
 
 export interface DiscussPageProps {
@@ -13,6 +14,7 @@ export interface DiscussPageProps {
   cards: readonly Card[];
   groups?: readonly Group[];
   votes: readonly Vote[];
+  templateId?: string;
   discuss: DiscussState;
   notes: readonly DiscussNote[];
   onStartTimer: () => void;
@@ -28,6 +30,7 @@ export interface DiscussPageProps {
 interface VotableItem {
   id: string;
   label: string;
+  columnId: string;
   childCards?: readonly Card[];
   votes: number;
 }
@@ -46,6 +49,7 @@ function resolveVotable(
     return {
       id: group.id,
       label: group.name || children.map((c) => c.text).join(' + '),
+      columnId: group.columnId,
       childCards: children,
       votes: votes.filter((v) => v.cardId === group.id).length,
     };
@@ -54,6 +58,7 @@ function resolveVotable(
   return {
     id,
     label: card?.text ?? id,
+    columnId: card?.columnId ?? '',
     votes: votes.filter((v) => v.cardId === id).length,
   };
 }
@@ -126,6 +131,7 @@ export function DiscussPage({
   cards,
   groups = [],
   votes,
+  templateId,
   discuss,
   notes,
   onStartTimer,
@@ -142,6 +148,8 @@ export function DiscussPage({
   const isFirst = discuss.currentIndex === 0 && discuss.segment === 'context';
   const isLast = discuss.currentIndex === total - 1 && discuss.segment === 'actions';
 
+  const template = getTemplate(templateId ?? 'start-stop');
+  const colorByColumnId = new Map(template.columns.map((col) => [col.id, col.color]));
   const items = discuss.order.map((id) => resolveVotable(id, cards, groups, votes));
   const activeItem = items[discuss.currentIndex];
 
@@ -181,11 +189,13 @@ export function DiscussPage({
       <div className="discuss-carousel" ref={scrollRef}>
         {items.map((item, i) => {
           const isCurrent = i === discuss.currentIndex;
+          const colColor = colorByColumnId.get(item.columnId);
           return (
             <div
               key={item.id}
               className={`discuss-carousel-card${isCurrent ? ' discuss-carousel-active' : ''}`}
               data-testid={isCurrent ? 'discuss-card-text' : undefined}
+              style={colColor ? { '--col-color': colColor } as React.CSSProperties : undefined}
             >
               <div className="discuss-carousel-label">{item.label}</div>
               {item.votes > 0 && (

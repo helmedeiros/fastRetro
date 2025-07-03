@@ -215,6 +215,7 @@ export function App({
             cards={retro.cards}
             groups={retro.groups}
             votes={retro.votes}
+            templateId={retro.meta.templateId}
             discuss={retro.discuss}
             notes={retro.discussNotes}
             onStartTimer={retro.startTimer}
