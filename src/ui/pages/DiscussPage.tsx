@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { Card } from '../../domain/retro/Card';
 import { MAX_CARD_LENGTH } from '../../domain/retro/Card';
+import type { Group } from '../../domain/retro/Group';
 import type { Timer } from '../../domain/retro/Timer';
 import type { Vote } from '../../domain/retro/Vote';
 import type { DiscussState } from '../../domain/retro/Retro';
@@ -10,6 +11,7 @@ import { PresentTimer } from '../components/PresentTimer';
 export interface DiscussPageProps {
   timer: Timer;
   cards: readonly Card[];
+  groups?: readonly Group[];
   votes: readonly Vote[];
   discuss: DiscussState;
   notes: readonly DiscussNote[];
@@ -23,8 +25,40 @@ export interface DiscussPageProps {
   onRemoveNote: (noteId: string) => void;
 }
 
+interface VotableItem {
+  id: string;
+  label: string;
+  childCards?: readonly Card[];
+  votes: number;
+}
+
+function resolveVotable(
+  id: string,
+  cards: readonly Card[],
+  groups: readonly Group[],
+  votes: readonly Vote[],
+): VotableItem {
+  const group = groups.find((g) => g.id === id);
+  if (group !== undefined) {
+    const children = group.cardIds
+      .map((cid) => cards.find((c) => c.id === cid))
+      .filter((c): c is Card => c !== undefined);
+    return {
+      id: group.id,
+      label: group.name || children.map((c) => c.text).join(' + '),
+      childCards: children,
+      votes: votes.filter((v) => v.cardId === group.id).length,
+    };
+  }
+  const card = cards.find((c) => c.id === id);
+  return {
+    id,
+    label: card?.text ?? id,
+    votes: votes.filter((v) => v.cardId === id).length,
+  };
+}
+
 interface LaneProps {
-  lane: DiscussLane;
   title: string;
   notes: readonly DiscussNote[];
   active: boolean;
@@ -32,13 +66,7 @@ interface LaneProps {
   onRemove: (noteId: string) => void;
 }
 
-function Lane({
-  title,
-  notes,
-  active,
-  onAdd,
-  onRemove,
-}: LaneProps): JSX.Element {
+function Lane({ title, notes, active, onAdd, onRemove }: LaneProps): JSX.Element {
   const [text, setText] = useState('');
   const trimmed = text.trim().length;
   const tooLong = text.length > MAX_CARD_LENGTH;
@@ -96,6 +124,7 @@ function Lane({
 export function DiscussPage({
   timer,
   cards,
+  groups = [],
   votes,
   discuss,
   notes,
@@ -109,18 +138,26 @@ export function DiscussPage({
   onRemoveNote,
 }: DiscussPageProps): JSX.Element {
   const total = discuss.order.length;
-  const activeCardId = discuss.order[discuss.currentIndex];
-  const activeCard = cards.find((c) => c.id === activeCardId);
-  const voteCount = votes.filter((v) => v.cardId === activeCardId).length;
+  const activeId = discuss.order[discuss.currentIndex];
   const isFirst = discuss.currentIndex === 0 && discuss.segment === 'context';
-  const isLast =
-    discuss.currentIndex === total - 1 && discuss.segment === 'actions';
-  const contextNotes = notes.filter(
-    (n) => n.parentCardId === activeCardId && n.lane === 'context',
-  );
-  const actionNotes = notes.filter(
-    (n) => n.parentCardId === activeCardId && n.lane === 'actions',
-  );
+  const isLast = discuss.currentIndex === total - 1 && discuss.segment === 'actions';
+
+  const items = discuss.order.map((id) => resolveVotable(id, cards, groups, votes));
+  const activeItem = items[discuss.currentIndex];
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (scrollRef.current && typeof scrollRef.current.scrollTo === 'function') {
+      const cardWidth = 280;
+      const gap = 12;
+      const containerWidth = scrollRef.current.offsetWidth;
+      const targetScroll = discuss.currentIndex * (cardWidth + gap) - (containerWidth - cardWidth) / 2;
+      scrollRef.current.scrollTo({ left: Math.max(0, targetScroll), behavior: 'smooth' });
+    }
+  }, [discuss.currentIndex]);
+
+  const contextNotes = notes.filter((n) => n.parentCardId === activeId && n.lane === 'context');
+  const actionNotes = notes.filter((n) => n.parentCardId === activeId && n.lane === 'actions');
 
   return (
     <section aria-label="Discuss">
@@ -131,68 +168,69 @@ export function DiscussPage({
         onResume={onResumeTimer}
         onReset={onResetTimer}
       />
-      {activeCard !== undefined && (
+
+      <div className="discuss-carousel-dots">
+        {items.map((item, i) => (
+          <span
+            key={item.id}
+            className={`discuss-dot${i === discuss.currentIndex ? ' current' : ''}`}
+          />
+        ))}
+      </div>
+
+      <div className="discuss-carousel" ref={scrollRef}>
+        {items.map((item, i) => {
+          const isCurrent = i === discuss.currentIndex;
+          return (
+            <div
+              key={item.id}
+              className={`discuss-carousel-card${isCurrent ? ' discuss-carousel-active' : ''}`}
+              data-testid={isCurrent ? 'discuss-card-text' : undefined}
+            >
+              <div className="discuss-carousel-label">{item.label}</div>
+              {item.votes > 0 && (
+                <span className="discuss-carousel-votes">+{String(item.votes)}</span>
+              )}
+              {item.childCards !== undefined && item.childCards.length > 0 && (
+                <ul className="discuss-carousel-children">
+                  {item.childCards.map((c) => (
+                    <li key={c.id}>{c.text}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {activeItem !== undefined && (
         <section aria-label="Active card" className="discuss-active-card">
-          <div className="discuss-progress">
-            <span className="discuss-dots" data-testid="discuss-card-index">
-              {Array.from({ length: total }, (_, i) => (
-                <span
-                  key={String(i)}
-                  className={`discuss-dot${i === discuss.currentIndex ? ' current' : ''}`}
-                />
-              ))}
-            </span>
-          </div>
-          <h3 data-testid="discuss-card-text" className="discuss-card-title">{activeCard.text}</h3>
-          <p data-testid="discuss-card-votes" className="discuss-card-votes">
-            {voteCount > 0 ? `${String(voteCount)} votes` : 'No votes'}
-          </p>
           <p data-testid="discuss-segment" className="discuss-segment-indicator">
-            <span data-active={discuss.segment === 'context' ? 'true' : 'false'}>
-              Context
-            </span>
+            <span data-active={discuss.segment === 'context' ? 'true' : 'false'}>Context</span>
             {' / '}
-            <span data-active={discuss.segment === 'actions' ? 'true' : 'false'}>
-              Actions
-            </span>
+            <span data-active={discuss.segment === 'actions' ? 'true' : 'false'}>Actions</span>
           </p>
           <div role="group" aria-label="Segment navigation" className="discuss-nav">
-            <button
-              type="button"
-              aria-label="Previous segment"
-              onClick={onPreviousSegment}
-              disabled={isFirst}
-            >
+            <button type="button" aria-label="Previous segment" onClick={onPreviousSegment} disabled={isFirst}>
               &#8592; Previous
             </button>
-            <button
-              type="button"
-              aria-label="Next segment"
-              onClick={onNextSegment}
-              disabled={isLast}
-            >
+            <button type="button" aria-label="Next segment" onClick={onNextSegment} disabled={isLast}>
               Next &#8594;
             </button>
           </div>
           <div className="columns">
             <Lane
-              lane="context"
               title="Context"
               notes={contextNotes}
               active={discuss.segment === 'context'}
-              onAdd={(text): void => {
-                onAddNote(activeCard.id, 'context', text);
-              }}
+              onAdd={(text): void => { onAddNote(activeId, 'context', text); }}
               onRemove={onRemoveNote}
             />
             <Lane
-              lane="actions"
               title="Actions"
               notes={actionNotes}
               active={discuss.segment === 'actions'}
-              onAdd={(text): void => {
-                onAddNote(activeCard.id, 'actions', text);
-              }}
+              onAdd={(text): void => { onAddNote(activeId, 'actions', text); }}
               onRemove={onRemoveNote}
             />
           </div>

@@ -213,6 +213,7 @@ export function App({
           <DiscussPage
             timer={retro.timer}
             cards={retro.cards}
+            groups={retro.groups}
             votes={retro.votes}
             discuss={retro.discuss}
             notes={retro.discussNotes}
