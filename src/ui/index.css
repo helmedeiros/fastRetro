@@ -2262,10 +2262,12 @@ form button {
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding: 0.5rem calc(50% - 140px) 1rem;
+  padding: 0.5rem 0 1rem;
   margin-bottom: 1rem;
-  scroll-behavior: smooth;
+}
+
+.discuss-carousel-spacer {
+  flex: 0 0 calc(50% - 140px);
 }
 
 .discuss-carousel-card {

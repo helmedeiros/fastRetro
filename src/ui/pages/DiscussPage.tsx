@@ -155,13 +155,13 @@ export function DiscussPage({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (scrollRef.current && typeof scrollRef.current.scrollTo === 'function') {
-      const cardWidth = 280;
-      const gap = 12;
-      const containerWidth = scrollRef.current.offsetWidth;
-      const targetScroll = discuss.currentIndex * (cardWidth + gap) - (containerWidth - cardWidth) / 2;
-      scrollRef.current.scrollTo({ left: Math.max(0, targetScroll), behavior: 'smooth' });
-    }
+    if (!scrollRef.current || typeof scrollRef.current.scrollTo !== 'function') return;
+    // +1 to skip the leading spacer div
+    const cardEl = scrollRef.current.children[discuss.currentIndex + 1] as HTMLElement | undefined;
+    if (!cardEl) return;
+    const containerWidth = scrollRef.current.offsetWidth;
+    const targetScroll = cardEl.offsetLeft - (containerWidth - cardEl.offsetWidth) / 2;
+    scrollRef.current.scrollTo({ left: Math.max(0, targetScroll), behavior: 'smooth' });
   }, [discuss.currentIndex]);
 
   const contextNotes = notes.filter((n) => n.parentCardId === activeId && n.lane === 'context');
@@ -187,6 +187,7 @@ export function DiscussPage({
       </div>
 
       <div className="discuss-carousel" ref={scrollRef}>
+        <div className="discuss-carousel-spacer" />
         {items.map((item, i) => {
           const isCurrent = i === discuss.currentIndex;
           const colColor = colorByColumnId.get(item.columnId);
@@ -211,6 +212,7 @@ export function DiscussPage({
             </div>
           );
         })}
+        <div className="discuss-carousel-spacer" />
       </div>
 
       {activeItem !== undefined && (
