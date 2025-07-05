@@ -23,6 +23,7 @@ export interface DiscussPageProps {
   onResetTimer: () => void;
   onPreviousSegment: () => void;
   onNextSegment: () => void;
+  onJumpToItem?: (index: number) => void;
   onAddNote: (parentCardId: string, lane: DiscussLane, text: string) => void;
   onRemoveNote: (noteId: string) => void;
 }
@@ -140,6 +141,7 @@ export function DiscussPage({
   onResetTimer,
   onPreviousSegment,
   onNextSegment,
+  onJumpToItem,
   onAddNote,
   onRemoveNote,
 }: DiscussPageProps): JSX.Element {
@@ -197,6 +199,8 @@ export function DiscussPage({
               className={`discuss-carousel-card${isCurrent ? ' discuss-carousel-active' : ''}`}
               data-testid={isCurrent ? 'discuss-card-text' : undefined}
               style={colColor ? { '--col-color': colColor } as React.CSSProperties : undefined}
+              onClick={(): void => { if (!isCurrent && onJumpToItem) onJumpToItem(i); }}
+              role={!isCurrent ? 'button' : undefined}
             >
               <div className="discuss-carousel-label">{item.label}</div>
               {item.votes > 0 && (

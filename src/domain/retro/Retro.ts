@@ -584,6 +584,19 @@ export function previousDiscussSegment(state: RetroState): RetroState {
   };
 }
 
+export function jumpToDiscussItem(
+  state: RetroState,
+  index: number,
+): RetroState {
+  const d = requireDiscuss(state);
+  if (index < 0 || index >= d.order.length) return state;
+  return {
+    ...state,
+    discuss: { ...d, currentIndex: index, segment: 'context' },
+    timer: createTimer(STAGE_DURATIONS.discuss),
+  };
+}
+
 export function addDiscussNote(
   state: RetroState,
   parentCardId: string,

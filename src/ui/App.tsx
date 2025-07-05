@@ -224,6 +224,7 @@ export function App({
             onResetTimer={retro.resetTimer}
             onPreviousSegment={retro.previousDiscussSegment}
             onNextSegment={retro.advanceDiscussSegment}
+            onJumpToItem={retro.jumpToDiscussItem}
             onAddNote={retro.addDiscussNote}
             onRemoveNote={retro.removeDiscussNote}
           />

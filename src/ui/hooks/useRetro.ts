@@ -49,6 +49,7 @@ import type { Card, ColumnId } from '../../domain/retro/Card';
 import type { Group } from '../../domain/retro/Group';
 import type { Participant } from '../../domain/retro/Participant';
 import type { RetroStage, RetroMeta, RetroState } from '../../domain/retro/Retro';
+import { jumpToDiscussItem as jumpToDiscussItemDomain } from '../../domain/retro/Retro';
 import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
 import type { Timer } from '../../domain/retro/Timer';
 import type { Vote } from '../../domain/retro/Vote';
@@ -89,6 +90,7 @@ export interface UseRetro {
   startDiscuss: () => void;
   advanceDiscussSegment: () => void;
   previousDiscussSegment: () => void;
+  jumpToDiscussItem: (index: number) => void;
   addDiscussNote: (parentCardId: string, lane: DiscussLane, text: string) => void;
   removeDiscussNote: (noteId: string) => void;
   startReview: () => void;
@@ -317,6 +319,11 @@ export function useRetro(
     refresh();
   }, [services, refresh]);
 
+  const jumpToDiscussItem = useCallback((index: number) => {
+    repository.save(jumpToDiscussItemDomain(repository.load(), index));
+    refresh();
+  }, [repository, refresh]);
+
   const addDiscussNote = useCallback(
     (parentCardId: string, lane: DiscussLane, text: string) => {
       services.addDiscussNote.execute(parentCardId, lane, text);
@@ -409,6 +416,7 @@ export function useRetro(
     startDiscuss,
     advanceDiscussSegment,
     previousDiscussSegment,
+    jumpToDiscussItem,
     addDiscussNote,
     removeDiscussNote,
     startReview,
