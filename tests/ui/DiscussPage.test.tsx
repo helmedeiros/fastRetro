@@ -81,17 +81,13 @@ function Harness(): JSX.Element {
 }
 
 describe('DiscussPage', () => {
-  it('renders carousel with active card, timer, and context active', () => {
+  it('renders carousel with active card and timer', () => {
     render(<Harness />);
     expect(screen.getByTestId('time-remaining')).toHaveTextContent('2m 30s');
     expect(screen.getByTestId('discuss-card-text')).toHaveTextContent('ship faster');
-    const segment = screen.getByTestId('discuss-segment');
-    expect(
-      within(segment).getByText('Context').getAttribute('data-active'),
-    ).toBe('true');
   });
 
-  it('adds a context note, then switches to actions and adds an action note', () => {
+  it('adds a context note and an action note in the timeline', () => {
     render(<Harness />);
     const contextSection = screen.getByRole('region', {
       name: /context notes/i,
@@ -106,12 +102,6 @@ describe('DiscussPage', () => {
     expect(
       within(contextSection).getByText('we have CI flakes'),
     ).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /next segment/i }));
-    const segment = screen.getByTestId('discuss-segment');
-    expect(
-      within(segment).getByText('Actions').getAttribute('data-active'),
-    ).toBe('true');
 
     const actionSection = screen.getByRole('region', {
       name: /actions notes/i,

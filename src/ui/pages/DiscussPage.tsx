@@ -66,63 +66,60 @@ function resolveVotable(
 
 interface LaneProps {
   title: string;
+  side: 'left' | 'right';
   notes: readonly DiscussNote[];
-  active: boolean;
   onAdd: (text: string) => void;
   onRemove: (noteId: string) => void;
 }
 
-function Lane({ title, notes, active, onAdd, onRemove }: LaneProps): JSX.Element {
+function Lane({ title, side, notes, onAdd, onRemove }: LaneProps): JSX.Element {
   const [text, setText] = useState('');
   const trimmed = text.trim().length;
   const tooLong = text.length > MAX_CARD_LENGTH;
-  const disabled = !active || trimmed === 0 || tooLong;
+  const disabled = trimmed === 0 || tooLong;
   const submit = (): void => {
     if (disabled) return;
     onAdd(text);
     setText('');
   };
   return (
-    <section aria-label={`${title} notes`} data-active={active ? 'true' : 'false'}>
-      <h4>{title}</h4>
-      {active && (
-        <div className="brainstorm-input-row">
-          <span className="brainstorm-input-plus">+</span>
-          <input
-            type="text"
-            value={text}
-            onChange={(e): void => { setText(e.target.value); }}
-            onKeyDown={(e): void => { if (e.key === 'Enter') submit(); }}
-            placeholder={`Add ${title.toLowerCase()}...`}
-            aria-label={`${title} note text`}
-            aria-invalid={tooLong}
-          />
-          <button
-            type="button"
-            className="brainstorm-input-add"
-            onClick={submit}
-            disabled={disabled}
-            aria-label={`Add ${title} note`}
-          >
-            Add
-          </button>
-        </div>
-      )}
-      <ul aria-label={`${title} notes list`} className="brainstorm-card-list">
+    <section aria-label={`${title} notes`} className={`discuss-lane discuss-lane-${side}`}>
+      <h4 className="discuss-lane-title">{title}</h4>
+      <div className="discuss-lane-messages">
         {notes.map((n) => (
-          <li key={n.id} data-testid={`discuss-note-${n.id}`} className="brainstorm-card">
-            <span className="brainstorm-card-text">{n.text}</span>
+          <div key={n.id} data-testid={`discuss-note-${n.id}`} className={`discuss-bubble discuss-bubble-${side}`}>
+            <span className="discuss-bubble-text">{n.text}</span>
             <button
               type="button"
-              className="brainstorm-card-remove"
+              className="discuss-bubble-remove"
               onClick={(): void => { onRemove(n.id); }}
               aria-label={`Remove ${title} note ${n.text}`}
             >
               &times;
             </button>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
+      <div className="discuss-lane-input">
+        <input
+          type="text"
+          value={text}
+          onChange={(e): void => { setText(e.target.value); }}
+          onKeyDown={(e): void => { if (e.key === 'Enter') submit(); }}
+          placeholder={`Add ${title.toLowerCase()}...`}
+          aria-label={`${title} note text`}
+          aria-invalid={tooLong}
+        />
+        <button
+          type="button"
+          className="discuss-lane-add"
+          onClick={submit}
+          disabled={disabled}
+          aria-label={`Add ${title} note`}
+        >
+          &#10148;
+        </button>
+      </div>
     </section>
   );
 }
@@ -221,31 +218,32 @@ export function DiscussPage({
 
       {activeItem !== undefined && (
         <section aria-label="Active card" className="discuss-active-card">
-          <p data-testid="discuss-segment" className="discuss-segment-indicator">
-            <span data-active={discuss.segment === 'context' ? 'true' : 'false'}>Context</span>
-            {' / '}
-            <span data-active={discuss.segment === 'actions' ? 'true' : 'false'}>Actions</span>
-          </p>
           <div role="group" aria-label="Segment navigation" className="discuss-nav">
             <button type="button" aria-label="Previous segment" onClick={onPreviousSegment} disabled={isFirst}>
-              &#8592; Previous
+              &#8592; Prev
             </button>
+            <p data-testid="discuss-segment" className="discuss-segment-indicator">
+              <span data-active={discuss.segment === 'context' ? 'true' : 'false'}>Context</span>
+              {' / '}
+              <span data-active={discuss.segment === 'actions' ? 'true' : 'false'}>Actions</span>
+            </p>
             <button type="button" aria-label="Next segment" onClick={onNextSegment} disabled={isLast}>
               Next &#8594;
             </button>
           </div>
-          <div className="columns">
+          <div className="discuss-timeline">
             <Lane
               title="Context"
+              side="left"
               notes={contextNotes}
-              active={discuss.segment === 'context'}
               onAdd={(text): void => { onAddNote(activeId, 'context', text); }}
               onRemove={onRemoveNote}
             />
+            <div className="discuss-timeline-divider" />
             <Lane
               title="Actions"
+              side="right"
               notes={actionNotes}
-              active={discuss.segment === 'actions'}
               onAdd={(text): void => { onAddNote(activeId, 'actions', text); }}
               onRemove={onRemoveNote}
             />
