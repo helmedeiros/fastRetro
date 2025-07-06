@@ -207,9 +207,10 @@ export function DiscussPage({
                   ))}
                 </ul>
               )}
-              {item.votes > 0 && (
-                <span className="discuss-carousel-votes">+{String(item.votes)}</span>
-              )}
+              <div className="discuss-carousel-votes-row">
+                <span className="discuss-carousel-votes-label">Votes:</span>
+                <span className="discuss-carousel-votes">{String(item.votes)}</span>
+              </div>
             </div>
           );
         })}
