@@ -2280,6 +2280,10 @@ form button {
   opacity: 0.5;
   transition: opacity 0.2s, border-color 0.2s, transform 0.2s;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .discuss-carousel-card.discuss-carousel-active {
@@ -2303,7 +2307,8 @@ form button {
   font-weight: 700;
   padding: 0.15rem 0.4rem;
   border-radius: 999px;
-  margin-bottom: 0.4rem;
+  margin-top: auto;
+  padding-top: 0.3rem;
 }
 
 .discuss-carousel-children {

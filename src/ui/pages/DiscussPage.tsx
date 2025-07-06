@@ -200,15 +200,15 @@ export function DiscussPage({
               role={!isCurrent ? 'button' : undefined}
             >
               <div className="discuss-carousel-label">{item.label}</div>
-              {item.votes > 0 && (
-                <span className="discuss-carousel-votes">+{String(item.votes)}</span>
-              )}
               {item.childCards !== undefined && item.childCards.length > 0 && (
                 <ul className="discuss-carousel-children">
                   {item.childCards.map((c) => (
                     <li key={c.id}>{c.text}</li>
                   ))}
                 </ul>
+              )}
+              {item.votes > 0 && (
+                <span className="discuss-carousel-votes">+{String(item.votes)}</span>
               )}
             </div>
           );
