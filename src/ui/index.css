@@ -2309,6 +2309,7 @@ form button {
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
+  margin-block-start: 0.6rem;
 }
 
 .discuss-carousel-votes-label {
