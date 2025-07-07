@@ -2302,25 +2302,25 @@ form button {
 .discuss-carousel-votes-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   margin-top: auto;
-  padding-top: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--fr-accent);
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .discuss-carousel-votes-label {
-  font-size: 0.7rem;
-  color: var(--fr-text-muted);
+  font-size: 0.75rem;
+  color: var(--fr-bg);
+  opacity: 0.8;
 }
 
 .discuss-carousel-votes {
-  display: inline-block;
-  background: var(--fr-accent);
-  color: var(--fr-bg);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  padding: 0.15rem 0.4rem;
-  border-radius: 999px;
+  color: var(--fr-bg);
 }
 
 .discuss-carousel-children {
