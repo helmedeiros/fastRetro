@@ -67,12 +67,13 @@ function resolveVotable(
 interface LaneProps {
   title: string;
   side: 'left' | 'right';
+  active?: boolean;
   notes: readonly DiscussNote[];
   onAdd: (text: string) => void;
   onRemove: (noteId: string) => void;
 }
 
-function Lane({ title, side, notes, onAdd, onRemove }: LaneProps): JSX.Element {
+function Lane({ title, side, active = false, notes, onAdd, onRemove }: LaneProps): JSX.Element {
   const [text, setText] = useState('');
   const trimmed = text.trim().length;
   const tooLong = text.length > MAX_CARD_LENGTH;
@@ -83,7 +84,7 @@ function Lane({ title, side, notes, onAdd, onRemove }: LaneProps): JSX.Element {
     setText('');
   };
   return (
-    <section aria-label={`${title} notes`} className={`discuss-lane discuss-lane-${side}`}>
+    <section aria-label={`${title} notes`} className={`discuss-lane discuss-lane-${side}${active ? ' discuss-lane-active' : ''}`}>
       <h4 className="discuss-lane-title">{title}</h4>
       <div className="discuss-lane-messages">
         {notes.map((n) => (
@@ -219,15 +220,10 @@ export function DiscussPage({
 
       {activeItem !== undefined && (
         <section aria-label="Active card" className="discuss-active-card">
-          <div role="group" aria-label="Segment navigation" className="discuss-nav">
+          <div role="group" aria-label="Segment navigation" className="discuss-nav" data-testid="discuss-segment">
             <button type="button" aria-label="Previous segment" onClick={onPreviousSegment} disabled={isFirst}>
               &#8592; Prev
             </button>
-            <p data-testid="discuss-segment" className="discuss-segment-indicator">
-              <span data-active={discuss.segment === 'context' ? 'true' : 'false'}>Context</span>
-              {' / '}
-              <span data-active={discuss.segment === 'actions' ? 'true' : 'false'}>Actions</span>
-            </p>
             <button type="button" aria-label="Next segment" onClick={onNextSegment} disabled={isLast}>
               Next &#8594;
             </button>
@@ -236,6 +232,7 @@ export function DiscussPage({
             <Lane
               title="Context"
               side="left"
+              active={discuss.segment === 'context'}
               notes={contextNotes}
               onAdd={(text): void => { onAddNote(activeId, 'context', text); }}
               onRemove={onRemoveNote}
@@ -244,6 +241,7 @@ export function DiscussPage({
             <Lane
               title="Actions"
               side="right"
+              active={discuss.segment === 'actions'}
               notes={actionNotes}
               onAdd={(text): void => { onAddNote(activeId, 'actions', text); }}
               onRemove={onRemoveNote}

@@ -2359,19 +2359,6 @@ form button {
   margin-bottom: 1.25rem;
 }
 
-.discuss-segment-indicator {
-  margin: 0;
-  font-size: 0.85rem;
-}
-
-.discuss-segment-indicator span[data-active='true'] {
-  font-weight: 700;
-  color: var(--fr-accent);
-}
-
-.discuss-segment-indicator span[data-active='false'] {
-  color: var(--fr-text-muted);
-}
 
 /* --- Timeline layout --- */
 
@@ -2390,7 +2377,13 @@ form button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.discuss-lane-active {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .discuss-lane-title {
