@@ -2364,7 +2364,7 @@ form button {
 
 .discuss-timeline {
   display: flex;
-  gap: 0;
+  gap: 1rem;
 }
 
 .discuss-timeline-divider {
@@ -2379,12 +2379,13 @@ form button {
   flex-direction: column;
   padding: 0.75rem;
   border-radius: 8px;
-  transition: background 0.2s;
+  border: 2px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .discuss-lane-active {
-  background: rgba(94, 196, 200, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(94, 196, 200, 0.25);
+  background: rgba(94, 196, 200, 0.12);
+  border-color: var(--fr-accent);
 }
 
 .discuss-lane-title {
