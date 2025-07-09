@@ -2484,6 +2484,14 @@ form button {
   cursor: default;
 }
 
+.discuss-lane-right .discuss-lane-input {
+  flex-direction: row-reverse;
+}
+
+.discuss-lane-right .discuss-lane-add {
+  transform: scaleX(-1);
+}
+
 /* === Review page === */
 
 .review-list {
