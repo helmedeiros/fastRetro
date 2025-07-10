@@ -225,6 +225,7 @@ export function App({
             onPreviousSegment={retro.previousDiscussSegment}
             onNextSegment={retro.advanceDiscussSegment}
             onJumpToItem={retro.jumpToDiscussItem}
+            onRenameGroup={retro.renameGroup}
             onAddNote={retro.addDiscussNote}
             onRemoveNote={retro.removeDiscussNote}
           />

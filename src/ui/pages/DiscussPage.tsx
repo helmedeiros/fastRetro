@@ -24,6 +24,7 @@ export interface DiscussPageProps {
   onPreviousSegment: () => void;
   onNextSegment: () => void;
   onJumpToItem?: (index: number) => void;
+  onRenameGroup?: (groupId: string, name: string) => void;
   onAddNote: (parentCardId: string, lane: DiscussLane, text: string) => void;
   onRemoveNote: (noteId: string) => void;
 }
@@ -32,6 +33,7 @@ interface VotableItem {
   id: string;
   label: string;
   columnId: string;
+  isGroup: boolean;
   childCards?: readonly Card[];
   votes: number;
 }
@@ -51,6 +53,7 @@ function resolveVotable(
       id: group.id,
       label: group.name || children.map((c) => c.text).join(' + '),
       columnId: group.columnId,
+      isGroup: true,
       childCards: children,
       votes: votes.filter((v) => v.cardId === group.id).length,
     };
@@ -60,6 +63,7 @@ function resolveVotable(
     id,
     label: card?.text ?? id,
     columnId: card?.columnId ?? '',
+    isGroup: false,
     votes: votes.filter((v) => v.cardId === id).length,
   };
 }
@@ -140,6 +144,7 @@ export function DiscussPage({
   onPreviousSegment,
   onNextSegment,
   onJumpToItem,
+  onRenameGroup,
   onAddNote,
   onRemoveNote,
 }: DiscussPageProps): JSX.Element {
@@ -147,6 +152,8 @@ export function DiscussPage({
   const activeId = discuss.order[discuss.currentIndex];
   const isFirst = discuss.currentIndex === 0 && discuss.segment === 'context';
   const isLast = discuss.currentIndex === total - 1 && discuss.segment === 'actions';
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState('');
 
   const template = getTemplate(templateId ?? 'start-stop');
   const colorByColumnId = new Map(template.columns.map((col) => [col.id, col.color]));
@@ -200,7 +207,48 @@ export function DiscussPage({
               onClick={(): void => { if (!isCurrent && onJumpToItem) onJumpToItem(i); }}
               role={!isCurrent ? 'button' : undefined}
             >
-              <div className="discuss-carousel-label">{item.label}</div>
+              {editingId === item.id ? (
+                <div className="discuss-carousel-edit" onClick={(e): void => { e.stopPropagation(); }}>
+                  <input
+                    type="text"
+                    value={editDraft}
+                    onChange={(e): void => { setEditDraft(e.target.value); }}
+                    onKeyDown={(e): void => {
+                      if (e.key === 'Enter' && editDraft.trim().length > 0) {
+                        onRenameGroup?.(item.id, editDraft.trim());
+                        setEditingId(null);
+                      }
+                      if (e.key === 'Escape') setEditingId(null);
+                    }}
+                    autoFocus
+                    className="discuss-carousel-edit-input"
+                  />
+                  <button
+                    type="button"
+                    className="discuss-carousel-edit-save"
+                    onClick={(): void => {
+                      if (editDraft.trim().length > 0) onRenameGroup?.(item.id, editDraft.trim());
+                      setEditingId(null);
+                    }}
+                  >&#10003;</button>
+                </div>
+              ) : (
+                <div
+                  className="discuss-carousel-label"
+                  onClick={(e): void => {
+                    if (item.isGroup && onRenameGroup && isCurrent) {
+                      e.stopPropagation();
+                      setEditDraft(item.label);
+                      setEditingId(item.id);
+                    }
+                  }}
+                >
+                  {item.label}
+                  {item.isGroup && onRenameGroup !== undefined && isCurrent && (
+                    <span className="discuss-carousel-edit-icon">&#9998;</span>
+                  )}
+                </div>
+              )}
               {item.childCards !== undefined && item.childCards.length > 0 && (
                 <ul className="discuss-carousel-children">
                   {item.childCards.map((c) => (
