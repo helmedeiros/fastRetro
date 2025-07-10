@@ -234,11 +234,19 @@ export function App({
             timer={retro.timer}
             participants={retro.participants}
             actionItems={retro.actionItems}
+            existingActionItems={dashboard.allActionItems}
+            agreements={dashboard.team.agreements}
+            members={dashboard.team.members}
             onStartTimer={retro.startTimer}
             onPauseTimer={retro.pauseTimer}
             onResumeTimer={retro.resumeTimer}
             onResetTimer={retro.resetTimer}
             onAssignOwner={retro.assignActionOwner}
+            onPromoteToAgreement={dashboard.promoteToAgreement}
+            onDemoteAgreement={dashboard.demoteAgreement}
+            onAddAgreement={dashboard.addAgreement}
+            onRemoveAgreement={dashboard.removeAgreement}
+            onReassignAction={dashboard.reassignActionItem}
           />
         ) : null}
       </main>

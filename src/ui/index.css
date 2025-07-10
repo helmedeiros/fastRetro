@@ -2536,48 +2536,114 @@ form button {
 
 /* === Review page === */
 
+.review-section {
+  margin-bottom: 2rem;
+}
+
+.review-section-title {
+  font-size: 0.9rem;
+  color: var(--fr-text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+  margin: 0 0 0.75rem;
+  border-bottom: 1px solid var(--fr-border);
+  padding-bottom: 0.5rem;
+}
+
 .review-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .review-item {
-  display: flex !important;
-  gap: 1rem;
-  align-items: flex-start;
-  padding: 1rem !important;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
   background: var(--fr-surface);
-  border: 1px solid var(--fr-border) !important;
+  border: 1px solid var(--fr-border);
   border-radius: 8px;
 }
 
 .review-item-content {
   flex: 1;
+  min-width: 0;
 }
 
 .review-parent {
-  margin: 0 0 0.25rem;
-  font-size: 0.75rem;
+  margin: 0;
+  font-size: 0.7rem;
   color: var(--fr-text-muted);
 }
 
 .review-text {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
 }
 
-.review-owner {
+.review-item-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
   flex-shrink: 0;
 }
 
-.review-owner label {
-  font-size: 0.7rem;
+.review-check {
+  color: var(--fr-accent);
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
-.review-owner select {
-  max-width: 12rem;
+.review-promote-btn,
+.review-demote-btn,
+.review-remove-btn {
+  all: unset;
+  cursor: pointer;
+  color: var(--fr-text-muted);
+  font-size: 0.9rem;
+  padding: 0.2rem;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.review-promote-btn:hover,
+.review-demote-btn:hover {
+  opacity: 1;
+  color: var(--fr-accent);
+}
+
+.review-remove-btn:hover {
+  opacity: 1;
+  color: var(--fr-danger);
+}
+
+.review-agreement-icon {
+  color: var(--fr-text-muted);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.review-agreement-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.review-agreement-input input {
+  flex: 1;
   font-size: 0.85rem;
+}
+
+.review-empty {
+  text-align: center;
+  color: var(--fr-text-muted);
+  font-size: 0.85rem;
+  padding: 1rem;
 }
 
 /* === Close summary === */

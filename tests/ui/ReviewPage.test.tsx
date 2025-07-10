@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ReviewPage } from '../../src/ui/pages/ReviewPage';
 import type { Timer } from '../../src/domain/retro/Timer';
@@ -29,10 +29,7 @@ const actionItems: ActionItem[] = [
   },
 ];
 
-function renderPage(): {
-  onAssignOwner: ReturnType<typeof vi.fn>;
-} {
-  const onAssignOwner = vi.fn();
+function renderPage(): void {
   render(
     <ReviewPage
       timer={timer}
@@ -42,10 +39,9 @@ function renderPage(): {
       onPauseTimer={vi.fn()}
       onResumeTimer={vi.fn()}
       onResetTimer={vi.fn()}
-      onAssignOwner={onAssignOwner}
+      onAssignOwner={vi.fn()}
     />,
   );
-  return { onAssignOwner };
 }
 
 describe('ReviewPage', () => {
@@ -58,23 +54,42 @@ describe('ReviewPage', () => {
     expect(within(region).getByText('long meetings')).toBeInTheDocument();
   });
 
-  it('reflects current owner in select value', () => {
+  it('renders timer', () => {
     renderPage();
-    const select = screen.getByLabelText(/owner for timebox meetings/i);
-    expect((select as HTMLSelectElement).value).toBe('p-1');
+    expect(screen.getByTestId('time-remaining')).toHaveTextContent('5m 00s');
   });
 
-  it('fires onAssignOwner with participant id when selecting an owner', () => {
-    const { onAssignOwner } = renderPage();
-    const select = screen.getByLabelText(/owner for fix flaky test/i);
-    fireEvent.change(select, { target: { value: 'p-2' } });
-    expect(onAssignOwner).toHaveBeenCalledWith('n-1', 'p-2');
+  it('renders team agreements section', () => {
+    render(
+      <ReviewPage
+        timer={timer}
+        participants={participants}
+        actionItems={[]}
+        agreements={[{ id: 'a-1', text: 'timebox to 30min', createdAt: '2025-01-01' }]}
+        onStartTimer={vi.fn()}
+        onPauseTimer={vi.fn()}
+        onResumeTimer={vi.fn()}
+        onResetTimer={vi.fn()}
+        onAssignOwner={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('timebox to 30min')).toBeInTheDocument();
   });
 
-  it('fires onAssignOwner with null when selecting unassigned', () => {
-    const { onAssignOwner } = renderPage();
-    const select = screen.getByLabelText(/owner for timebox meetings/i);
-    fireEvent.change(select, { target: { value: '' } });
-    expect(onAssignOwner).toHaveBeenCalledWith('n-2', null);
+  it('shows empty states when no items', () => {
+    render(
+      <ReviewPage
+        timer={timer}
+        participants={participants}
+        actionItems={[]}
+        onStartTimer={vi.fn()}
+        onPauseTimer={vi.fn()}
+        onResumeTimer={vi.fn()}
+        onResetTimer={vi.fn()}
+        onAssignOwner={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('No actions yet')).toBeInTheDocument();
+    expect(screen.getByText('No agreements yet')).toBeInTheDocument();
   });
 });
