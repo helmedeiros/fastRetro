@@ -2664,23 +2664,25 @@ form button {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 0.15rem;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.close-stat-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+  line-height: 1;
+  margin-bottom: 0.25rem;
 }
 
 .close-stat-value {
-  font-size: 1.5rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  color: var(--fr-accent);
-}
-
-.close-stat-label {
-  font-size: 0.85rem;
-  font-weight: 600;
   color: var(--fr-text);
 }
 
 .close-stat-sub {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--fr-text-muted);
 }
 

@@ -39,24 +39,24 @@ export function ClosePage({ summary, stats, onExport, onReturnToDashboard, onBac
       {stats !== undefined && (
         <div className="close-stats">
           <div className="close-stat">
-            <span className="close-stat-value">{String(stats.ideas)}</span>
-            <span className="close-stat-label">ideas</span>
+            <span className="close-stat-icon">&#128161;</span>
+            <span className="close-stat-value">{String(stats.ideas)} ideas added</span>
             <span className="close-stat-sub">by {String(stats.participants)} participants</span>
           </div>
           <div className="close-stat">
-            <span className="close-stat-value">{String(stats.votes)}</span>
-            <span className="close-stat-label">votes cast</span>
+            <span className="close-stat-icon">&#9745;</span>
+            <span className="close-stat-value">{stats.votes > 0 ? `${String(stats.votes)} votes cast` : 'No votes cast'}</span>
             <span className="close-stat-sub">for {String(stats.groups)} groups</span>
           </div>
           <div className="close-stat">
-            <span className="close-stat-value">{String(stats.actions)}</span>
-            <span className="close-stat-label">actions</span>
+            <span className="close-stat-icon">&#10003;</span>
+            <span className="close-stat-value">{stats.actions > 0 ? `${String(stats.actions)} actions` : 'No new actions'}</span>
             <span className="close-stat-sub">from this retro</span>
           </div>
           <div className="close-stat">
-            <span className="close-stat-value">{String(stats.participants)}/{String(stats.participants)}</span>
-            <span className="close-stat-label">participation</span>
-            <span className="close-stat-sub">invited participants</span>
+            <span className="close-stat-icon">&#128101;</span>
+            <span className="close-stat-value">100% participation</span>
+            <span className="close-stat-sub">{String(stats.participants)}/{String(stats.participants)} invited participants</span>
           </div>
         </div>
       )}
