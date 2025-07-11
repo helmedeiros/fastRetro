@@ -3,8 +3,17 @@ import type {
   CloseSummaryDiscussedItem,
 } from '../../domain/retro/Retro';
 
+export interface CloseStats {
+  readonly ideas: number;
+  readonly participants: number;
+  readonly votes: number;
+  readonly groups: number;
+  readonly actions: number;
+}
+
 export interface ClosePageProps {
   summary: CloseSummary;
+  stats?: CloseStats;
   onExport?: () => void;
   onReturnToDashboard?: () => void;
   onBackToDashboard?: () => void;
@@ -22,10 +31,36 @@ function itemVotes(d: CloseSummaryDiscussedItem): number {
   return d.kind === 'card' ? d.card.votes : d.group.votes;
 }
 
-export function ClosePage({ summary, onExport, onReturnToDashboard, onBackToDashboard }: ClosePageProps): JSX.Element {
+export function ClosePage({ summary, stats, onExport, onReturnToDashboard, onBackToDashboard }: ClosePageProps): JSX.Element {
   return (
     <section aria-label="Close">
       <h2>Retro complete</h2>
+
+      {stats !== undefined && (
+        <div className="close-stats">
+          <div className="close-stat">
+            <span className="close-stat-value">{String(stats.ideas)}</span>
+            <span className="close-stat-label">ideas</span>
+            <span className="close-stat-sub">by {String(stats.participants)} participants</span>
+          </div>
+          <div className="close-stat">
+            <span className="close-stat-value">{String(stats.votes)}</span>
+            <span className="close-stat-label">votes cast</span>
+            <span className="close-stat-sub">for {String(stats.groups)} groups</span>
+          </div>
+          <div className="close-stat">
+            <span className="close-stat-value">{String(stats.actions)}</span>
+            <span className="close-stat-label">actions</span>
+            <span className="close-stat-sub">from this retro</span>
+          </div>
+          <div className="close-stat">
+            <span className="close-stat-value">{String(stats.participants)}/{String(stats.participants)}</span>
+            <span className="close-stat-label">participation</span>
+            <span className="close-stat-sub">invited participants</span>
+          </div>
+        </div>
+      )}
+
       <ol aria-label="Close summary">
         {summary.discussed.map((d) => {
           const id = itemId(d);
@@ -68,7 +103,7 @@ export function ClosePage({ summary, onExport, onReturnToDashboard, onBackToDash
           );
         })}
       </ol>
-      <div role="group" aria-label="Close actions">
+      <div role="group" aria-label="Close actions" className="close-actions">
         {onExport !== undefined && (
           <button
             type="button"

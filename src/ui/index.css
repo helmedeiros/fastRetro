@@ -2646,6 +2646,51 @@ form button {
   padding: 1rem;
 }
 
+/* === Close stats === */
+
+.close-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 10px;
+}
+
+.close-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.15rem;
+}
+
+.close-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--fr-accent);
+}
+
+.close-stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fr-text);
+}
+
+.close-stat-sub {
+  font-size: 0.7rem;
+  color: var(--fr-text-muted);
+}
+
+.close-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
 /* === Close summary === */
 
 [aria-label='Close summary'] > li {

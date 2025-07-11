@@ -128,6 +128,13 @@ export function App({
         <StageNav currentStage="close" onNavigate={navigateStage} />
         <ClosePage
           summary={retro.closeSummary}
+          stats={{
+            ideas: retro.cards.length,
+            participants: retro.participants.length,
+            votes: retro.votes.length,
+            groups: retro.groups.length,
+            actions: retro.closeSummary.allActionItems.length,
+          }}
           onExport={retro.exportJson}
           onReturnToDashboard={() => {
             dashboard.returnToDashboard();
