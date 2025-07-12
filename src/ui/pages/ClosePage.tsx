@@ -44,7 +44,7 @@ export function ClosePage({ summary, stats, onExport, onReturnToDashboard, onBac
             <span className="close-stat-sub">by {String(stats.participants)} participants</span>
           </div>
           <div className="close-stat">
-            <span className="close-stat-icon">{'\u2610'}</span>
+            <span className="close-stat-icon">{'\u2630'}</span>
             <span className="close-stat-value">{stats.votes > 0 ? `${String(stats.votes)} votes cast` : 'No votes cast'}</span>
             <span className="close-stat-sub">for {String(stats.groups)} groups</span>
           </div>
@@ -54,7 +54,7 @@ export function ClosePage({ summary, stats, onExport, onReturnToDashboard, onBac
             <span className="close-stat-sub">from this retro</span>
           </div>
           <div className="close-stat">
-            <span className="close-stat-icon">{'\u2662\u2662'}</span>
+            <span className="close-stat-icon">{'\u2687'}</span>
             <span className="close-stat-value">100% participation</span>
             <span className="close-stat-sub">{String(stats.participants)}/{String(stats.participants)} invited participants</span>
           </div>
