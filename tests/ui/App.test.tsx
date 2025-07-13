@@ -153,7 +153,7 @@ describe('App', () => {
       screen.getByRole('heading', { name: /retro complete/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /return to dashboard/i }),
+      screen.getByRole('button', { name: /exit/i }),
     ).toBeInTheDocument();
   });
 });

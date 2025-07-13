@@ -2688,9 +2688,50 @@ form button {
 
 .close-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 0;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.close-action-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1rem 2rem;
+  background: var(--fr-accent);
+  color: var(--fr-bg);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: filter 0.15s;
+}
+
+.close-action-btn:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.close-action-btn:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.close-action-btn:only-child {
+  border-radius: 8px;
+}
+
+.close-action-btn + .close-action-btn {
+  border-left: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.close-action-btn:hover {
+  filter: brightness(1.1);
+}
+
+.close-action-icon {
+  font-size: 1.3rem;
 }
 
 /* === Close summary === */

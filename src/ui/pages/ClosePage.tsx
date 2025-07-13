@@ -110,29 +110,32 @@ export function ClosePage({ summary, stats, onExport, onReturnToDashboard, onBac
         {onExport !== undefined && (
           <button
             type="button"
-            className="primary"
+            className="close-action-btn"
             aria-label="Export retro as JSON"
             onClick={onExport}
           >
-            Export JSON
+            <span className="close-action-icon">{'\u2913'}</span>
+            <span>Download</span>
           </button>
         )}
         {onReturnToDashboard !== undefined && (
           <button
             type="button"
-            className="primary"
+            className="close-action-btn"
             onClick={onReturnToDashboard}
           >
-            Return to Dashboard
+            <span className="close-action-icon">{'\u2302'}</span>
+            <span>Exit</span>
           </button>
         )}
         {onBackToDashboard !== undefined && (
           <button
             type="button"
-            className="secondary"
+            className="close-action-btn"
             onClick={onBackToDashboard}
           >
-            Back to Dashboard
+            <span className="close-action-icon">{'\u2190'}</span>
+            <span>Back</span>
           </button>
         )}
       </div>
