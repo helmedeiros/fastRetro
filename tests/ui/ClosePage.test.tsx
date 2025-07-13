@@ -52,7 +52,7 @@ describe('ClosePage', () => {
     expect(screen.getByText('ship faster')).toBeInTheDocument();
     expect(screen.getByText('CI flaky')).toBeInTheDocument();
     expect(screen.getByText('fix flaky test')).toBeInTheDocument();
-    expect(screen.getByText(/owned by Alice/i)).toBeInTheDocument();
+    expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('timebox meetings')).toBeInTheDocument();
     expect(screen.getByText(/unassigned/i)).toBeInTheDocument();
   });

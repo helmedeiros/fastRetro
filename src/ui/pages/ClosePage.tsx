@@ -61,48 +61,51 @@ export function ClosePage({ summary, stats, onExport, onReturnToDashboard, onBac
         </div>
       )}
 
-      <ol aria-label="Close summary">
+      <div aria-label="Close summary" className="close-discussed">
         {summary.discussed.map((d) => {
           const id = itemId(d);
           const title = itemTitle(d);
           const votes = itemVotes(d);
+          const hasContent = d.contextNotes.length > 0 || d.actionItems.length > 0;
           return (
-            <li key={id} data-testid={`close-card-${id}`}>
-              <h3>
-                {title}{' '}
-                <small data-testid={`close-card-votes-${id}`}>
-                  ({String(votes)} votes)
-                </small>
-              </h3>
-              <section aria-label={`Context notes for ${title}`}>
-                <h4>Context</h4>
-                <ul>
-                  {d.contextNotes.map((n) => (
-                    <li key={n.id} data-testid={`close-context-${n.id}`}>
-                      {n.text}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-              <section aria-label={`Action items for ${title}`}>
-                <h4>Action items</h4>
-                <ul>
-                  {d.actionItems.map((a) => (
-                    <li key={a.note.id} data-testid={`close-action-${a.note.id}`}>
-                      <span>{a.note.text}</span>{' '}
-                      <em>
-                        {a.owner === null
-                          ? 'unassigned'
-                          : `owned by ${a.owner.name}`}
-                      </em>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            </li>
+            <div key={id} data-testid={`close-card-${id}`} className="close-topic">
+              <div className="close-topic-header">
+                <h3 className="close-topic-title">{title}</h3>
+                <span className="close-topic-votes" data-testid={`close-card-votes-${id}`}>
+                  {String(votes)} votes
+                </span>
+              </div>
+              {hasContent && (
+                <div className="close-topic-body">
+                  {d.contextNotes.length > 0 && (
+                    <section aria-label={`Context notes for ${title}`} className="close-topic-lane">
+                      <h4 className="close-topic-lane-title">Context</h4>
+                      {d.contextNotes.map((n) => (
+                        <div key={n.id} data-testid={`close-context-${n.id}`} className="close-topic-note close-note-context">
+                          {n.text}
+                        </div>
+                      ))}
+                    </section>
+                  )}
+                  {d.actionItems.length > 0 && (
+                    <section aria-label={`Action items for ${title}`} className="close-topic-lane">
+                      <h4 className="close-topic-lane-title">Actions</h4>
+                      {d.actionItems.map((a) => (
+                        <div key={a.note.id} data-testid={`close-action-${a.note.id}`} className="close-topic-note close-note-action">
+                          <span>{a.note.text}</span>
+                          <span className="close-topic-owner">
+                            {a.owner === null ? 'unassigned' : a.owner.name}
+                          </span>
+                        </div>
+                      ))}
+                    </section>
+                  )}
+                </div>
+              )}
+            </div>
           );
         })}
-      </ol>
+      </div>
       <div role="group" aria-label="Close actions" className="close-actions">
         {onExport !== undefined && (
           <button

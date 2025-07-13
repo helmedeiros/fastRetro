@@ -2695,17 +2695,84 @@ form button {
 
 /* === Close summary === */
 
-[aria-label='Close summary'] > li {
+.close-discussed {
+  display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 1rem 0;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-/* Close actions group */
-[aria-label='Close actions'] {
+.close-topic {
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.close-topic-header {
   display: flex;
+  align-items: baseline;
   gap: 0.75rem;
-  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.close-topic-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--fr-text);
+  text-transform: none;
+  letter-spacing: normal;
+  margin: 0;
+}
+
+.close-topic-votes {
+  font-size: 0.75rem;
+  color: var(--fr-accent);
+  font-weight: 600;
+}
+
+.close-topic-body {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.close-topic-lane {
+  flex: 1;
+}
+
+.close-topic-lane-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fr-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.close-topic-note {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.close-note-context {
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid var(--fr-accent);
+}
+
+.close-note-action {
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid #d4a84e;
+}
+
+.close-topic-owner {
+  font-size: 0.75rem;
+  color: var(--fr-text-muted);
+  white-space: nowrap;
 }
 
 /* --- Continue / primary action buttons --- */
