@@ -135,6 +135,9 @@ export function App({
             groups: retro.groups.length,
             actions: retro.closeSummary.allActionItems.length,
           }}
+          cards={retro.cards}
+          groups={retro.groups}
+          templateId={retro.meta.templateId}
           onExport={retro.exportJson}
           onReturnToDashboard={() => {
             dashboard.returnToDashboard();

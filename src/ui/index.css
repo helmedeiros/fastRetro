@@ -2734,86 +2734,71 @@ form button {
   font-size: 1.3rem;
 }
 
-/* === Close summary === */
+/* === Close board & action list === */
 
-.close-discussed {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.close-topic {
+.close-board {
   background: var(--fr-surface);
   border: 1px solid var(--fr-border);
   border-radius: 10px;
-  padding: 1.25rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.close-topic-header {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.close-topic-title {
-  font-size: 1.1rem;
-  font-weight: 700;
+.close-board-title {
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--fr-text);
   text-transform: none;
   letter-spacing: normal;
+  margin: 0 0 1rem;
+}
+
+.close-action-list {
+  list-style: none;
+  padding: 0;
   margin: 0;
-}
-
-.close-topic-votes {
-  font-size: 0.75rem;
-  color: var(--fr-accent);
-  font-weight: 600;
-}
-
-.close-topic-body {
   display: flex;
-  gap: 1.5rem;
-}
-
-.close-topic-lane {
-  flex: 1;
-}
-
-.close-topic-lane-title {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fr-text-muted);
-  margin: 0 0 0.5rem;
-}
-
-.close-topic-note {
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.88rem;
-  margin-bottom: 0.35rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 0.5rem;
 }
 
-.close-note-context {
-  background: rgba(255, 255, 255, 0.04);
-  border-left: 3px solid var(--fr-accent);
+.close-action-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--fr-border);
+  border-radius: 8px;
 }
 
-.close-note-action {
-  background: rgba(255, 255, 255, 0.04);
-  border-left: 3px solid #d4a84e;
+.close-action-check {
+  color: var(--fr-accent);
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
-.close-topic-owner {
+.close-action-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.close-action-text {
+  display: block;
+  font-size: 0.88rem;
+}
+
+.close-action-parent {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--fr-text-muted);
+}
+
+.close-action-owner {
   font-size: 0.75rem;
   color: var(--fr-text-muted);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* --- Continue / primary action buttons --- */
