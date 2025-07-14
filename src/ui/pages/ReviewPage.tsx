@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import type { Card } from '../../domain/retro/Card';
+import type { Group } from '../../domain/retro/Group';
 import type { Timer } from '../../domain/retro/Timer';
 import type { Participant } from '../../domain/retro/Participant';
 import type { ActionItem } from '../../domain/retro/Retro';
 import type { Agreement } from '../../domain/team/Team';
 import type { FlatActionItem } from '../../domain/team/RetroHistory';
+import { getTemplate } from '../../domain/retro/FacilitationTemplate';
 import { OwnerPicker } from '../components/OwnerPicker';
 import { PresentTimer } from '../components/PresentTimer';
 
@@ -11,6 +14,9 @@ export interface ReviewPageProps {
   timer: Timer;
   participants: readonly Participant[];
   actionItems: readonly ActionItem[];
+  cards?: readonly Card[];
+  groups?: readonly Group[];
+  templateId?: string;
   existingActionItems?: readonly FlatActionItem[];
   agreements?: readonly Agreement[];
   members?: readonly { id: string; name: string }[];
@@ -30,6 +36,9 @@ export function ReviewPage({
   timer,
   participants,
   actionItems,
+  cards = [],
+  groups = [],
+  templateId,
   existingActionItems = [],
   agreements = [],
   members = [],
@@ -202,6 +211,57 @@ export function ReviewPage({
           )}
         </ul>
       </section>
+
+      {cards.length > 0 && (() => {
+        const template = getTemplate(templateId ?? 'start-stop');
+        return (
+          <section className="review-section review-board">
+            <h3 className="review-section-title">Board overview</h3>
+            <div className="columns">
+              {template.columns.map((col) => {
+                const colCards = cards.filter((c) => c.columnId === col.id);
+                const colGroups = groups.filter((g) => g.columnId === col.id);
+                const groupedIds = new Set(colGroups.flatMap((g) => g.cardIds));
+                const ungrouped = colCards.filter((c) => !groupedIds.has(c.id));
+                return (
+                  <section
+                    key={col.id}
+                    className="brainstorm-column"
+                    style={{ '--col-color': col.color } as React.CSSProperties}
+                  >
+                    <h3>{col.title}</h3>
+                    <p className="column-desc">{col.description}</p>
+                    {ungrouped.map((c) => (
+                      <div key={c.id} className="brainstorm-card">
+                        <span className="brainstorm-card-text">{c.text}</span>
+                      </div>
+                    ))}
+                    {colGroups.map((g) => {
+                      const gCards = g.cardIds
+                        .map((cid) => cards.find((c) => c.id === cid))
+                        .filter((c): c is Card => c !== undefined);
+                      return (
+                        <div key={g.id} className="brainstorm-group">
+                          <div className="brainstorm-group-header">
+                            <span className="brainstorm-group-name">{g.name || 'Group'}</span>
+                          </div>
+                          <ul className="brainstorm-group-cards">
+                            {gCards.map((c) => (
+                              <li key={c.id} className="brainstorm-card">
+                                <span className="brainstorm-card-text">{c.text}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })}
+                  </section>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })()}
     </section>
   );
 }

@@ -241,6 +241,9 @@ export function App({
             timer={retro.timer}
             participants={retro.participants}
             actionItems={retro.actionItems}
+            cards={retro.cards}
+            groups={retro.groups}
+            templateId={retro.meta.templateId}
             existingActionItems={dashboard.allActionItems}
             agreements={dashboard.team.agreements}
             members={dashboard.team.members}
