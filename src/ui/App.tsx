@@ -24,6 +24,7 @@ import { ReviewPage } from './pages/ReviewPage';
 import { ClosePage } from './pages/ClosePage';
 import { StageNav } from './components/StageNav';
 import { SideMenu } from './components/SideMenu';
+import { useP2PSync } from './hooks/useP2PSync';
 
 export interface AppProps {
   teamRepository: TeamRepository;
@@ -58,6 +59,7 @@ export function App({
   const [viewingMemberId, setViewingMemberId] = useState<string | null>(null);
   const dashboard = useTeamDashboard(teamRepository, ids, picker, clock);
   const retro = useRetro(bridge, picker, ids, clock, downloader);
+  const p2p = useP2PSync();
 
   const retroStage = retro.stage;
   const hasActiveRetro = dashboard.activeRetro !== null;
@@ -127,7 +129,7 @@ export function App({
       <main className="container">
         {logo}
         <StageNav currentStage="close" onNavigate={navigateStage} />
-        <SideMenu participants={retro.participants} />
+        <SideMenu participants={retro.participants} sync={p2p} />
         <ClosePage
           summary={retro.closeSummary}
           stats={{
@@ -156,7 +158,7 @@ export function App({
       <main className="container">
         {logo}
         <StageNav currentStage={retroStage} onNavigate={navigateStage} />
-        <SideMenu participants={retro.participants} />
+        <SideMenu participants={retro.participants} sync={p2p} />
         {retro.stage === 'icebreaker' &&
           retro.timer !== null &&
           retro.icebreaker !== null ? (

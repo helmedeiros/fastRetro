@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import type { Participant } from '../../domain/retro/Participant';
+import type { UseP2PSync } from '../hooks/useP2PSync';
+import { SyncPanel } from './SyncPanel';
 
 export interface SideMenuProps {
   participants: readonly Participant[];
+  sync?: UseP2PSync;
 }
 
 const AVATAR_COLORS = [
@@ -24,11 +27,13 @@ function initials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function SideMenu({ participants }: SideMenuProps): JSX.Element {
-  const [open, setOpen] = useState(false);
-  const [panel, setPanel] = useState<'team' | null>(null);
+type PanelType = 'team' | 'sync' | null;
 
-  const togglePanel = (p: 'team'): void => {
+export function SideMenu({ participants, sync }: SideMenuProps): JSX.Element {
+  const [open, setOpen] = useState(false);
+  const [panel, setPanel] = useState<PanelType>(null);
+
+  const togglePanel = (p: PanelType): void => {
     if (panel === p) {
       setPanel(null);
     } else {
@@ -37,14 +42,18 @@ export function SideMenu({ participants }: SideMenuProps): JSX.Element {
     }
   };
 
+  const syncStatusDot = sync !== undefined && sync.status === 'connected'
+    ? 'sync-dot-connected'
+    : sync !== undefined && sync.role !== 'none'
+      ? 'sync-dot-waiting'
+      : '';
+
   return (
     <>
-      {/* Overlay */}
       {panel !== null && (
         <div className="side-menu-overlay" onClick={(): void => { setPanel(null); }} />
       )}
 
-      {/* Panel */}
       {panel === 'team' && (
         <div className="side-menu-panel">
           <div className="side-menu-panel-header">
@@ -69,7 +78,18 @@ export function SideMenu({ participants }: SideMenuProps): JSX.Element {
         </div>
       )}
 
-      {/* Pill bar */}
+      {panel === 'sync' && sync !== undefined && (
+        <div className="side-menu-panel">
+          <div className="side-menu-panel-header">
+            <h3>Sync</h3>
+            <button type="button" className="side-menu-panel-close" onClick={(): void => { setPanel(null); }}>
+              &times;
+            </button>
+          </div>
+          <SyncPanel sync={sync} />
+        </div>
+      )}
+
       <div className={`side-menu-bar${open ? ' side-menu-bar-open' : ''}`}>
         <button
           type="button"
@@ -81,17 +101,18 @@ export function SideMenu({ participants }: SideMenuProps): JSX.Element {
           <span className="side-menu-label">Team</span>
         </button>
 
-        <button
-          type="button"
-          className="side-menu-item"
-          title="Info"
-          onClick={(): void => { setOpen(!open); }}
-        >
-          <span className="side-menu-icon">{'\u24D8'}</span>
-          <span className="side-menu-label">Context</span>
-        </button>
+        {sync !== undefined && (
+          <button
+            type="button"
+            className={`side-menu-item${panel === 'sync' ? ' active' : ''}${syncStatusDot !== '' ? ` ${syncStatusDot}` : ''}`}
+            title="Sync"
+            onClick={(): void => { togglePanel('sync'); }}
+          >
+            <span className="side-menu-icon">{'\u21C4'}</span>
+            <span className="side-menu-label">Sync</span>
+          </button>
+        )}
 
-        {/* Toggle button at the bottom */}
         <button
           type="button"
           className="side-menu-toggle"
