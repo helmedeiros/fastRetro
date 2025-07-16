@@ -2809,6 +2809,194 @@ form button {
   flex-shrink: 0;
 }
 
+/* === Side Menu === */
+
+.side-menu-bar {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.side-menu-bar:not(.side-menu-bar-open) .side-menu-item {
+  transform: scale(0);
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.side-menu-bar.side-menu-bar-open .side-menu-item {
+  transform: scale(1);
+  opacity: 1;
+  height: auto;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+}
+
+.side-menu-item {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.6rem 0.5rem;
+  width: 3.5rem;
+  background: var(--fr-surface);
+  color: var(--fr-text-muted);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: color 0.15s, background 0.15s;
+}
+
+.side-menu-item:first-child {
+  border-radius: 999px 999px 0 0;
+}
+
+.side-menu-item:last-of-type {
+  border-radius: 0 0 999px 999px;
+}
+
+.side-menu-item:hover,
+.side-menu-item.active {
+  color: var(--fr-accent);
+}
+
+.side-menu-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.side-menu-label {
+  font-size: 0.55rem;
+  font-weight: 600;
+}
+
+.side-menu-toggle {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--fr-accent);
+  color: var(--fr-bg);
+  font-size: 1.2rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 12px rgba(94, 196, 200, 0.3);
+  transition: transform 0.2s;
+}
+
+.side-menu-toggle:hover {
+  transform: scale(1.05);
+}
+
+.side-menu-toggle-icon {
+  line-height: 1;
+}
+
+/* Side Menu Overlay */
+.side-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 98;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Side Menu Panel */
+.side-menu-panel {
+  position: fixed;
+  right: 5rem;
+  bottom: 1rem;
+  width: 280px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  z-index: 99;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: side-panel-in 0.2s ease-out;
+}
+
+@keyframes side-panel-in {
+  from { opacity: 0; transform: translateX(1rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.side-menu-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.side-menu-panel-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.side-menu-panel-close {
+  all: unset;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: var(--fr-text-muted);
+}
+
+.side-menu-panel-close:hover {
+  color: var(--fr-text);
+}
+
+.side-menu-panel-section h4 {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fr-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.side-menu-participant-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.side-menu-participant {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+}
+
+.side-menu-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--fr-bg);
+  flex-shrink: 0;
+}
+
 /* --- Continue / primary action buttons --- */
 
 section > button.primary {

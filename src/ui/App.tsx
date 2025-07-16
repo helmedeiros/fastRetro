@@ -23,6 +23,7 @@ import { DiscussPage } from './pages/DiscussPage';
 import { ReviewPage } from './pages/ReviewPage';
 import { ClosePage } from './pages/ClosePage';
 import { StageNav } from './components/StageNav';
+import { SideMenu } from './components/SideMenu';
 
 export interface AppProps {
   teamRepository: TeamRepository;
@@ -126,6 +127,7 @@ export function App({
       <main className="container">
         {logo}
         <StageNav currentStage="close" onNavigate={navigateStage} />
+        <SideMenu participants={retro.participants} />
         <ClosePage
           summary={retro.closeSummary}
           stats={{
@@ -154,6 +156,7 @@ export function App({
       <main className="container">
         {logo}
         <StageNav currentStage={retroStage} onNavigate={navigateStage} />
+        <SideMenu participants={retro.participants} />
         {retro.stage === 'icebreaker' &&
           retro.timer !== null &&
           retro.icebreaker !== null ? (
