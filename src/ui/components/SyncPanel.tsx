@@ -1,151 +1,103 @@
 import { useState } from 'react';
-import type { UseP2PSync } from '../hooks/useP2PSync';
+import type { UseRoomSync } from '../hooks/useRoomSync';
 
 export interface SyncPanelProps {
-  sync: UseP2PSync;
+  sync: UseRoomSync;
 }
 
 export function SyncPanel({ sync }: SyncPanelProps): JSX.Element {
-  const [answerInput, setAnswerInput] = useState('');
-  const [offerInput, setOfferInput] = useState('');
-  const [answerCode, setAnswerCode] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const copyToClipboard = (text: string): void => {
+  const copyToClipboard = (text: string, field: string): void => {
     navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => { setCopied(false); }, 2000);
+      setCopiedField(field);
+      setTimeout(() => { setCopiedField(null); }, 2000);
     }).catch(() => undefined);
   };
 
-  // Not connected yet
+  // Not connected
   if (sync.role === 'none') {
     return (
       <div className="sync-panel">
         <h4 className="sync-panel-title">Share this retro</h4>
-        <p className="sync-panel-desc">Host a session or join an existing one.</p>
-        <div className="sync-panel-actions">
+        <p className="sync-panel-desc">Host a live session so others can join from another tab.</p>
+        <button
+          type="button"
+          className="sync-btn sync-btn-host"
+          onClick={sync.hostRoom}
+        >
+          Host session
+        </button>
+        <div className="sync-divider">or join an existing one</div>
+        <div className="sync-join-section">
+          <input
+            type="text"
+            value={joinCode}
+            onChange={(e): void => { setJoinCode(e.target.value.toUpperCase()); }}
+            placeholder="Enter room code..."
+            className="sync-input"
+          />
           <button
             type="button"
-            className="sync-btn sync-btn-host"
-            onClick={(): void => { sync.startHosting().catch(() => undefined); }}
+            className="sync-btn"
+            disabled={joinCode.trim().length === 0}
+            onClick={(): void => { sync.joinRoom(joinCode.trim()); }}
           >
-            Host session
+            Join
           </button>
-          <div className="sync-join-section">
-            <textarea
-              value={offerInput}
-              onChange={(e): void => { setOfferInput(e.target.value); }}
-              placeholder="Paste host code here..."
-              className="sync-textarea"
-              rows={3}
-            />
-            <button
-              type="button"
-              className="sync-btn"
-              disabled={offerInput.trim().length === 0}
-              onClick={(): void => {
-                sync.joinAsGuest(offerInput.trim()).then((code) => {
-                  setAnswerCode(code);
-                }).catch(() => undefined);
-              }}
-            >
-              Join
-            </button>
-          </div>
         </div>
       </div>
     );
   }
 
-  // Peer waiting for connection or showing answer code
-  if (sync.role === 'peer') {
-    return (
-      <div className="sync-panel">
-        <h4 className="sync-panel-title">
-          {sync.status === 'connected' ? 'Connected' : 'Joining...'}
-        </h4>
-        {answerCode !== null && sync.status !== 'connected' && (
-          <div className="sync-code-section">
-            <p className="sync-panel-desc">Send this answer code back to the host:</p>
-            <div className="sync-code-box">
-              <code className="sync-code">{answerCode.slice(0, 40)}...</code>
+  // Connected (host or guest)
+  return (
+    <div className="sync-panel">
+      <h4 className="sync-panel-title">
+        {sync.role === 'host' ? 'Hosting session' : 'Joined session'}
+      </h4>
+
+      <div className="sync-status-bar">
+        <span className="sync-status-dot" />
+        <span className="sync-status-text">Connected</span>
+      </div>
+
+      {sync.roomCode !== null && (
+        <div className="sync-share-section">
+          <div className="sync-code-display">
+            <span className="sync-code-label">Room code</span>
+            <div className="sync-code-row">
+              <span className="sync-room-code">{sync.roomCode}</span>
               <button
                 type="button"
                 className="sync-copy-btn"
-                onClick={(): void => { copyToClipboard(answerCode); }}
+                onClick={(): void => { copyToClipboard(sync.roomCode!, 'code'); }}
               >
-                {copied ? 'Copied!' : 'Copy'}
+                {copiedField === 'code' ? '\u2713' : '\u2398'}
               </button>
             </div>
           </div>
-        )}
-        {sync.status === 'connected' && (
-          <p className="sync-status-connected">Synced with host</p>
-        )}
-        <button type="button" className="sync-btn-disconnect" onClick={sync.disconnect}>
-          Disconnect
-        </button>
-      </div>
-    );
-  }
 
-  // Host mode
-  return (
-    <div className="sync-panel">
-      <h4 className="sync-panel-title">Hosting session</h4>
-      <div className="sync-host-status">
-        <span className="sync-peer-count">{String(sync.peerCount)}</span>
-        <span className="sync-peer-label">peer{sync.peerCount !== 1 ? 's' : ''} connected</span>
-      </div>
-
-      {sync.pendingOffer !== null && (
-        <div className="sync-code-section">
-          <p className="sync-panel-desc">Share this code with a participant:</p>
-          <div className="sync-code-box">
-            <code className="sync-code">{sync.pendingOffer.offerCode.slice(0, 40)}...</code>
-            <button
-              type="button"
-              className="sync-copy-btn"
-              onClick={(): void => { copyToClipboard(sync.pendingOffer!.offerCode); }}
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-          <div className="sync-answer-section">
-            <textarea
-              value={answerInput}
-              onChange={(e): void => { setAnswerInput(e.target.value); }}
-              placeholder="Paste their answer code here..."
-              className="sync-textarea"
-              rows={3}
-            />
-            <button
-              type="button"
-              className="sync-btn"
-              disabled={answerInput.trim().length === 0}
-              onClick={(): void => {
-                sync.acceptAnswer(sync.pendingOffer!.peerId, answerInput.trim())
-                  .then(() => { setAnswerInput(''); })
-                  .catch(() => undefined);
-              }}
-            >
-              Accept
-            </button>
-          </div>
+          {sync.shareUrl !== null && (
+            <div className="sync-link-display">
+              <div className="sync-link-row">
+                <span className="sync-link-text">{sync.shareUrl}</span>
+                <button
+                  type="button"
+                  className="sync-copy-btn"
+                  onClick={(): void => { copyToClipboard(sync.shareUrl!, 'link'); }}
+                >
+                  {copiedField === 'link' ? '\u2713' : '\u2398'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      <button
-        type="button"
-        className="sync-btn"
-        onClick={(): void => { sync.createNewOffer().catch(() => undefined); }}
-      >
-        + Invite another
-      </button>
-
       <button type="button" className="sync-btn-disconnect" onClick={sync.disconnect}>
-        End session
+        {sync.role === 'host' ? 'End session' : 'Leave session'}
       </button>
     </div>
   );

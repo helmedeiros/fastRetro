@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import type { Participant } from '../../domain/retro/Participant';
-import type { UseP2PSync } from '../hooks/useP2PSync';
+import type { UseRoomSync } from '../hooks/useRoomSync';
 import { SyncPanel } from './SyncPanel';
 
 export interface SideMenuProps {
   participants: readonly Participant[];
-  sync?: UseP2PSync;
+  sync?: UseRoomSync;
 }
 
 const AVATAR_COLORS = [
@@ -44,9 +44,7 @@ export function SideMenu({ participants, sync }: SideMenuProps): JSX.Element {
 
   const syncStatusDot = sync !== undefined && sync.status === 'connected'
     ? 'sync-dot-connected'
-    : sync !== undefined && sync.role !== 'none'
-      ? 'sync-dot-waiting'
-      : '';
+    : '';
 
   return (
     <>
