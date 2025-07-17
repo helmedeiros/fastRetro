@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RetroStage } from '../domain/retro/Retro';
 import type { Clock } from '../domain/ports/Clock';
 import type { Downloader } from '../domain/ports/Downloader';
@@ -62,14 +62,45 @@ export function App({
   const retro = useRetro(bridge, picker, ids, clock, downloader);
   const roomSync = useRoomSync();
 
-  // Auto-join room from URL hash
-  useState(() => {
+  // Auto-join room from URL hash on mount
+  const autoJoinedRef = useRef(false);
+  useEffect(() => {
+    if (autoJoinedRef.current) return;
     const code = RoomSync.extractRoomCodeFromHash();
     if (code !== null) {
+      autoJoinedRef.current = true;
       roomSync.joinRoom(code);
       window.location.hash = '';
     }
-  });
+  }, [roomSync]);
+
+  // Sync: broadcast state when retro changes (host side)
+  useEffect(() => {
+    if (roomSync.role === 'none') return;
+    const state = teamRepository.loadActiveRetro();
+    if (state !== null) {
+      roomSync.broadcastState(state);
+    }
+  }, [retro.stage, retro.cards, retro.votes, retro.groups, retro.discussNotes, retro.participants, roomSync, teamRepository]);
+
+  // Sync: receive remote state and apply it
+  useEffect(() => {
+    roomSync.onRemoteState((state) => {
+      teamRepository.saveActiveRetro(state);
+      retro.refresh();
+      setForceDashboard(false);
+    });
+  }, [roomSync, teamRepository, retro]);
+
+  // Sync: when a new peer requests state, send current
+  useEffect(() => {
+    roomSync.onRequestState(() => {
+      const state = teamRepository.loadActiveRetro();
+      if (state !== null) {
+        roomSync.broadcastState(state);
+      }
+    });
+  }, [roomSync, teamRepository]);
 
   const retroStage = retro.stage;
   const hasActiveRetro = dashboard.activeRetro !== null;
@@ -106,6 +137,19 @@ export function App({
     };
     nav[stage]?.();
   }, [retro]);
+
+  // Sync: stage vote consensus (40% threshold)
+  useEffect(() => {
+    roomSync.onStageVote((stage) => {
+      const votes = roomSync.stageVotes.get(stage);
+      const voteCount = votes?.size ?? 0;
+      const totalParticipants = retro.participants.length;
+      const threshold = Math.ceil(totalParticipants * 0.4);
+      if (voteCount >= threshold && roomSync.role === 'host') {
+        navigateStage(stage);
+      }
+    });
+  }, [roomSync, retro.participants.length, navigateStage]);
 
   const logo = (
     <h1>
