@@ -27,6 +27,7 @@ export interface UseTeamDashboard {
   readonly activeRetro: RetroState | null;
   readonly viewingCompletedRetroId: string | null;
   readonly viewingCompletedSummary: CloseSummary | null;
+  refresh: () => void;
   addMember: (name: string) => void;
   removeMember: (id: string) => void;
   startRetro: (meta: RetroMeta) => void;
@@ -144,6 +145,7 @@ export function useTeamDashboard(
     history,
     allActionItems,
     activeRetro,
+    refresh,
     viewingCompletedRetroId,
     viewingCompletedSummary,
     addMember,

@@ -63,16 +63,15 @@ export function App({
   const roomSync = useRoomSync();
 
   // Auto-join room from URL hash on mount
-  const autoJoinedRef = useRef(false);
+  const hashCodeRef = useRef(RoomSync.extractRoomCodeFromHash());
+  const { joinRoom: joinRoomFn } = roomSync;
   useEffect(() => {
-    if (autoJoinedRef.current) return;
-    const code = RoomSync.extractRoomCodeFromHash();
-    if (code !== null) {
-      autoJoinedRef.current = true;
-      roomSync.joinRoom(code);
-      window.location.hash = '';
-    }
-  }, [roomSync]);
+    const code = hashCodeRef.current;
+    if (code === null) return;
+    hashCodeRef.current = null;
+    joinRoomFn(code);
+    window.location.hash = '';
+  }, [joinRoomFn]);
 
   // Sync: broadcast state when retro changes (host side)
   useEffect(() => {
@@ -88,9 +87,10 @@ export function App({
     roomSync.onRemoteState((state) => {
       teamRepository.saveActiveRetro(state);
       retro.refresh();
+      dashboard.refresh();
       setForceDashboard(false);
     });
-  }, [roomSync, teamRepository, retro]);
+  }, [roomSync, teamRepository, retro, dashboard]);
 
   // Sync: when a new peer requests state, send current
   useEffect(() => {
