@@ -138,18 +138,12 @@ export function App({
     nav[stage]?.();
   }, [retro]);
 
-  // Sync: stage vote consensus (40% threshold)
+  // Sync: server tells us to navigate (40% threshold reached)
   useEffect(() => {
-    roomSync.onStageVote((stage) => {
-      const votes = roomSync.stageVotes.get(stage);
-      const voteCount = votes?.size ?? 0;
-      const totalParticipants = retro.participants.length;
-      const threshold = Math.ceil(totalParticipants * 0.4);
-      if (voteCount >= threshold && roomSync.role === 'host') {
-        navigateStage(stage);
-      }
+    roomSync.onNavigateStage((stage) => {
+      navigateStage(stage);
     });
-  }, [roomSync, retro.participants.length, navigateStage]);
+  }, [roomSync, navigateStage]);
 
   const logo = (
     <h1>

@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { RoomSync } from '../../src/adapters/sync/RoomSync';
 
-// BroadcastChannel is not available in jsdom, so we test the non-channel logic
-
 describe('RoomSync', () => {
   it('generates a room code in XXX-XXX-XXX format when hosting', () => {
     const sync = new RoomSync();

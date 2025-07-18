@@ -1,11 +1,5 @@
 import type { RetroState, RetroStage } from '../../domain/retro/Retro';
 
-export type RoomMessage =
-  | { type: 'state'; state: RetroState }
-  | { type: 'vote-stage'; stage: RetroStage; participantId: string }
-  | { type: 'join'; participantId: string; name: string }
-  | { type: 'request-state' };
-
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const parts: string[] = [];
@@ -20,13 +14,14 @@ function generateRoomCode(): string {
 }
 
 export class RoomSync {
-  private channel: BroadcastChannel | null = null;
+  private ws: WebSocket | null = null;
   private _roomCode: string;
   private _isHost: boolean;
   private onStateCallback: ((state: RetroState) => void) | null = null;
   private onVoteCallback: ((stage: RetroStage, participantId: string) => void) | null = null;
-  private onJoinCallback: ((participantId: string, name: string) => void) | null = null;
   private onRequestStateCallback: (() => void) | null = null;
+  private onNavigateCallback: ((stage: RetroStage) => void) | null = null;
+  private onPeerCountCallback: ((count: number) => void) | null = null;
 
   constructor(roomCode?: string) {
     this._roomCode = roomCode ?? generateRoomCode();
@@ -42,40 +37,51 @@ export class RoomSync {
   }
 
   connect(): void {
-    this.channel = new BroadcastChannel(`fastretro:room:${this._roomCode}`);
-    this.channel.onmessage = (e: MessageEvent): void => {
-      const msg = e.data as RoomMessage;
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = `${protocol}//${window.location.host}/__ws/room/${this._roomCode}`;
+    this.ws = new WebSocket(url);
+
+    this.ws.onmessage = (e): void => {
+      const msg = JSON.parse(e.data as string) as {
+        type: string;
+        state?: RetroState;
+        stage?: string;
+        participantId?: string;
+        count?: number;
+      };
+
       switch (msg.type) {
         case 'state':
-          this.onStateCallback?.(msg.state);
+          if (msg.state !== undefined) this.onStateCallback?.(msg.state);
           break;
         case 'vote-stage':
-          this.onVoteCallback?.(msg.stage, msg.participantId);
+          if (msg.stage !== undefined && msg.participantId !== undefined) {
+            this.onVoteCallback?.(msg.stage as RetroStage, msg.participantId);
+          }
           break;
-        case 'join':
-          this.onJoinCallback?.(msg.participantId, msg.name);
+        case 'navigate-stage':
+          if (msg.stage !== undefined) this.onNavigateCallback?.(msg.stage as RetroStage);
+          break;
+        case 'peer-count':
+          if (msg.count !== undefined) this.onPeerCountCallback?.(msg.count);
           break;
         case 'request-state':
           this.onRequestStateCallback?.();
           break;
       }
     };
-
-    if (!this._isHost) {
-      this.channel.postMessage({ type: 'request-state' } satisfies RoomMessage);
-    }
   }
 
   broadcastState(state: RetroState): void {
-    this.channel?.postMessage({ type: 'state', state } satisfies RoomMessage);
+    if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ type: 'state', state }));
+    }
   }
 
   sendVoteStage(stage: RetroStage, participantId: string): void {
-    this.channel?.postMessage({ type: 'vote-stage', stage, participantId } satisfies RoomMessage);
-  }
-
-  sendJoin(participantId: string, name: string): void {
-    this.channel?.postMessage({ type: 'join', participantId, name } satisfies RoomMessage);
+    if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ type: 'vote-stage', stage, participantId }));
+    }
   }
 
   onState(cb: (state: RetroState) => void): void {
@@ -86,8 +92,12 @@ export class RoomSync {
     this.onVoteCallback = cb;
   }
 
-  onJoin(cb: (participantId: string, name: string) => void): void {
-    this.onJoinCallback = cb;
+  onNavigateStage(cb: (stage: RetroStage) => void): void {
+    this.onNavigateCallback = cb;
+  }
+
+  onPeerCount(cb: (count: number) => void): void {
+    this.onPeerCountCallback = cb;
   }
 
   onRequestState(cb: () => void): void {
@@ -99,8 +109,14 @@ export class RoomSync {
   }
 
   disconnect(): void {
-    this.channel?.close();
-    this.channel = null;
+    this.ws?.close();
+    this.ws = null;
+  }
+
+  static async createRoom(): Promise<string> {
+    const res = await fetch('/__api/rooms', { method: 'POST' });
+    const data = (await res.json()) as { code: string };
+    return data.code;
   }
 
   static extractRoomCodeFromHash(): string | null {

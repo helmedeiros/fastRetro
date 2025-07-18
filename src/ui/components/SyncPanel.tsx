@@ -60,7 +60,7 @@ export function SyncPanel({ sync }: SyncPanelProps): JSX.Element {
 
       <div className="sync-status-bar">
         <span className="sync-status-dot" />
-        <span className="sync-status-text">Connected</span>
+        <span className="sync-status-text">Connected ({String(sync.peerCount)} in room)</span>
       </div>
 
       {sync.roomCode !== null && (
