@@ -73,34 +73,43 @@ export function App({
     window.location.hash = '';
   }, [joinRoomFn]);
 
-  // Sync: broadcast state when retro changes (host side)
+  // Sync: stable refs to avoid stale closures
+  const { broadcastState: syncBroadcast, onRemoteState: syncOnRemote, onRequestState: syncOnRequest, onNavigateStage: syncOnNavigate, role: syncRole } = roomSync;
+  const retroRefresh = retro.refresh;
+  const dashboardRefresh = dashboard.refresh;
+
+  // Sync: broadcast state when retro changes
+  const isSyncingRef = useRef(false);
   useEffect(() => {
-    if (roomSync.role === 'none') return;
+    if (syncRole === 'none' || isSyncingRef.current) return;
     const state = teamRepository.loadActiveRetro();
     if (state !== null) {
-      roomSync.broadcastState(state);
+      syncBroadcast(state);
     }
-  }, [retro.stage, retro.cards, retro.votes, retro.groups, retro.discussNotes, retro.participants, roomSync, teamRepository]);
+  }, [retro.stage, retro.cards, retro.votes, retro.groups, retro.discussNotes, retro.participants, syncBroadcast, syncRole, teamRepository]);
 
   // Sync: receive remote state and apply it
   useEffect(() => {
-    roomSync.onRemoteState((state) => {
+    syncOnRemote((state) => {
+      isSyncingRef.current = true;
       teamRepository.saveActiveRetro(state);
-      retro.refresh();
-      dashboard.refresh();
+      retroRefresh();
+      dashboardRefresh();
       setForceDashboard(false);
+      // Reset after React processes the update
+      setTimeout(() => { isSyncingRef.current = false; }, 50);
     });
-  }, [roomSync, teamRepository, retro, dashboard]);
+  }, [syncOnRemote, teamRepository, retroRefresh, dashboardRefresh]);
 
   // Sync: when a new peer requests state, send current
   useEffect(() => {
-    roomSync.onRequestState(() => {
+    syncOnRequest(() => {
       const state = teamRepository.loadActiveRetro();
       if (state !== null) {
-        roomSync.broadcastState(state);
+        syncBroadcast(state);
       }
     });
-  }, [roomSync, teamRepository]);
+  }, [syncOnRequest, syncBroadcast, teamRepository]);
 
   const retroStage = retro.stage;
   const hasActiveRetro = dashboard.activeRetro !== null;
@@ -140,10 +149,10 @@ export function App({
 
   // Sync: server tells us to navigate (40% threshold reached)
   useEffect(() => {
-    roomSync.onNavigateStage((stage) => {
+    syncOnNavigate((stage) => {
       navigateStage(stage);
     });
-  }, [roomSync, navigateStage]);
+  }, [syncOnNavigate, navigateStage]);
 
   const logo = (
     <h1>
