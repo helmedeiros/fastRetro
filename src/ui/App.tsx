@@ -105,12 +105,16 @@ export function App({
   // Sync: when WebSocket connects, broadcast current state (host)
   useEffect(() => {
     syncOnConnected(() => {
-      const state = teamRepository.loadActiveRetro();
-      if (state !== null) {
-        syncBroadcast(state);
+      // Only the host broadcasts state on connect — guests must NOT
+      // overwrite the room with their stale local data
+      if (syncRole === 'host') {
+        const state = teamRepository.loadActiveRetro();
+        if (state !== null) {
+          syncBroadcast(state);
+        }
       }
     });
-  }, [syncOnConnected, syncBroadcast, teamRepository]);
+  }, [syncOnConnected, syncBroadcast, syncRole, teamRepository]);
 
   // Sync: when a new peer requests state, send current
   useEffect(() => {
