@@ -36,10 +36,20 @@ export class RoomSync {
     return this._isHost;
   }
 
+  private onConnectedCallback: (() => void) | null = null;
+
+  onConnected(cb: () => void): void {
+    this.onConnectedCallback = cb;
+  }
+
   connect(): void {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const url = `${protocol}//${window.location.host}/__ws/room/${this._roomCode}`;
     this.ws = new WebSocket(url);
+
+    this.ws.onopen = (): void => {
+      this.onConnectedCallback?.();
+    };
 
     this.ws.onmessage = (e): void => {
       const msg = JSON.parse(e.data as string) as {

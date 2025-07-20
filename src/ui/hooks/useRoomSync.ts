@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { RetroState, RetroStage } from '../../domain/retro/Retro';
 import { RoomSync } from '../../adapters/sync/RoomSync';
 
@@ -20,6 +20,7 @@ export interface UseRoomSync {
   onStageVote: (cb: (stage: RetroStage, participantId: string) => void) => void;
   onNavigateStage: (cb: (stage: RetroStage) => void) => void;
   onRequestState: (cb: () => void) => void;
+  onConnected: (cb: () => void) => void;
   disconnect: () => void;
 }
 
@@ -33,16 +34,24 @@ export function useRoomSync(): UseRoomSync {
 
   const syncRef = useRef<RoomSync | null>(null);
   const remoteStateCbRef = useRef<((state: RetroState) => void) | null>(null);
+  const bufferedStateRef = useRef<RetroState | null>(null);
   const stageVoteCbRef = useRef<((stage: RetroStage, pid: string) => void) | null>(null);
   const navigateStageCbRef = useRef<((stage: RetroStage) => void) | null>(null);
   const requestStateCbRef = useRef<(() => void) | null>(null);
+  const connectedCbRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => {
-    return () => { syncRef.current?.disconnect(); };
-  }, []);
+  // WebSocket closes automatically on page unload.
+  // Manual disconnect via the disconnect() callback.
+  // No cleanup effect here — React StrictMode double-mounts would kill the connection.
 
   const setupCallbacks = useCallback((sync: RoomSync) => {
-    sync.onState((state) => { remoteStateCbRef.current?.(state); });
+    sync.onState((state) => {
+      if (remoteStateCbRef.current !== null) {
+        remoteStateCbRef.current(state);
+      } else {
+        bufferedStateRef.current = state;
+      }
+    });
     sync.onVoteStage((stage, pid) => {
       setStageVotes((prev) => {
         const next = new Map(prev);
@@ -56,6 +65,7 @@ export function useRoomSync(): UseRoomSync {
     sync.onNavigateStage((stage) => { navigateStageCbRef.current?.(stage); });
     sync.onPeerCount((count) => { setPeerCount(count); });
     sync.onRequestState(() => { requestStateCbRef.current?.(); });
+    sync.onConnected(() => { connectedCbRef.current?.(); });
   }, []);
 
   const connectSync = useCallback((sync: RoomSync) => {
@@ -96,6 +106,12 @@ export function useRoomSync(): UseRoomSync {
 
   const onRemoteState = useCallback((cb: (state: RetroState) => void) => {
     remoteStateCbRef.current = cb;
+    // Replay buffered state that arrived before callback was registered
+    if (bufferedStateRef.current !== null) {
+      const buffered = bufferedStateRef.current;
+      bufferedStateRef.current = null;
+      cb(buffered);
+    }
   }, []);
 
   const onStageVote = useCallback((cb: (stage: RetroStage, pid: string) => void) => {
@@ -108,6 +124,10 @@ export function useRoomSync(): UseRoomSync {
 
   const onRequestState = useCallback((cb: () => void) => {
     requestStateCbRef.current = cb;
+  }, []);
+
+  const onConnected = useCallback((cb: () => void) => {
+    connectedCbRef.current = cb;
   }, []);
 
   const disconnect = useCallback(() => {
@@ -124,6 +144,6 @@ export function useRoomSync(): UseRoomSync {
   return {
     role, status, roomCode, shareUrl, peerCount, stageVotes,
     hostRoom, joinRoom, broadcastState, voteForStage,
-    onRemoteState, onStageVote, onNavigateStage, onRequestState, disconnect,
+    onRemoteState, onStageVote, onNavigateStage, onRequestState, onConnected, disconnect,
   };
 }

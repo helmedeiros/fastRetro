@@ -63,18 +63,20 @@ export function App({
   const roomSync = useRoomSync();
 
   // Auto-join room from URL hash on mount
-  const hashCodeRef = useRef(RoomSync.extractRoomCodeFromHash());
   const { joinRoom: joinRoomFn } = roomSync;
+  const hasJoinedRef = useRef(false);
   useEffect(() => {
-    const code = hashCodeRef.current;
+    if (hasJoinedRef.current) return;
+    const code = RoomSync.extractRoomCodeFromHash();
     if (code === null) return;
-    hashCodeRef.current = null;
+    hasJoinedRef.current = true;
     joinRoomFn(code);
-    window.location.hash = '';
+    // Clear hash after a short delay so StrictMode re-mount still sees it
+    setTimeout(() => { window.location.hash = ''; }, 100);
   }, [joinRoomFn]);
 
   // Sync: stable refs to avoid stale closures
-  const { broadcastState: syncBroadcast, onRemoteState: syncOnRemote, onRequestState: syncOnRequest, onNavigateStage: syncOnNavigate, role: syncRole } = roomSync;
+  const { broadcastState: syncBroadcast, onRemoteState: syncOnRemote, onRequestState: syncOnRequest, onNavigateStage: syncOnNavigate, onConnected: syncOnConnected, role: syncRole } = roomSync;
   const retroRefresh = retro.refresh;
   const dashboardRefresh = dashboard.refresh;
 
@@ -96,10 +98,19 @@ export function App({
       retroRefresh();
       dashboardRefresh();
       setForceDashboard(false);
-      // Reset after React processes the update
       setTimeout(() => { isSyncingRef.current = false; }, 50);
     });
   }, [syncOnRemote, teamRepository, retroRefresh, dashboardRefresh]);
+
+  // Sync: when WebSocket connects, broadcast current state (host)
+  useEffect(() => {
+    syncOnConnected(() => {
+      const state = teamRepository.loadActiveRetro();
+      if (state !== null) {
+        syncBroadcast(state);
+      }
+    });
+  }, [syncOnConnected, syncBroadcast, teamRepository]);
 
   // Sync: when a new peer requests state, send current
   useEffect(() => {
