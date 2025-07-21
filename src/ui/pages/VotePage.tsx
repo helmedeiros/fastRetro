@@ -19,6 +19,7 @@ export interface VotePageProps {
   onPauseTimer: () => void;
   onResumeTimer: () => void;
   onResetTimer: () => void;
+  currentParticipantId?: string | null;
   onSetVoteBudget: (budget: number) => void;
   onCastVote: (participantId: string, cardId: string) => void;
 }
@@ -159,10 +160,12 @@ export function VotePage({
   onSetVoteBudget,
   onCastVote,
   templateId,
+  currentParticipantId,
 }: VotePageProps): JSX.Element {
   const template = getTemplate(templateId ?? 'start-stop');
+  const lockedToSelf = currentParticipantId !== undefined && currentParticipantId !== null;
   const [activeId, setActiveId] = useState<string | null>(
-    participants[0]?.id ?? null,
+    currentParticipantId ?? participants[0]?.id ?? null,
   );
   const usedBy = (pid: string): number =>
     votes.filter((v) => v.participantId === pid).length;
@@ -199,13 +202,15 @@ export function VotePage({
           {participants.map((p) => {
             const remaining = voteBudget - usedBy(p.id);
             const selected = p.id === activeId;
+            const disabled = lockedToSelf && p.id !== currentParticipantId;
             return (
               <button
                 key={p.id}
                 type="button"
                 aria-pressed={selected}
-                className={`voter-pill${selected ? ' active' : ''}`}
-                onClick={(): void => { setActiveId(p.id); }}
+                className={`voter-pill${selected ? ' active' : ''}${disabled ? ' voter-pill-disabled' : ''}`}
+                disabled={disabled}
+                onClick={(): void => { if (!disabled) setActiveId(p.id); }}
               >
                 {p.name}
                 <span className="voter-remaining">{String(remaining)}</span>

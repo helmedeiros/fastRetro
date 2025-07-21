@@ -24,7 +24,9 @@ import { ReviewPage } from './pages/ReviewPage';
 import { ClosePage } from './pages/ClosePage';
 import { StageNav } from './components/StageNav';
 import { SideMenu } from './components/SideMenu';
+import { JoinModal } from './components/JoinModal';
 import { useRoomSync } from './hooks/useRoomSync';
+import { useIdentity } from './hooks/useIdentity';
 import { RoomSync } from '../adapters/sync/RoomSync';
 
 export interface AppProps {
@@ -61,6 +63,14 @@ export function App({
   const dashboard = useTeamDashboard(teamRepository, ids, picker, clock);
   const retro = useRetro(bridge, picker, ids, clock, downloader);
   const roomSync = useRoomSync();
+  const identity = useIdentity();
+
+  // Host automatically gets identity as first participant
+  useEffect(() => {
+    if (roomSync.role === 'host' && identity.participantId === null && retro.participants.length > 0) {
+      identity.setParticipantId(retro.participants[0].id);
+    }
+  }, [roomSync.role, identity, retro.participants]);
 
   // Auto-join room from URL hash on mount
   const { joinRoom: joinRoomFn } = roomSync;
@@ -231,6 +241,23 @@ export function App({
         {logo}
         <StageNav currentStage={retroStage} onNavigate={navigateStage} />
         <SideMenu participants={retro.participants} sync={roomSync} />
+        {roomSync.role === 'guest' && identity.participantId === null && retro.participants.length > 0 && (
+          <JoinModal
+            participants={retro.participants}
+            onSelectParticipant={(pid): void => { identity.setParticipantId(pid); }}
+            onAddParticipant={(name): void => {
+              retro.addParticipant(name);
+              // The new participant will be the last one after refresh
+              setTimeout(() => {
+                const state = teamRepository.loadActiveRetro();
+                if (state !== null) {
+                  const last = state.participants[state.participants.length - 1];
+                  if (last !== undefined) identity.setParticipantId(last.id);
+                }
+              }, 100);
+            }}
+          />
+        )}
         {retro.stage === 'icebreaker' &&
           retro.timer !== null &&
           retro.icebreaker !== null ? (
@@ -283,6 +310,7 @@ export function App({
             timer={retro.timer}
             participants={retro.participants}
             templateId={retro.meta.templateId}
+            currentParticipantId={identity.participantId}
             cards={retro.cards}
             groups={retro.groups}
             votes={retro.votes}

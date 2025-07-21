@@ -2175,6 +2175,11 @@ form button {
   color: #1a1a2e;
 }
 
+.voter-pill-disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .voter-remaining {
   display: inline-flex;
   align-items: center;
@@ -3013,6 +3018,119 @@ form button {
   font-weight: 700;
   color: var(--fr-bg);
   flex-shrink: 0;
+}
+
+/* === Join Modal === */
+
+.join-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.join-modal {
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.join-modal-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.3rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.join-modal-desc {
+  margin: 0 0 1.5rem;
+  color: var(--fr-text-muted);
+  font-size: 0.9rem;
+}
+
+.join-modal-section {
+  margin-bottom: 1.25rem;
+}
+
+.join-modal-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fr-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.join-modal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.join-modal-participant {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background 0.15s;
+}
+
+.join-modal-participant:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.join-modal-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--fr-bg);
+  flex-shrink: 0;
+}
+
+.join-modal-add {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.join-modal-input {
+  flex: 1;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.join-modal-btn {
+  all: unset;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  background: var(--fr-accent);
+  color: var(--fr-bg);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.join-modal-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 /* === Sync Panel === */
