@@ -65,12 +65,7 @@ export function App({
   const roomSync = useRoomSync();
   const identity = useIdentity();
 
-  // Host automatically gets identity as first participant
-  useEffect(() => {
-    if (roomSync.role === 'host' && identity.participantId === null && retro.participants.length > 0) {
-      identity.setParticipantId(retro.participants[0].id);
-    }
-  }, [roomSync.role, identity, retro.participants]);
+  // No auto-assign — host and guests both pick via JoinModal
 
   // Auto-join room from URL hash on mount
   const { joinRoom: joinRoomFn } = roomSync;
@@ -241,18 +236,24 @@ export function App({
         {logo}
         <StageNav currentStage={retroStage} onNavigate={navigateStage} />
         <SideMenu participants={retro.participants} sync={roomSync} />
-        {roomSync.role === 'guest' && identity.participantId === null && retro.participants.length > 0 && (
+        {roomSync.role !== 'none' && identity.participantId === null && retro.participants.length > 0 && (
           <JoinModal
             participants={retro.participants}
-            onSelectParticipant={(pid): void => { identity.setParticipantId(pid); }}
+            takenParticipantIds={roomSync.takenIds}
+            onSelectParticipant={(pid): void => {
+              identity.setParticipantId(pid);
+              roomSync.claimIdentity(pid);
+            }}
             onAddParticipant={(name): void => {
               retro.addParticipant(name);
-              // The new participant will be the last one after refresh
               setTimeout(() => {
                 const state = teamRepository.loadActiveRetro();
                 if (state !== null) {
                   const last = state.participants[state.participants.length - 1];
-                  if (last !== undefined) identity.setParticipantId(last.id);
+                  if (last !== undefined) {
+                    identity.setParticipantId(last.id);
+                    roomSync.claimIdentity(last.id);
+                  }
                 }
               }, 100);
             }}

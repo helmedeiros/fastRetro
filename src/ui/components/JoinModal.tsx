@@ -3,6 +3,7 @@ import type { Participant } from '../../domain/retro/Participant';
 
 export interface JoinModalProps {
   participants: readonly Participant[];
+  takenParticipantIds?: ReadonlySet<string>;
   onSelectParticipant: (participantId: string) => void;
   onAddParticipant: (name: string) => void;
 }
@@ -26,7 +27,8 @@ function initials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function JoinModal({ participants, onSelectParticipant, onAddParticipant }: JoinModalProps): JSX.Element {
+export function JoinModal({ participants, takenParticipantIds, onSelectParticipant, onAddParticipant }: JoinModalProps): JSX.Element {
+  const taken = takenParticipantIds ?? new Set<string>();
   const [newName, setNewName] = useState('');
 
   return (
@@ -39,20 +41,25 @@ export function JoinModal({ participants, onSelectParticipant, onAddParticipant 
           <div className="join-modal-section">
             <h4 className="join-modal-label">Pick your name</h4>
             <ul className="join-modal-list">
-              {participants.map((p) => (
+              {participants.map((p) => {
+                const isTaken = taken.has(p.id);
+                return (
                 <li key={p.id}>
                   <button
                     type="button"
-                    className="join-modal-participant"
-                    onClick={(): void => { onSelectParticipant(p.id); }}
+                    className={`join-modal-participant${isTaken ? ' join-modal-taken' : ''}`}
+                    disabled={isTaken}
+                    onClick={(): void => { if (!isTaken) onSelectParticipant(p.id); }}
                   >
                     <span className="join-modal-avatar" style={{ background: avatarColor(p.name) }}>
                       {initials(p.name)}
                     </span>
                     <span>{p.name}</span>
+                    {isTaken && <span className="join-modal-taken-label">taken</span>}
                   </button>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         )}

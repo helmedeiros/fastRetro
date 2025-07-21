@@ -37,6 +37,7 @@ export class RoomSync {
   }
 
   private onConnectedCallback: (() => void) | null = null;
+  private onTakenIdsCallback: ((ids: string[]) => void) | null = null;
 
   onConnected(cb: () => void): void {
     this.onConnectedCallback = cb;
@@ -58,6 +59,7 @@ export class RoomSync {
         stage?: string;
         participantId?: string;
         count?: number;
+        ids?: string[];
       };
 
       switch (msg.type) {
@@ -77,6 +79,9 @@ export class RoomSync {
           break;
         case 'request-state':
           this.onRequestStateCallback?.();
+          break;
+        case 'taken-ids':
+          if (msg.ids !== undefined) this.onTakenIdsCallback?.(msg.ids);
           break;
       }
     };
@@ -112,6 +117,16 @@ export class RoomSync {
 
   onRequestState(cb: () => void): void {
     this.onRequestStateCallback = cb;
+  }
+
+  onTakenIds(cb: (ids: string[]) => void): void {
+    this.onTakenIdsCallback = cb;
+  }
+
+  sendClaimIdentity(participantId: string): void {
+    if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ type: 'claim-identity', participantId }));
+    }
   }
 
   getShareUrl(): string {

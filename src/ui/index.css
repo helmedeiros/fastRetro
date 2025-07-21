@@ -3089,8 +3089,20 @@ form button {
   transition: background 0.15s;
 }
 
-.join-modal-participant:hover {
+.join-modal-participant:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.06);
+}
+
+.join-modal-taken {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.join-modal-taken-label {
+  margin-left: auto;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--fr-text-muted);
 }
 
 .join-modal-avatar {

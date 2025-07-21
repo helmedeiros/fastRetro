@@ -5,6 +5,7 @@ interface Room {
   state: string | null;
   clients: Set<WebSocket>;
   votes: Map<string, Set<string>>; // stage -> participantIds
+  takenIds: Set<string>; // claimed participant IDs
 }
 
 export function retroSyncPlugin(): Plugin {
@@ -17,7 +18,7 @@ export function retroSyncPlugin(): Plugin {
       function getOrCreateRoom(code: string): Room {
         let room = rooms.get(code);
         if (room === undefined) {
-          room = { state: null, clients: new Set(), votes: new Map() };
+          room = { state: null, clients: new Set(), votes: new Map(), takenIds: new Set() };
           rooms.set(code, room);
         }
         return room;
@@ -50,6 +51,11 @@ export function retroSyncPlugin(): Plugin {
             // Notify all about peer count
             broadcast(room, JSON.stringify({ type: 'peer-count', count: room.clients.size }));
 
+            // Send taken participant IDs to new client
+            if (room.takenIds.size > 0) {
+              ws.send(JSON.stringify({ type: 'taken-ids', ids: [...room.takenIds] }));
+            }
+
             ws.on('message', (raw) => {
               const msg = JSON.parse(raw.toString()) as { type: string; state?: unknown; stage?: string; participantId?: string };
 
@@ -78,6 +84,11 @@ export function retroSyncPlugin(): Plugin {
                   broadcast(room, JSON.stringify({ type: 'navigate-stage', stage }));
                   room.votes.clear();
                 }
+              }
+
+              if (msg.type === 'claim-identity' && msg.participantId !== undefined) {
+                room.takenIds.add(msg.participantId);
+                broadcast(room, JSON.stringify({ type: 'taken-ids', ids: [...room.takenIds] }));
               }
             });
 

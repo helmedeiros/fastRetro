@@ -11,9 +11,11 @@ export interface UseRoomSync {
   roomCode: string | null;
   shareUrl: string | null;
   peerCount: number;
+  takenIds: Set<string>;
   stageVotes: Map<string, Set<string>>;
   hostRoom: () => void;
   joinRoom: (code: string) => void;
+  claimIdentity: (participantId: string) => void;
   broadcastState: (state: RetroState) => void;
   voteForStage: (stage: RetroStage, participantId: string) => void;
   onRemoteState: (cb: (state: RetroState) => void) => void;
@@ -30,6 +32,7 @@ export function useRoomSync(): UseRoomSync {
   const [roomCode, setRoomCode] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [peerCount, setPeerCount] = useState(0);
+  const [takenIds, setTakenIds] = useState<Set<string>>(new Set());
   const [stageVotes, setStageVotes] = useState<Map<string, Set<string>>>(new Map());
 
   const syncRef = useRef<RoomSync | null>(null);
@@ -64,6 +67,7 @@ export function useRoomSync(): UseRoomSync {
     });
     sync.onNavigateStage((stage) => { navigateStageCbRef.current?.(stage); });
     sync.onPeerCount((count) => { setPeerCount(count); });
+    sync.onTakenIds((ids) => { setTakenIds(new Set(ids)); });
     sync.onRequestState(() => { requestStateCbRef.current?.(); });
     sync.onConnected(() => { connectedCbRef.current?.(); });
   }, []);
@@ -95,6 +99,11 @@ export function useRoomSync(): UseRoomSync {
     setRole('guest');
     connectSync(sync);
   }, [connectSync]);
+
+  const claimIdentity = useCallback((participantId: string) => {
+    syncRef.current?.sendClaimIdentity(participantId);
+    setTakenIds((prev) => new Set([...prev, participantId]));
+  }, []);
 
   const broadcastState = useCallback((state: RetroState) => {
     syncRef.current?.broadcastState(state);
@@ -138,12 +147,13 @@ export function useRoomSync(): UseRoomSync {
     setRoomCode(null);
     setShareUrl(null);
     setPeerCount(0);
+    setTakenIds(new Set());
     setStageVotes(new Map());
   }, []);
 
   return {
-    role, status, roomCode, shareUrl, peerCount, stageVotes,
-    hostRoom, joinRoom, broadcastState, voteForStage,
+    role, status, roomCode, shareUrl, peerCount, takenIds, stageVotes,
+    hostRoom, joinRoom, claimIdentity, broadcastState, voteForStage,
     onRemoteState, onStageVote, onNavigateStage, onRequestState, onConnected, disconnect,
   };
 }
