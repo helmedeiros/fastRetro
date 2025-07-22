@@ -86,6 +86,10 @@ export function retroSyncPlugin(): Plugin {
                 }
               }
 
+              if (msg.type === 'request-state') {
+                broadcast(room, raw.toString(), ws);
+              }
+
               if (msg.type === 'claim-identity' && msg.participantId !== undefined) {
                 room.takenIds.add(msg.participantId);
                 broadcast(room, JSON.stringify({ type: 'taken-ids', ids: [...room.takenIds] }));
