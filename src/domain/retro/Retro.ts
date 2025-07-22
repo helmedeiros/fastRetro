@@ -134,7 +134,18 @@ export function addParticipant(
   if (exists) {
     throw new Error(`Participant "${participant.name}" already exists`);
   }
-  return { ...state, participants: [...state.participants, participant] };
+  let next: RetroState = { ...state, participants: [...state.participants, participant] };
+  // Add to icebreaker rotation if active
+  if (next.icebreaker !== null) {
+    next = {
+      ...next,
+      icebreaker: {
+        ...next.icebreaker,
+        participantIds: [...next.icebreaker.participantIds, id],
+      },
+    };
+  }
+  return next;
 }
 
 export function removeParticipant(

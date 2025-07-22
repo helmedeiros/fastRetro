@@ -22,6 +22,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       picker={picker}
       idGenerator={idGenerator}
       downloader={downloader}
+      storage={window.localStorage}
     />
   </React.StrictMode>,
 );

@@ -81,24 +81,39 @@ function isPersistedHistoryV10(value: unknown): value is PersistedHistoryV10 {
 export class LocalStorageTeamRepository implements TeamRepository {
   private readonly retroRepo: LocalStorageRetroRepository;
   private migrated = false;
+  private readonly teamKey: string;
+  private readonly historyKey: string;
+  private readonly activeKey: string;
+  private readonly migratedKey: string;
 
-  constructor(private readonly storage: Storage) {
+  constructor(private readonly storage: Storage, teamId?: string) {
     this.retroRepo = new LocalStorageRetroRepository(storage);
+    if (teamId !== undefined) {
+      this.teamKey = `fastretro:team:${teamId}`;
+      this.historyKey = `fastretro:history:${teamId}`;
+      this.activeKey = `fastretro:active:${teamId}`;
+      this.migratedKey = `fastretro:migrated:${teamId}`;
+    } else {
+      this.teamKey = TEAM_STORAGE_KEY;
+      this.historyKey = HISTORY_STORAGE_KEY;
+      this.activeKey = ACTIVE_RETRO_STORAGE_KEY;
+      this.migratedKey = MIGRATED_KEY;
+    }
   }
 
   private ensureMigrated(): void {
     if (this.migrated) return;
     this.migrated = true;
 
-    if (this.storage.getItem(MIGRATED_KEY) !== null) return;
-    if (this.storage.getItem(TEAM_STORAGE_KEY) !== null) {
-      this.storage.setItem(MIGRATED_KEY, '1');
+    if (this.storage.getItem(this.migratedKey) !== null) return;
+    if (this.storage.getItem(this.teamKey) !== null) {
+      this.storage.setItem(this.migratedKey, '1');
       return;
     }
 
     const v9Raw = this.storage.getItem(V9_KEY);
     if (v9Raw === null) {
-      this.storage.setItem(MIGRATED_KEY, '1');
+      this.storage.setItem(this.migratedKey, '1');
       return;
     }
 
@@ -114,12 +129,12 @@ export class LocalStorageTeamRepository implements TeamRepository {
       this.saveActiveRetroRaw(v9State);
     }
 
-    this.storage.setItem(MIGRATED_KEY, '1');
+    this.storage.setItem(this.migratedKey, '1');
   }
 
   loadTeam(): TeamState {
     this.ensureMigrated();
-    const raw = this.storage.getItem(TEAM_STORAGE_KEY);
+    const raw = this.storage.getItem(this.teamKey);
     if (raw === null) return createTeam();
     try {
       const parsed = JSON.parse(raw);
@@ -150,12 +165,12 @@ export class LocalStorageTeamRepository implements TeamRepository {
   }
 
   private saveTeamRaw(payload: PersistedTeamV10): void {
-    this.storage.setItem(TEAM_STORAGE_KEY, JSON.stringify(payload));
+    this.storage.setItem(this.teamKey, JSON.stringify(payload));
   }
 
   loadHistory(): RetroHistoryState {
     this.ensureMigrated();
-    const raw = this.storage.getItem(HISTORY_STORAGE_KEY);
+    const raw = this.storage.getItem(this.historyKey);
     if (raw === null) return createHistory();
     try {
       const parsed = JSON.parse(raw);
@@ -206,12 +221,12 @@ export class LocalStorageTeamRepository implements TeamRepository {
       };
     });
     const payload: PersistedHistoryV10 = { version: 10, completed };
-    this.storage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(payload));
+    this.storage.setItem(this.historyKey, JSON.stringify(payload));
   }
 
   loadActiveRetro(): RetroState | null {
     this.ensureMigrated();
-    const raw = this.storage.getItem(ACTIVE_RETRO_STORAGE_KEY);
+    const raw = this.storage.getItem(this.activeKey);
     if (raw === null) return null;
     if (raw === 'null') return null;
     try {
@@ -232,14 +247,14 @@ export class LocalStorageTeamRepository implements TeamRepository {
 
   private saveActiveRetroRaw(state: RetroState | null): void {
     if (state === null) {
-      this.storage.setItem(ACTIVE_RETRO_STORAGE_KEY, 'null');
+      this.storage.setItem(this.activeKey, 'null');
       return;
     }
     const fakeStorage = this.createFakeStorage();
     const stateRepo = new LocalStorageRetroRepository(fakeStorage);
     stateRepo.save(state);
     const serialized = fakeStorage.getItem('fastretro:state:v9') ?? '';
-    this.storage.setItem(ACTIVE_RETRO_STORAGE_KEY, serialized);
+    this.storage.setItem(this.activeKey, serialized);
   }
 
   private createFakeStorage(): Storage {

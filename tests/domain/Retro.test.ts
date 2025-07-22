@@ -56,6 +56,22 @@ describe('Retro.addParticipant', () => {
   it('rejects empty names', () => {
     expect(() => addParticipant(createRetro(), 'id-1', '   ')).toThrow();
   });
+
+  it('adds participant to icebreaker rotation when icebreaker is active', () => {
+    let s = addParticipant(createRetro(), 'id-1', 'Alice');
+    s = addParticipant(s, 'id-2', 'Bob');
+    s = startIcebreaker(s, { pick: (items: readonly string[]) => items[0] });
+    expect(s.icebreaker!.participantIds).toHaveLength(2);
+    s = addParticipant(s, 'id-3', 'Carol');
+    expect(s.participants).toHaveLength(3);
+    expect(s.icebreaker!.participantIds).toHaveLength(3);
+    expect(s.icebreaker!.participantIds).toContain('id-3');
+  });
+
+  it('does not modify icebreaker when icebreaker is null', () => {
+    const s = addParticipant(createRetro(), 'id-1', 'Alice');
+    expect(s.icebreaker).toBeNull();
+  });
 });
 
 describe('Retro.removeParticipant', () => {

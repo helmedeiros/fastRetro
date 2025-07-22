@@ -28,6 +28,9 @@ import { JoinModal } from './components/JoinModal';
 import { useRoomSync } from './hooks/useRoomSync';
 import { useIdentity } from './hooks/useIdentity';
 import { RoomSync } from '../adapters/sync/RoomSync';
+import { TeamRegistry } from '../adapters/storage/TeamRegistry';
+import { LocalStorageTeamRepository } from '../adapters/storage/LocalStorageTeamRepository';
+import { TeamSelectorPage } from './pages/TeamSelectorPage';
 
 export interface AppProps {
   teamRepository: TeamRepository;
@@ -35,22 +38,139 @@ export interface AppProps {
   picker?: Picker<string>;
   idGenerator?: IdGenerator;
   downloader?: Downloader;
+  storage?: Storage;
 }
 
 const defaultPicker = new RandomPicker<string>();
 
 export function App({
-  teamRepository,
+  teamRepository: defaultTeamRepository,
   clock,
   picker = defaultPicker,
   idGenerator,
   downloader,
+  storage,
 }: AppProps): JSX.Element {
+  const hasStorage = storage !== undefined && typeof storage.getItem === 'function';
+  const safeStorage = hasStorage ? storage : null;
+
+  const registry = useMemo(
+    () => safeStorage !== null ? new TeamRegistry(safeStorage) : null,
+    [safeStorage],
+  );
+
+  const [teams, setTeams] = useState(() => {
+    if (registry === null) return [];
+    const existing = registry.list();
+    if (existing.length === 0) {
+      try {
+        const team = defaultTeamRepository.loadTeam();
+        if (team.members.length > 0) {
+          registry.add('default', 'Default Team');
+          registry.setSelectedTeamId('default');
+          return registry.list();
+        }
+      } catch {
+        // skip
+      }
+    }
+    return existing;
+  });
+
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(() => {
+    // No storage (test env) — skip team selection
+    if (registry === null) return 'default';
+    // Joining via share URL — skip team selection, go straight to retro
+    if (RoomSync.extractRoomCodeFromHash() !== null) return 'default';
+    // No teams — show team selector
+    if (registry.list().length === 0) return null;
+    // Saved selection still valid
+    const saved = registry.getSelectedTeamId();
+    if (saved !== null && registry.list().some((t) => t.id === saved)) return saved;
+    // Only one team — auto-select
+    if (registry.list().length === 1) return registry.list()[0].id;
+    return null;
+  });
+
+  const teamRepository = useMemo(() => {
+    if (selectedTeamId === 'default' || safeStorage === null) return defaultTeamRepository;
+    if (selectedTeamId === null) return defaultTeamRepository;
+    return new LocalStorageTeamRepository(safeStorage, selectedTeamId);
+  }, [selectedTeamId, safeStorage, defaultTeamRepository]);
+
   const ids = useMemo(
     () => idGenerator ?? new CryptoIdGenerator(),
     [idGenerator],
   );
 
+  // Team selector — must be BEFORE the inner app
+  if (selectedTeamId === null && registry !== null) {
+    const teamSelectorLogo = (
+      <h1>
+        <span className="logo-btn">fastRetro</span>
+      </h1>
+    );
+    return (
+      <main className="container">
+        {teamSelectorLogo}
+        <TeamSelectorPage
+          teams={teams}
+          onSelectTeam={(id): void => {
+            setSelectedTeamId(id);
+            registry.setSelectedTeamId(id);
+          }}
+          onCreateTeam={(name): void => {
+            const id = ids.next();
+            registry.add(id, name);
+            setTeams(registry.list());
+            setSelectedTeamId(id);
+            registry.setSelectedTeamId(id);
+          }}
+          onDeleteTeam={(id): void => {
+            registry.remove(id);
+            setTeams(registry.list());
+          }}
+        />
+      </main>
+    );
+  }
+
+  const currentTeamName = teams.find((t) => t.id === selectedTeamId)?.name;
+
+  return (
+    <TeamApp
+      key={selectedTeamId ?? 'default'}
+      teamRepository={teamRepository}
+      clock={clock}
+      picker={picker}
+      ids={ids}
+      downloader={downloader}
+      teamName={currentTeamName}
+      onSwitchTeam={registry !== null ? (): void => {
+        setSelectedTeamId(null);
+        registry.setSelectedTeamId(null);
+      } : undefined}
+    />
+  );
+}
+
+function TeamApp({
+  teamRepository,
+  clock,
+  picker,
+  ids,
+  downloader,
+  teamName,
+  onSwitchTeam,
+}: {
+  teamRepository: TeamRepository;
+  clock: Clock;
+  picker: Picker<string>;
+  ids: IdGenerator;
+  downloader?: Downloader;
+  teamName?: string;
+  onSwitchTeam?: () => void;
+}): JSX.Element {
   const bridge = useMemo(
     () => new ActiveRetroRepositoryBridge(teamRepository),
     [teamRepository],
@@ -175,16 +295,27 @@ export function App({
   }, [syncOnNavigate, navigateStage]);
 
   const logo = (
-    <h1>
-      <button
-        type="button"
-        className="logo-btn"
-        onClick={goHome}
-        aria-label="Go to dashboard"
-      >
-        fastRetro
-      </button>
-    </h1>
+    <div className="app-header">
+      <h1>
+        <button
+          type="button"
+          className="logo-btn"
+          onClick={goHome}
+          aria-label="Go to dashboard"
+        >
+          fastRetro
+        </button>
+      </h1>
+      {teamName !== undefined && onSwitchTeam !== undefined && (
+        <button
+          type="button"
+          className="team-switch-btn"
+          onClick={onSwitchTeam}
+        >
+          {teamName} &#9662;
+        </button>
+      )}
+    </div>
   );
 
   // Viewing a completed retro from history
