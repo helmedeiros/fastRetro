@@ -227,7 +227,7 @@ function TeamApp({
     });
   }, [syncOnRemote, teamRepository, retroRefresh, dashboardRefresh]);
 
-  // Sync: when WebSocket connects, broadcast current state (host)
+  // Sync: when WebSocket connects, broadcast current state and team info (host)
   useEffect(() => {
     syncOnConnected(() => {
       // Only the host broadcasts state on connect — guests must NOT
@@ -237,36 +237,24 @@ function TeamApp({
         if (state !== null) {
           syncBroadcast(state);
         }
+        if (teamName) {
+          syncBroadcastTeamInfo({
+            teamName,
+            members: dashboard.team.members.map((m) => ({ id: m.id, name: m.name })),
+            agreements: dashboard.team.agreements.map((a) => ({ id: a.id, text: a.text })),
+          });
+        }
       }
     });
-  }, [syncOnConnected, syncBroadcast, syncRole, teamRepository]);
+  }, [syncOnConnected, syncBroadcast, syncBroadcastTeamInfo, syncRole, teamRepository, teamName, dashboard.team.members, dashboard.team.agreements]);
 
-  // Sync: when a new peer requests state, send current
+  // Sync: when a new peer requests state, send current state and team info
   useEffect(() => {
     syncOnRequest(() => {
       const state = teamRepository.loadActiveRetro();
       if (state !== null) {
         syncBroadcast(state);
       }
-    });
-  }, [syncOnRequest, syncBroadcast, teamRepository]);
-
-  // Sync: broadcast team info when hosting
-  useEffect(() => {
-    syncOnConnected(() => {
-      if (syncRole === 'host' && teamName) {
-        syncBroadcastTeamInfo({
-          teamName,
-          members: dashboard.team.members.map((m) => ({ id: m.id, name: m.name })),
-          agreements: dashboard.team.agreements.map((a) => ({ id: a.id, text: a.text })),
-        });
-      }
-    });
-  }, [syncOnConnected, syncBroadcastTeamInfo, syncRole, teamName, dashboard.team.members, dashboard.team.agreements]);
-
-  // Sync: when a new peer requests state, also send team info
-  useEffect(() => {
-    syncOnRequest(() => {
       if (teamName) {
         syncBroadcastTeamInfo({
           teamName,
@@ -275,7 +263,7 @@ function TeamApp({
         });
       }
     });
-  }, [syncOnRequest, syncBroadcastTeamInfo, teamName, dashboard.team.members, dashboard.team.agreements]);
+  }, [syncOnRequest, syncBroadcast, syncBroadcastTeamInfo, teamRepository, teamName, dashboard.team.members, dashboard.team.agreements]);
 
   // Sync: receive team info (used by CLI clients to capture team data)
   useEffect(() => {
