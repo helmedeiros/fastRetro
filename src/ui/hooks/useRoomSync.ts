@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import type { RetroState, RetroStage } from '../../domain/retro/Retro';
 import { RoomSync } from '../../adapters/sync/RoomSync';
+import type { SyncTeamInfo } from '../../adapters/sync/RoomSync';
 
 export type RoomRole = 'none' | 'host' | 'guest';
 export type RoomStatus = 'disconnected' | 'connected';
@@ -23,6 +24,8 @@ export interface UseRoomSync {
   onNavigateStage: (cb: (stage: RetroStage) => void) => void;
   onRequestState: (cb: () => void) => void;
   onConnected: (cb: () => void) => void;
+  broadcastTeamInfo: (info: SyncTeamInfo) => void;
+  onTeamInfo: (cb: (info: SyncTeamInfo) => void) => void;
   disconnect: () => void;
 }
 
@@ -42,6 +45,7 @@ export function useRoomSync(): UseRoomSync {
   const navigateStageCbRef = useRef<((stage: RetroStage) => void) | null>(null);
   const requestStateCbRef = useRef<(() => void) | null>(null);
   const connectedCbRef = useRef<(() => void) | null>(null);
+  const teamInfoCbRef = useRef<((info: SyncTeamInfo) => void) | null>(null);
 
   // WebSocket closes automatically on page unload.
   // Manual disconnect via the disconnect() callback.
@@ -70,6 +74,7 @@ export function useRoomSync(): UseRoomSync {
     sync.onTakenIds((ids) => { setTakenIds(new Set(ids)); });
     sync.onRequestState(() => { requestStateCbRef.current?.(); });
     sync.onConnected(() => { connectedCbRef.current?.(); });
+    sync.onTeamInfo((info) => { teamInfoCbRef.current?.(info); });
   }, []);
 
   const connectSync = useCallback((sync: RoomSync) => {
@@ -139,6 +144,14 @@ export function useRoomSync(): UseRoomSync {
     connectedCbRef.current = cb;
   }, []);
 
+  const broadcastTeamInfo = useCallback((info: SyncTeamInfo) => {
+    syncRef.current?.broadcastTeamInfo(info);
+  }, []);
+
+  const onTeamInfo = useCallback((cb: (info: SyncTeamInfo) => void) => {
+    teamInfoCbRef.current = cb;
+  }, []);
+
   const disconnect = useCallback(() => {
     syncRef.current?.disconnect();
     syncRef.current = null;
@@ -154,6 +167,7 @@ export function useRoomSync(): UseRoomSync {
   return {
     role, status, roomCode, shareUrl, peerCount, takenIds, stageVotes,
     hostRoom, joinRoom, claimIdentity, broadcastState, voteForStage,
-    onRemoteState, onStageVote, onNavigateStage, onRequestState, onConnected, disconnect,
+    onRemoteState, onStageVote, onNavigateStage, onRequestState, onConnected,
+    broadcastTeamInfo, onTeamInfo, disconnect,
   };
 }

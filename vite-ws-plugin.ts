@@ -57,7 +57,7 @@ export function retroSyncPlugin(): Plugin {
             }
 
             ws.on('message', (raw) => {
-              const msg = JSON.parse(raw.toString()) as { type: string; state?: unknown; stage?: string; participantId?: string };
+              const msg = JSON.parse(raw.toString()) as { type: string; state?: unknown; stage?: string; participantId?: string; teamInfo?: unknown };
 
               if (msg.type === 'state' && msg.state !== undefined) {
                 room.state = JSON.stringify(msg.state);
@@ -87,6 +87,10 @@ export function retroSyncPlugin(): Plugin {
               }
 
               if (msg.type === 'request-state') {
+                broadcast(room, raw.toString(), ws);
+              }
+
+              if (msg.type === 'team-info' && msg.teamInfo !== undefined) {
                 broadcast(room, raw.toString(), ws);
               }
 

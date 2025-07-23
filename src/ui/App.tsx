@@ -201,7 +201,7 @@ function TeamApp({
   }, [joinRoomFn]);
 
   // Sync: stable refs to avoid stale closures
-  const { broadcastState: syncBroadcast, onRemoteState: syncOnRemote, onRequestState: syncOnRequest, onNavigateStage: syncOnNavigate, onConnected: syncOnConnected, role: syncRole } = roomSync;
+  const { broadcastState: syncBroadcast, onRemoteState: syncOnRemote, onRequestState: syncOnRequest, onNavigateStage: syncOnNavigate, onConnected: syncOnConnected, broadcastTeamInfo: syncBroadcastTeamInfo, onTeamInfo: syncOnTeamInfo, role: syncRole } = roomSync;
   const retroRefresh = retro.refresh;
   const dashboardRefresh = dashboard.refresh;
 
@@ -250,6 +250,40 @@ function TeamApp({
       }
     });
   }, [syncOnRequest, syncBroadcast, teamRepository]);
+
+  // Sync: broadcast team info when hosting
+  useEffect(() => {
+    syncOnConnected(() => {
+      if (syncRole === 'host' && teamName) {
+        syncBroadcastTeamInfo({
+          teamName,
+          members: dashboard.team.members.map((m) => ({ id: m.id, name: m.name })),
+          agreements: dashboard.team.agreements.map((a) => ({ id: a.id, text: a.text })),
+        });
+      }
+    });
+  }, [syncOnConnected, syncBroadcastTeamInfo, syncRole, teamName, dashboard.team.members, dashboard.team.agreements]);
+
+  // Sync: when a new peer requests state, also send team info
+  useEffect(() => {
+    syncOnRequest(() => {
+      if (teamName) {
+        syncBroadcastTeamInfo({
+          teamName,
+          members: dashboard.team.members.map((m) => ({ id: m.id, name: m.name })),
+          agreements: dashboard.team.agreements.map((a) => ({ id: a.id, text: a.text })),
+        });
+      }
+    });
+  }, [syncOnRequest, syncBroadcastTeamInfo, teamName, dashboard.team.members, dashboard.team.agreements]);
+
+  // Sync: receive team info (used by CLI clients to capture team data)
+  useEffect(() => {
+    syncOnTeamInfo(() => {
+      // Web app already has its own team data — no action needed.
+      // This callback exists so CLI clients can receive team info from the host.
+    });
+  }, [syncOnTeamInfo]);
 
   const retroStage = retro.stage;
   const hasActiveRetro = dashboard.activeRetro !== null;

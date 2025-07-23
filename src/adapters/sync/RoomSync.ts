@@ -1,5 +1,11 @@
 import type { RetroState, RetroStage } from '../../domain/retro/Retro';
 
+export interface SyncTeamInfo {
+  teamName: string;
+  members: Array<{ id: string; name: string }>;
+  agreements: Array<{ id: string; text: string }>;
+}
+
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const parts: string[] = [];
@@ -38,6 +44,7 @@ export class RoomSync {
 
   private onConnectedCallback: (() => void) | null = null;
   private onTakenIdsCallback: ((ids: string[]) => void) | null = null;
+  private onTeamInfoCallback: ((info: SyncTeamInfo) => void) | null = null;
 
   onConnected(cb: () => void): void {
     this.onConnectedCallback = cb;
@@ -60,6 +67,7 @@ export class RoomSync {
         participantId?: string;
         count?: number;
         ids?: string[];
+        teamInfo?: SyncTeamInfo;
       };
 
       switch (msg.type) {
@@ -82,6 +90,9 @@ export class RoomSync {
           break;
         case 'taken-ids':
           if (msg.ids !== undefined) this.onTakenIdsCallback?.(msg.ids);
+          break;
+        case 'team-info':
+          if (msg.teamInfo !== undefined) this.onTeamInfoCallback?.(msg.teamInfo);
           break;
       }
     };
@@ -121,6 +132,16 @@ export class RoomSync {
 
   onTakenIds(cb: (ids: string[]) => void): void {
     this.onTakenIdsCallback = cb;
+  }
+
+  onTeamInfo(cb: (info: SyncTeamInfo) => void): void {
+    this.onTeamInfoCallback = cb;
+  }
+
+  broadcastTeamInfo(info: SyncTeamInfo): void {
+    if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ type: 'team-info', teamInfo: info }));
+    }
   }
 
   sendClaimIdentity(participantId: string): void {
