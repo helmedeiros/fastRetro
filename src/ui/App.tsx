@@ -304,7 +304,8 @@ function TeamApp({
     });
   }, [syncOnRemote, teamRepository, retroRefresh, dashboardRefresh]);
 
-  // Sync: when WebSocket connects, broadcast current state and team info (host)
+  // Sync: when WebSocket connects, broadcast current state and team info (host),
+  // and re-claim identity if we already picked one (reconnect scenario)
   useEffect(() => {
     syncOnConnected(() => {
       // Only the host broadcasts state on connect — guests must NOT
@@ -322,8 +323,12 @@ function TeamApp({
           });
         }
       }
+      // Re-claim persisted identity so the server marks it as taken
+      if (identity.participantId !== null) {
+        roomSync.claimIdentity(identity.participantId);
+      }
     });
-  }, [syncOnConnected, syncBroadcast, syncBroadcastTeamInfo, syncRole, teamRepository, teamName, dashboard.team.members, dashboard.team.agreements]);
+  }, [syncOnConnected, syncBroadcast, syncBroadcastTeamInfo, syncRole, teamRepository, teamName, dashboard.team.members, dashboard.team.agreements, identity.participantId, roomSync]);
 
   // Sync: when a new peer requests state, send current state and team info
   useEffect(() => {
@@ -480,7 +485,7 @@ function TeamApp({
             participants={retro.participants}
             takenParticipantIds={roomSync.takenIds}
             onSelectParticipant={(pid): void => {
-              identity.setParticipantId(pid);
+              identity.setParticipantId(pid, roomSync.roomCode ?? '');
               roomSync.claimIdentity(pid);
             }}
             onAddParticipant={(name): void => {
@@ -490,7 +495,7 @@ function TeamApp({
                 if (state !== null) {
                   const last = state.participants[state.participants.length - 1];
                   if (last !== undefined) {
-                    identity.setParticipantId(last.id);
+                    identity.setParticipantId(last.id, roomSync.roomCode ?? '');
                     roomSync.claimIdentity(last.id);
                   }
                 }

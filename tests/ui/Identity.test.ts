@@ -10,13 +10,13 @@ describe('useIdentity hook', () => {
 
   it('setParticipantId updates the id', () => {
     const { result } = renderHook(() => useIdentity());
-    act(() => { result.current.setParticipantId('p-1'); });
+    act(() => { result.current.setParticipantId('p-1', 'ROOM-1'); });
     expect(result.current.participantId).toBe('p-1');
   });
 
   it('clear resets to null', () => {
     const { result } = renderHook(() => useIdentity());
-    act(() => { result.current.setParticipantId('p-1'); });
+    act(() => { result.current.setParticipantId('p-1', 'ROOM-1'); });
     expect(result.current.participantId).toBe('p-1');
     act(() => { result.current.clear(); });
     expect(result.current.participantId).toBeNull();
