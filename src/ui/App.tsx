@@ -28,9 +28,14 @@ import { JoinModal } from './components/JoinModal';
 import { useRoomSync } from './hooks/useRoomSync';
 import { useIdentity } from './hooks/useIdentity';
 import { RoomSync } from '../adapters/sync/RoomSync';
+import type { SyncTeamInfo } from '../adapters/sync/RoomSync';
 import { TeamRegistry } from '../adapters/storage/TeamRegistry';
 import { LocalStorageTeamRepository } from '../adapters/storage/LocalStorageTeamRepository';
 import { TeamSelectorPage } from './pages/TeamSelectorPage';
+import { addMember, addAgreement } from '../domain/team/Team';
+import { ReturnToDashboard } from '../application/usecases/ReturnToDashboard';
+import { STAGE_DURATIONS } from '../domain/retro/Retro';
+import { createTimer } from '../domain/retro/Timer';
 
 export interface AppProps {
   teamRepository: TeamRepository;
@@ -103,6 +108,64 @@ export function App({
     [idGenerator],
   );
 
+  // Guest retro complete: resolve/create team, merge data, save history, switch
+  const onGuestRetroComplete = useCallback((info: SyncTeamInfo) => {
+    if (registry === null || safeStorage === null) return;
+
+    // Find existing team by name or create a new one
+    const existing = registry.list().find((t) => t.name === info.teamName);
+    let teamId: string;
+    if (existing !== undefined) {
+      teamId = existing.id;
+    } else {
+      teamId = ids.next();
+      registry.add(teamId, info.teamName);
+    }
+
+    // Move active retro from default repo to target repo
+    const activeRetro = teamRepository.loadActiveRetro();
+    const targetRepo = new LocalStorageTeamRepository(safeStorage, teamId);
+
+    // Merge members and agreements from host into the target team (dedup by id and name/text)
+    let team = targetRepo.loadTeam();
+
+    for (const m of info.members) {
+      const exists = team.members.some((x) => x.id === m.id || x.name.toLowerCase() === m.name.trim().toLowerCase());
+      if (!exists) {
+        try { team = addMember(team, m.id, m.name); } catch { /* skip */ }
+      }
+    }
+    for (const a of info.agreements) {
+      const exists = team.agreements.some((x) => x.id === a.id || x.text.toLowerCase() === a.text.trim().toLowerCase());
+      if (!exists) {
+        try { team = addAgreement(team, a.id, a.text, ''); } catch { /* skip */ }
+      }
+    }
+    // Also merge retro participants (like the CLI does)
+    if (activeRetro !== null) {
+      for (const p of activeRetro.participants) {
+        const exists = team.members.some((x) => x.id === p.id || x.name.toLowerCase() === p.name.trim().toLowerCase());
+        if (!exists) {
+          try { team = addMember(team, p.id, p.name); } catch { /* skip */ }
+        }
+      }
+    }
+    targetRepo.saveTeam(team);
+
+    // Complete the retro in the target repo
+    if (activeRetro !== null) {
+      targetRepo.saveActiveRetro(activeRetro);
+      teamRepository.saveActiveRetro(null);
+      const rtd = new ReturnToDashboard(targetRepo, ids, clock);
+      rtd.execute();
+    }
+
+    // Switch to the resolved team
+    setTeams(registry.list());
+    setSelectedTeamId(teamId);
+    registry.setSelectedTeamId(teamId);
+  }, [registry, safeStorage, ids, clock, teamRepository]);
+
   // Team selector — must be BEFORE the inner app
   if (selectedTeamId === null && registry !== null) {
     const teamSelectorLogo = (
@@ -150,6 +213,7 @@ export function App({
         setSelectedTeamId(null);
         registry.setSelectedTeamId(null);
       } : undefined}
+      onGuestRetroComplete={onGuestRetroComplete}
     />
   );
 }
@@ -162,6 +226,7 @@ function TeamApp({
   downloader,
   teamName,
   onSwitchTeam,
+  onGuestRetroComplete,
 }: {
   teamRepository: TeamRepository;
   clock: Clock;
@@ -170,6 +235,7 @@ function TeamApp({
   downloader?: Downloader;
   teamName?: string;
   onSwitchTeam?: () => void;
+  onGuestRetroComplete?: (info: SyncTeamInfo) => void;
 }): JSX.Element {
   const bridge = useMemo(
     () => new ActiveRetroRepositoryBridge(teamRepository),
@@ -219,7 +285,18 @@ function TeamApp({
   useEffect(() => {
     syncOnRemote((state) => {
       isSyncingRef.current = true;
-      teamRepository.saveActiveRetro(state);
+      // Patch state from CLI: ensure timer exists and actionItemOwners is not null
+      let patched = state;
+      if (patched.timer === null && patched.stage !== 'setup' && patched.stage !== 'close') {
+        const duration = STAGE_DURATIONS[patched.stage as keyof typeof STAGE_DURATIONS];
+        if (duration !== undefined) {
+          patched = { ...patched, timer: createTimer(duration) };
+        }
+      }
+      if (patched.actionItemOwners === null || patched.actionItemOwners === undefined) {
+        patched = { ...patched, actionItemOwners: {} };
+      }
+      teamRepository.saveActiveRetro(patched);
       retroRefresh();
       dashboardRefresh();
       setForceDashboard(false);
@@ -265,11 +342,11 @@ function TeamApp({
     });
   }, [syncOnRequest, syncBroadcast, syncBroadcastTeamInfo, teamRepository, teamName, dashboard.team.members, dashboard.team.agreements]);
 
-  // Sync: receive team info (used by CLI clients to capture team data)
+  // Sync: receive team info — store for team resolution when guest completes retro
+  const remoteTeamInfoRef = useRef<SyncTeamInfo | null>(null);
   useEffect(() => {
-    syncOnTeamInfo(() => {
-      // Web app already has its own team data — no action needed.
-      // This callback exists so CLI clients can receive team info from the host.
+    syncOnTeamInfo((info) => {
+      remoteTeamInfoRef.current = info;
     });
   }, [syncOnTeamInfo]);
 
@@ -284,11 +361,16 @@ function TeamApp({
   const isCloseStage = hasActiveRetro && retroStage === 'close';
 
   const goHome = useCallback(() => {
+    // Guest with team info: resolve/create team before going home
+    if (syncRole === 'guest' && remoteTeamInfoRef.current !== null && onGuestRetroComplete !== undefined) {
+      onGuestRetroComplete(remoteTeamInfoRef.current);
+      return;
+    }
     setForceDashboard(true);
     setShowingRetroSetup(false);
     setViewingMemberId(null);
     dashboard.backToDashboard();
-  }, [dashboard]);
+  }, [dashboard, syncRole, onGuestRetroComplete]);
 
   const resumeRetro = useCallback(() => {
     retro.refresh();
@@ -374,8 +456,12 @@ function TeamApp({
           templateId={retro.meta.templateId}
           onExport={retro.exportJson}
           onReturnToDashboard={() => {
-            dashboard.returnToDashboard();
-            setForceDashboard(true);
+            if (syncRole === 'guest' && remoteTeamInfoRef.current !== null && onGuestRetroComplete !== undefined) {
+              onGuestRetroComplete(remoteTeamInfoRef.current);
+            } else {
+              dashboard.returnToDashboard();
+              setForceDashboard(true);
+            }
           }}
         />
       </main>

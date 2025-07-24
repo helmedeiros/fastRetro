@@ -3,6 +3,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 interface Room {
   state: string | null;
+  teamInfo: string | null;
   clients: Set<WebSocket>;
   votes: Map<string, Set<string>>; // stage -> participantIds
   takenIds: Set<string>; // claimed participant IDs
@@ -18,7 +19,7 @@ export function retroSyncPlugin(): Plugin {
       function getOrCreateRoom(code: string): Room {
         let room = rooms.get(code);
         if (room === undefined) {
-          room = { state: null, clients: new Set(), votes: new Map(), takenIds: new Set() };
+          room = { state: null, teamInfo: null, clients: new Set(), votes: new Map(), takenIds: new Set() };
           rooms.set(code, room);
         }
         return room;
@@ -56,6 +57,11 @@ export function retroSyncPlugin(): Plugin {
               ws.send(JSON.stringify({ type: 'taken-ids', ids: [...room.takenIds] }));
             }
 
+            // Send team info to new client
+            if (room.teamInfo !== null) {
+              ws.send(room.teamInfo);
+            }
+
             ws.on('message', (raw) => {
               const msg = JSON.parse(raw.toString()) as { type: string; state?: unknown; stage?: string; participantId?: string; teamInfo?: unknown };
 
@@ -91,6 +97,7 @@ export function retroSyncPlugin(): Plugin {
               }
 
               if (msg.type === 'team-info' && msg.teamInfo !== undefined) {
+                room.teamInfo = raw.toString();
                 broadcast(room, raw.toString(), ws);
               }
 
