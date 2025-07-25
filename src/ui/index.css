@@ -3020,6 +3020,10 @@ form button {
   flex-shrink: 0;
 }
 
+.side-menu-participant-me {
+  font-weight: 700;
+}
+
 /* === App Header === */
 
 .app-header {

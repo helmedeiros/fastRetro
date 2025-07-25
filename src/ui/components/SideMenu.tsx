@@ -5,6 +5,7 @@ import { SyncPanel } from './SyncPanel';
 
 export interface SideMenuProps {
   participants: readonly Participant[];
+  currentParticipantId?: string | null;
   sync?: UseRoomSync;
 }
 
@@ -29,7 +30,7 @@ function initials(name: string): string {
 
 type PanelType = 'team' | 'sync' | null;
 
-export function SideMenu({ participants, sync }: SideMenuProps): JSX.Element {
+export function SideMenu({ participants, currentParticipantId, sync }: SideMenuProps): JSX.Element {
   const [open, setOpen] = useState(false);
   const [panel, setPanel] = useState<PanelType>(null);
 
@@ -64,11 +65,11 @@ export function SideMenu({ participants, sync }: SideMenuProps): JSX.Element {
             <h4>Participants</h4>
             <ul className="side-menu-participant-list">
               {participants.map((p) => (
-                <li key={p.id} className="side-menu-participant">
+                <li key={p.id} className={`side-menu-participant${p.id === currentParticipantId ? ' side-menu-participant-me' : ''}`}>
                   <span className="side-menu-avatar" style={{ background: avatarColor(p.name) }}>
                     {initials(p.name)}
                   </span>
-                  <span>{p.name}</span>
+                  <span>{p.name}{p.id === currentParticipantId ? ' (me)' : ''}</span>
                 </li>
               ))}
             </ul>
