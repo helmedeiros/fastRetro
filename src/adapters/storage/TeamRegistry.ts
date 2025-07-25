@@ -49,4 +49,16 @@ export class TeamRegistry {
       this.storage.setItem('fastretro:teams:selected', id);
     }
   }
+
+  getDefaultMemberName(): string | null {
+    return this.storage.getItem('fastretro:default-member');
+  }
+
+  setDefaultMemberName(name: string | null): void {
+    if (name === null) {
+      this.storage.removeItem('fastretro:default-member');
+    } else {
+      this.storage.setItem('fastretro:default-member', name);
+    }
+  }
 }

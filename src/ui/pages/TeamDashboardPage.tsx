@@ -21,8 +21,10 @@ export interface TeamDashboardPageProps {
   hasActiveRetro: boolean;
   activeRetroStage: string;
   activeRetroName: string;
+  defaultMemberName?: string | null;
   onAddMember: (name: string) => void;
   onRemoveMember: (id: string) => void;
+  onSetDefaultMember?: (name: string | null) => void;
   onStartRetro: () => void;
   onResumeRetro: () => void;
   onViewMember?: (memberId: string) => void;
@@ -66,6 +68,8 @@ export function TeamDashboardPage({
   activeRetroName,
   onAddMember,
   onRemoveMember,
+  onSetDefaultMember,
+  defaultMemberName,
   onStartRetro,
   onResumeRetro,
   onViewMember,
@@ -161,33 +165,51 @@ export function TeamDashboardPage({
             </form>
             {error !== null && <p role="alert">{error}</p>}
             <ul aria-label="Team members" className="members-list">
-              {members.map((m) => (
-                <li key={m.id} className="member-row">
-                  <span
-                    className="member-avatar-lg"
-                    style={{ background: avatarColor(m.name), cursor: onViewMember ? 'pointer' : undefined }}
-                    onClick={(): void => { if (onViewMember) onViewMember(m.id); }}
-                  >
-                    {initials(m.name)}
-                  </span>
-                  <div
-                    className="member-info"
-                    style={{ cursor: onViewMember ? 'pointer' : undefined }}
-                    onClick={(): void => { if (onViewMember) onViewMember(m.id); }}
-                  >
-                    <span className="member-name-lg">{m.name}</span>
-                    <span className="member-role-tag">Member</span>
-                  </div>
-                  <button
-                    type="button"
-                    className="member-remove-btn"
-                    aria-label={`Remove ${m.name}`}
-                    onClick={(): void => { onRemoveMember(m.id); }}
-                  >
-                    &times;
-                  </button>
-                </li>
-              ))}
+              {members.map((m) => {
+                const isDefault = defaultMemberName !== undefined && defaultMemberName !== null &&
+                  m.name.toLowerCase() === defaultMemberName.toLowerCase();
+                return (
+                  <li key={m.id} className="member-row">
+                    <span
+                      className="member-avatar-lg"
+                      style={{ background: avatarColor(m.name), cursor: onViewMember ? 'pointer' : undefined }}
+                      onClick={(): void => { if (onViewMember) onViewMember(m.id); }}
+                    >
+                      {initials(m.name)}
+                    </span>
+                    <div
+                      className="member-info"
+                      style={{ cursor: onViewMember ? 'pointer' : undefined }}
+                      onClick={(): void => { if (onViewMember) onViewMember(m.id); }}
+                    >
+                      <span className="member-name-lg">
+                        {m.name}
+                        {isDefault && <span className="member-default-badge" title="Default identity"> (me)</span>}
+                      </span>
+                      <span className="member-role-tag">Member</span>
+                    </div>
+                    {onSetDefaultMember !== undefined && (
+                      <button
+                        type="button"
+                        className={isDefault ? 'member-me-btn member-me-active' : 'member-me-btn'}
+                        aria-label={isDefault ? `Unset ${m.name} as me` : `Set ${m.name} as me`}
+                        title={isDefault ? 'Unset as me' : 'Set as me'}
+                        onClick={(): void => { onSetDefaultMember(isDefault ? null : m.name); }}
+                      >
+                        {isDefault ? '\u2605' : '\u2606'}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="member-remove-btn"
+                      aria-label={`Remove ${m.name}`}
+                      onClick={(): void => { onRemoveMember(m.id); }}
+                    >
+                      &times;
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         </aside>

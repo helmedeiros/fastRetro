@@ -209,6 +209,7 @@ export function App({
       ids={ids}
       downloader={downloader}
       teamName={currentTeamName}
+      registry={registry}
       onSwitchTeam={registry !== null ? (): void => {
         setSelectedTeamId(null);
         registry.setSelectedTeamId(null);
@@ -225,6 +226,7 @@ function TeamApp({
   ids,
   downloader,
   teamName,
+  registry,
   onSwitchTeam,
   onGuestRetroComplete,
 }: {
@@ -234,6 +236,7 @@ function TeamApp({
   ids: IdGenerator;
   downloader?: Downloader;
   teamName?: string;
+  registry?: TeamRegistry | null;
   onSwitchTeam?: () => void;
   onGuestRetroComplete?: (info: SyncTeamInfo) => void;
 }): JSX.Element {
@@ -246,6 +249,9 @@ function TeamApp({
   const [showingRetroSetup, setShowingRetroSetup] = useState(false);
   const [forceDashboard, setForceDashboard] = useState(false);
   const [viewingMemberId, setViewingMemberId] = useState<string | null>(null);
+  const [defaultMemberName, setDefaultMemberName] = useState<string | null>(
+    () => registry?.getDefaultMemberName() ?? null,
+  );
   const dashboard = useTeamDashboard(teamRepository, ids, picker, clock);
   const retro = useRetro(bridge, picker, ids, clock, downloader);
   const roomSync = useRoomSync();
@@ -300,9 +306,22 @@ function TeamApp({
       retroRefresh();
       dashboardRefresh();
       setForceDashboard(false);
+      // Auto-select default member if no identity picked yet
+      if (identity.participantId === null && registry !== undefined && registry !== null) {
+        const defaultName = registry.getDefaultMemberName();
+        if (defaultName !== null) {
+          const match = patched.participants.find(
+            (p) => p.name.toLowerCase() === defaultName.toLowerCase(),
+          );
+          if (match !== undefined) {
+            identity.setParticipantId(match.id, roomSync.roomCode ?? '');
+            roomSync.claimIdentity(match.id);
+          }
+        }
+      }
       setTimeout(() => { isSyncingRef.current = false; }, 50);
     });
-  }, [syncOnRemote, teamRepository, retroRefresh, dashboardRefresh]);
+  }, [syncOnRemote, teamRepository, retroRefresh, dashboardRefresh, identity, registry, roomSync]);
 
   // Sync: when WebSocket connects, broadcast current state and team info (host),
   // and re-claim identity if we already picked one (reconnect scenario)
@@ -323,12 +342,26 @@ function TeamApp({
           });
         }
       }
-      // Re-claim persisted identity so the server marks it as taken
+      // Re-claim persisted identity or auto-select default member
       if (identity.participantId !== null) {
         roomSync.claimIdentity(identity.participantId);
+      } else if (registry !== undefined && registry !== null) {
+        const defaultName = registry.getDefaultMemberName();
+        if (defaultName !== null) {
+          const state = teamRepository.loadActiveRetro();
+          if (state !== null) {
+            const match = state.participants.find(
+              (p) => p.name.toLowerCase() === defaultName.toLowerCase(),
+            );
+            if (match !== undefined) {
+              identity.setParticipantId(match.id, roomSync.roomCode ?? '');
+              roomSync.claimIdentity(match.id);
+            }
+          }
+        }
       }
     });
-  }, [syncOnConnected, syncBroadcast, syncBroadcastTeamInfo, syncRole, teamRepository, teamName, dashboard.team.members, dashboard.team.agreements, identity.participantId, roomSync]);
+  }, [syncOnConnected, syncBroadcast, syncBroadcastTeamInfo, syncRole, teamRepository, teamName, dashboard.team.members, dashboard.team.agreements, identity.participantId, roomSync, registry, identity]);
 
   // Sync: when a new peer requests state, send current state and team info
   useEffect(() => {
@@ -665,8 +698,13 @@ function TeamApp({
           hasActiveRetro={showActiveRetro}
           activeRetroStage={retroStage}
           activeRetroName={dashboard.activeRetro?.meta?.name ?? ''}
+          defaultMemberName={defaultMemberName}
           onAddMember={dashboard.addMember}
           onRemoveMember={dashboard.removeMember}
+          onSetDefaultMember={registry !== undefined && registry !== null ? (name): void => {
+            registry.setDefaultMemberName(name);
+            setDefaultMemberName(name);
+          } : undefined}
           onStartRetro={handleStartRetro}
           onResumeRetro={resumeRetro}
           onViewMember={setViewingMemberId}
