@@ -68,10 +68,19 @@ interface PersistedDiscussNoteV9 {
 }
 
 interface PersistedMetaV9 {
+  readonly type?: string;
   readonly name?: string;
   readonly date?: string;
   readonly context?: string;
   readonly templateId?: string;
+}
+
+interface PersistedSurveyResponseV9 {
+  readonly id: string;
+  readonly participantId: string;
+  readonly questionId: string;
+  readonly rating: number;
+  readonly comment: string;
 }
 
 interface PersistedRetroStateV9 {
@@ -87,6 +96,7 @@ interface PersistedRetroStateV9 {
   readonly discuss: PersistedDiscussV9 | null;
   readonly discussNotes: readonly PersistedDiscussNoteV9[];
   readonly actionItemOwners: Readonly<Record<string, string>>;
+  readonly surveyResponses?: readonly PersistedSurveyResponseV9[];
 }
 
 interface PersistedRetroV9 {
@@ -107,6 +117,7 @@ function isStage(value: unknown): value is RetroStage {
     value === 'brainstorm' ||
     value === 'group' ||
     value === 'vote' ||
+    value === 'survey' ||
     value === 'discuss' ||
     value === 'review' ||
     value === 'close'
@@ -309,7 +320,9 @@ export class LocalStorageRetroRepository implements RetroRepository {
         text: n.text,
       }),
     );
+    const rawType = parsed.retro.meta?.type;
     const meta = {
+      type: (rawType === 'retro' || rawType === 'check' ? rawType : 'retro') as import('../../domain/retro/Retro').RetroType,
       name: parsed.retro.meta?.name ?? '',
       date: parsed.retro.meta?.date ?? '',
       context: parsed.retro.meta?.context ?? '',
@@ -328,6 +341,13 @@ export class LocalStorageRetroRepository implements RetroRepository {
       discuss,
       discussNotes,
       actionItemOwners: { ...parsed.retro.actionItemOwners },
+      surveyResponses: (parsed.retro.surveyResponses ?? []).map((r) => ({
+        id: r.id,
+        participantId: r.participantId,
+        questionId: r.questionId,
+        rating: r.rating,
+        comment: r.comment,
+      })),
     };
   }
 
@@ -337,6 +357,7 @@ export class LocalStorageRetroRepository implements RetroRepository {
       retro: {
         stage: state.stage,
         meta: {
+          type: state.meta.type ?? 'retro',
           name: state.meta.name,
           date: state.meta.date,
           context: state.meta.context,
@@ -395,6 +416,13 @@ export class LocalStorageRetroRepository implements RetroRepository {
           text: n.text,
         })),
         actionItemOwners: { ...state.actionItemOwners },
+        surveyResponses: (state.surveyResponses ?? []).map((r) => ({
+          id: r.id,
+          participantId: r.participantId,
+          questionId: r.questionId,
+          rating: r.rating,
+          comment: r.comment,
+        })),
       },
     };
     this.storage.setItem(STORAGE_KEY, JSON.stringify(payload));

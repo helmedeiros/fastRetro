@@ -291,7 +291,7 @@ function TeamApp({
   useEffect(() => {
     syncOnRemote((state) => {
       isSyncingRef.current = true;
-      // Patch state from CLI: ensure timer exists and actionItemOwners is not null
+      // Patch state from CLI: ensure required fields exist with defaults
       let patched = state;
       if (patched.timer === null && patched.stage !== 'setup' && patched.stage !== 'close') {
         const duration = STAGE_DURATIONS[patched.stage as keyof typeof STAGE_DURATIONS];
@@ -301,6 +301,12 @@ function TeamApp({
       }
       if (patched.actionItemOwners === null || patched.actionItemOwners === undefined) {
         patched = { ...patched, actionItemOwners: {} };
+      }
+      if (!Array.isArray(patched.surveyResponses)) {
+        patched = { ...patched, surveyResponses: [] };
+      }
+      if (patched.meta.type !== 'retro' && patched.meta.type !== 'check') {
+        patched = { ...patched, meta: { ...patched.meta, type: 'retro' } };
       }
       teamRepository.saveActiveRetro(patched);
       retroRefresh();
@@ -422,6 +428,7 @@ function TeamApp({
       brainstorm: retro.startBrainstorm,
       group: retro.startGroup,
       vote: retro.startVote,
+      survey: undefined,
       discuss: retro.startDiscuss,
       review: retro.startReview,
       close: retro.startClose,

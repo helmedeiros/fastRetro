@@ -22,6 +22,10 @@ import {
   DiscussNote,
   createDiscussNote,
 } from './DiscussNote';
+import type { SurveyResponse } from './SurveyResponse';
+import { createSurveyResponse } from './SurveyResponse';
+import { getCheckTemplate } from './CheckTemplate';
+import { getDiscussItems, medianForQuestion } from './DiscussItem';
 import {
   ICEBREAKER_QUESTIONS,
   IcebreakerState,
@@ -29,19 +33,22 @@ import {
   nextParticipant as nextIcebreakerParticipant,
 } from './stages/Icebreaker';
 
+export type RetroType = 'retro' | 'check';
+
 export type RetroStage =
   | 'setup'
   | 'icebreaker'
   | 'brainstorm'
   | 'group'
   | 'vote'
+  | 'survey'
   | 'discuss'
   | 'review'
   | 'close';
 
 export const STAGE_DURATIONS: Readonly<
   Record<
-    'icebreaker' | 'brainstorm' | 'group' | 'vote' | 'discuss' | 'review',
+    'icebreaker' | 'brainstorm' | 'group' | 'vote' | 'survey' | 'discuss' | 'review',
     number
   >
 > = {
@@ -49,6 +56,7 @@ export const STAGE_DURATIONS: Readonly<
   brainstorm: 5 * 60 * 1000,
   group: 5 * 60 * 1000,
   vote: 5 * 60 * 1000,
+  survey: 10 * 60 * 1000,
   discuss: 2.5 * 60 * 1000,
   review: 5 * 60 * 1000,
 };
@@ -64,6 +72,7 @@ export interface DiscussState {
 export const DEFAULT_VOTE_BUDGET = 3;
 
 export interface RetroMeta {
+  readonly type: RetroType;
   readonly name: string;
   readonly date: string;
   readonly context: string;
@@ -83,6 +92,7 @@ export interface RetroState {
   readonly discuss: DiscussState | null;
   readonly discussNotes: readonly DiscussNote[];
   readonly actionItemOwners: Readonly<Record<string, string>>;
+  readonly surveyResponses: readonly SurveyResponse[];
 }
 
 export interface VotableSummary {
@@ -108,7 +118,7 @@ export type Votable =
 export function createRetro(meta?: RetroMeta): RetroState {
   return {
     stage: 'setup',
-    meta: meta ?? { name: '', date: '', context: '', templateId: 'start-stop' },
+    meta: meta ?? { type: 'retro', name: '', date: '', context: '', templateId: 'start-stop' },
     participants: [],
     timer: null,
     icebreaker: null,
@@ -119,6 +129,7 @@ export function createRetro(meta?: RetroMeta): RetroState {
     discuss: null,
     discussNotes: [],
     actionItemOwners: {},
+    surveyResponses: [],
   };
 }
 
@@ -239,11 +250,66 @@ export function startBrainstorm(state: RetroState): RetroState {
   if (state.stage === 'setup') {
     throw new Error('Brainstorm can only start after the icebreaker stage');
   }
+  if (state.meta.type === 'check') {
+    throw new Error('Brainstorm is not available for check sessions');
+  }
   return {
     ...state,
     stage: 'brainstorm',
     timer: createTimer(STAGE_DURATIONS.brainstorm),
   };
+}
+
+export function startSurvey(state: RetroState): RetroState {
+  if (state.stage === 'setup') {
+    throw new Error('Survey can only start after the icebreaker stage');
+  }
+  if (state.meta.type !== 'check') {
+    throw new Error('Survey is only available for check sessions');
+  }
+  return {
+    ...state,
+    stage: 'survey',
+    timer: createTimer(STAGE_DURATIONS.survey),
+  };
+}
+
+export function submitSurveyResponse(
+  state: RetroState,
+  participantId: string,
+  questionId: string,
+  rating: number,
+  comment: string,
+  ids: IdGenerator,
+): RetroState {
+  if (state.stage !== 'survey') {
+    throw new Error('Survey responses can only be submitted during survey');
+  }
+  if (!state.participants.some((p) => p.id === participantId)) {
+    throw new Error(`Participant "${participantId}" not found`);
+  }
+  const template = getCheckTemplate(state.meta.templateId);
+  const question = template.questions.find((q) => q.id === questionId);
+  if (question === undefined) {
+    throw new Error(`Question "${questionId}" not found in template`);
+  }
+  const validValues = question.options.map((o) => o.value);
+  const response = createSurveyResponse(
+    ids.next(),
+    participantId,
+    questionId,
+    rating,
+    comment,
+    validValues,
+  );
+  const existing = state.surveyResponses.findIndex(
+    (r) => r.participantId === participantId && r.questionId === questionId,
+  );
+  const next =
+    existing >= 0
+      ? state.surveyResponses.map((r, i) => (i === existing ? response : r))
+      : [...state.surveyResponses, response];
+  return { ...state, surveyResponses: next };
 }
 
 export function addCardToBrainstorm(
@@ -296,6 +362,9 @@ export function moveCard(
 export function startGroup(state: RetroState): RetroState {
   if (state.stage === 'setup') {
     throw new Error('Group can only start after the icebreaker stage');
+  }
+  if (state.meta.type === 'check') {
+    throw new Error('Group is not available for check sessions');
   }
   return {
     ...state,
@@ -408,6 +477,9 @@ export function startVote(state: RetroState): RetroState {
   if (state.stage === 'setup') {
     throw new Error('Vote can only start after the icebreaker stage');
   }
+  if (state.meta.type === 'check') {
+    throw new Error('Vote is not available for check sessions');
+  }
   return {
     ...state,
     stage: 'vote',
@@ -515,21 +587,8 @@ export function startDiscuss(state: RetroState): RetroState {
   if (state.stage === 'setup') {
     throw new Error('Discuss can only start after the icebreaker stage');
   }
-  const votables = getVotables(state);
-  const insertionIndex = new Map<string, number>();
-  votables.forEach((v, i) => insertionIndex.set(votableIdOf(v), i));
-  const order = [...votables]
-    .sort((a, b) => {
-      const ida = votableIdOf(a);
-      const idb = votableIdOf(b);
-      const va = votesForVotable(state, ida);
-      const vb = votesForVotable(state, idb);
-      if (vb !== va) return vb - va;
-      return (
-        (insertionIndex.get(ida) ?? 0) - (insertionIndex.get(idb) ?? 0)
-      );
-    })
-    .map((v) => votableIdOf(v));
+  const items = getDiscussItems(state);
+  const order = items.map((item) => item.id);
   return {
     ...state,
     stage: 'discuss',
@@ -743,9 +802,24 @@ export interface CloseSummaryGroupEntry {
   }[];
 }
 
+export interface CloseSummaryQuestionEntry {
+  readonly kind: 'question';
+  readonly question: {
+    readonly id: string;
+    readonly title: string;
+    readonly description: string;
+    readonly median: number;
+  };
+  readonly actionItems: readonly {
+    readonly note: DiscussNote;
+    readonly owner: Participant | null;
+  }[];
+}
+
 export type CloseSummaryDiscussedItem =
   | CloseSummaryCardEntry
-  | CloseSummaryGroupEntry;
+  | CloseSummaryGroupEntry
+  | CloseSummaryQuestionEntry;
 
 export interface CloseSummary {
   readonly discussed: readonly CloseSummaryDiscussedItem[];
@@ -785,41 +859,66 @@ export function getCloseSummary(state: RetroState): CloseSummary {
     if (ownerId === undefined) return null;
     return participantById.get(ownerId) ?? null;
   };
-  const ordered = orderedVotablesByVotes(state);
-  const discussed: CloseSummaryDiscussedItem[] = ordered.map((v) => {
-    const id = votableIdOf(v);
-    const contextNotes = state.discussNotes.filter(
-      (n) => n.parentCardId === id && n.lane === 'context',
-    );
-    const actionItems = state.discussNotes
-      .filter((n) => n.parentCardId === id && n.lane === 'actions')
-      .map((note) => ({ note, owner: ownerFor(note.id) }));
-    if (v.kind === 'card') {
+
+  let discussed: CloseSummaryDiscussedItem[];
+
+  if (state.meta.type === 'check') {
+    const template = getCheckTemplate(state.meta.templateId);
+    const items = getDiscussItems(state);
+    discussed = items.map((item) => {
+      const question = template.questions.find((q) => q.id === item.id);
+      const actionItems = state.discussNotes
+        .filter((n) => n.parentCardId === item.id && n.lane === 'actions')
+        .map((note) => ({ note, owner: ownerFor(note.id) }));
       return {
-        kind: 'card',
-        card: {
-          id: v.card.id,
-          columnId: v.card.columnId,
-          text: v.card.text,
+        kind: 'question' as const,
+        question: {
+          id: item.id,
+          title: question?.title ?? item.title,
+          description: question?.description ?? item.description,
+          median: medianForQuestion(state.surveyResponses, item.id),
+        },
+        actionItems,
+      };
+    });
+  } else {
+    const ordered = orderedVotablesByVotes(state);
+    discussed = ordered.map((v) => {
+      const id = votableIdOf(v);
+      const contextNotes = state.discussNotes.filter(
+        (n) => n.parentCardId === id && n.lane === 'context',
+      );
+      const actionItems = state.discussNotes
+        .filter((n) => n.parentCardId === id && n.lane === 'actions')
+        .map((note) => ({ note, owner: ownerFor(note.id) }));
+      if (v.kind === 'card') {
+        return {
+          kind: 'card' as const,
+          card: {
+            id: v.card.id,
+            columnId: v.card.columnId,
+            text: v.card.text,
+            votes: votesForVotable(state, id),
+          },
+          contextNotes,
+          actionItems,
+        };
+      }
+      return {
+        kind: 'group' as const,
+        group: {
+          id: v.group.id,
+          columnId: v.group.columnId,
+          name: v.group.name,
           votes: votesForVotable(state, id),
         },
+        cards: v.cards,
         contextNotes,
         actionItems,
       };
-    }
-    return {
-      kind: 'group',
-      group: {
-        id: v.group.id,
-        columnId: v.group.columnId,
-        name: v.group.name,
-        votes: votesForVotable(state, id),
-      },
-      cards: v.cards,
-      contextNotes,
-      actionItems,
-    };
-  });
+    });
+  }
+
   const allActionItems = getActionItems(state).map((item) => ({
     note: item.note,
     parentCard: item.parentCard,
@@ -886,11 +985,13 @@ export function serializeRetroToExportJson(
       participantId: v.participantId,
       cardId: v.cardId,
     })),
-    discussion: summary.discussed.map((d) => ({
-      cardId: d.kind === 'card' ? d.card.id : d.group.id,
-      context: d.contextNotes,
-      actionItems: d.actionItems.map((a) => a.note),
-    })),
+    discussion: summary.discussed
+      .filter((d): d is CloseSummaryCardEntry | CloseSummaryGroupEntry => d.kind !== 'question')
+      .map((d) => ({
+        cardId: d.kind === 'card' ? d.card.id : d.group.id,
+        context: d.contextNotes,
+        actionItems: d.actionItems.map((a) => a.note),
+      })),
     actionItems: summary.allActionItems.map((a) => ({
       id: a.note.id,
       text: a.note.text,
@@ -900,12 +1001,22 @@ export function serializeRetroToExportJson(
 }
 
 export function getActionItems(state: RetroState): readonly ActionItem[] {
-  // Determine parent votable order: by votes desc, insertion order tie-break.
-  const ordered = orderedVotablesByVotes(state);
+  const items = getDiscussItems(state);
   const rank = new Map<string, number>();
-  ordered.forEach((v, i) => rank.set(votableIdOf(v), i));
+  items.forEach((item, i) => rank.set(item.id, i));
   const summaryById = new Map<string, VotableSummary>();
-  for (const v of ordered) summaryById.set(votableIdOf(v), summarizeVotable(v));
+  for (const item of items) {
+    summaryById.set(item.id, { id: item.id, text: item.title, columnId: '' as ColumnId });
+  }
+
+  // For retros, also populate columnId from actual votables
+  if (state.meta.type !== 'check') {
+    const votables = getVotables(state);
+    for (const v of votables) {
+      const id = votableIdOf(v);
+      summaryById.set(id, summarizeVotable(v));
+    }
+  }
 
   const actionNotes = state.discussNotes.filter((n) => n.lane === 'actions');
   const withIndex = actionNotes.map((n, i) => ({ n, i }));
@@ -915,15 +1026,15 @@ export function getActionItems(state: RetroState): readonly ActionItem[] {
     if (ra !== rb) return ra - rb;
     return a.i - b.i;
   });
-  const items: ActionItem[] = [];
+  const result: ActionItem[] = [];
   for (const { n } of withIndex) {
     const parent = summaryById.get(n.parentCardId);
     if (parent === undefined) continue;
-    items.push({
+    result.push({
       note: n,
       parentCard: parent,
       ownerId: state.actionItemOwners[n.id] ?? null,
     });
   }
-  return items;
+  return result;
 }

@@ -93,6 +93,7 @@ export function RetroSetupPage({
           disabled={!canStart}
           onClick={(): void => {
             onStart({
+              type: 'retro',
               name: name.trim(),
               date,
               context: context.trim(),
