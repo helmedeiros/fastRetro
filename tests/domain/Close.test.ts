@@ -76,14 +76,21 @@ describe('Close stage', () => {
   it('getCloseSummary groups cards by votes with context + actions + owners', () => {
     const s = startClose(fixture());
     const summary = getCloseSummary(s);
-    const idOf = (d: (typeof summary.discussed)[number]): string =>
-      d.kind === 'card' ? d.card.id : d.group.id;
-    const votesOf = (d: (typeof summary.discussed)[number]): number =>
-      d.kind === 'card' ? d.card.votes : d.group.votes;
+    const idOf = (d: (typeof summary.discussed)[number]): string => {
+      if (d.kind === 'card') return d.card.id;
+      if (d.kind === 'group') return d.group.id;
+      return d.question.id;
+    };
+    const votesOf = (d: (typeof summary.discussed)[number]): number => {
+      if (d.kind === 'card') return d.card.votes;
+      if (d.kind === 'group') return d.group.votes;
+      return 0;
+    };
     expect(summary.discussed.map(idOf)).toEqual(['c-1', 'c-2']);
     expect(votesOf(summary.discussed[0])).toBe(2);
     expect(votesOf(summary.discussed[1])).toBe(1);
-    expect(summary.discussed[0].contextNotes.map((n) => n.id)).toEqual(['c-3']);
+    const first = summary.discussed[0];
+    expect(first.kind !== 'question' && first.contextNotes.map((n) => n.id)).toEqual(['c-3']);
     expect(summary.discussed[0].actionItems.map((a) => a.note.id)).toEqual([
       'c-4',
     ]);
@@ -190,5 +197,38 @@ describe('Close stage', () => {
     expect(json.participants).toEqual([]);
     expect(json.columns).toEqual({ start: [], stop: [] });
     expect(json.groups).toEqual([]);
+  });
+
+  it('getCloseSummary produces question entries for check type', () => {
+    const state: RetroState = {
+      ...createRetro({ type: 'check', name: 'HC', date: '', context: '', templateId: 'health-check' }),
+      stage: 'close',
+      participants: [
+        { id: 'p1', name: 'Alice' },
+        { id: 'p2', name: 'Bob' },
+      ],
+      surveyResponses: [
+        { id: 'r1', participantId: 'p1', questionId: 'ownership', rating: 4, comment: '' },
+        { id: 'r2', participantId: 'p2', questionId: 'ownership', rating: 2, comment: '' },
+        { id: 'r3', participantId: 'p1', questionId: 'value', rating: 5, comment: '' },
+      ],
+      discussNotes: [
+        { id: 'n1', parentCardId: 'ownership', lane: 'actions', text: 'Clarify ownership' },
+      ],
+      actionItemOwners: { n1: 'p1' },
+    };
+    const summary = getCloseSummary(state);
+    expect(summary.discussed.length).toBe(9);
+    const ownership = summary.discussed.find(
+      (d) => d.kind === 'question' && d.question.id === 'ownership',
+    );
+    expect(ownership).toBeDefined();
+    if (ownership?.kind === 'question') {
+      expect(ownership.question.median).toBe(3);
+      expect(ownership.actionItems).toHaveLength(1);
+      expect(ownership.actionItems[0].owner?.name).toBe('Alice');
+    }
+    expect(summary.allActionItems).toHaveLength(1);
+    expect(summary.allActionItems[0].parentCard.text).toBe('Ownership');
   });
 });
