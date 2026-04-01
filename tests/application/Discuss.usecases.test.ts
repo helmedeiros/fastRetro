@@ -13,7 +13,9 @@ import {
   startBrainstorm,
   startGroup,
   startIcebreaker,
+  startSurvey,
   startVote,
+  submitSurveyResponse,
 } from '../../src/domain/retro/Retro';
 import type { Picker } from '../../src/domain/ports/Picker';
 import type { IdGenerator } from '../../src/domain/ports/IdGenerator';
@@ -69,5 +71,51 @@ describe('Discuss use cases', () => {
     const id = repo.load().discussNotes[0].id;
     new RemoveDiscussNote(repo).execute(id);
     expect(repo.load().discussNotes).toHaveLength(0);
+  });
+});
+
+describe('Discuss use cases (check type)', () => {
+  let repo: InMemoryRetroRepository;
+  let ids: SeqIds;
+
+  beforeEach(() => {
+    ids = new SeqIds();
+    let s = createRetro({
+      type: 'check',
+      name: 'Health Check',
+      date: '',
+      context: '',
+      templateId: 'health-check',
+    });
+    s = addParticipant(s, 'p-1', 'Alice');
+    s = addParticipant(s, 'p-2', 'Bob');
+    s = startIcebreaker(s, firstPicker);
+    s = startSurvey(s);
+    s = submitSurveyResponse(s, 'p-1', 'ownership', 4, '', ids);
+    s = submitSurveyResponse(s, 'p-2', 'ownership', 2, '', ids);
+    s = submitSurveyResponse(s, 'p-1', 'value', 5, '', ids);
+    repo = new InMemoryRetroRepository(s);
+  });
+
+  it('StartDiscuss builds order from question medians ascending', () => {
+    new StartDiscuss(repo).execute();
+    const s = repo.load();
+    expect(s.stage).toBe('discuss');
+    expect(s.discuss).not.toBeNull();
+    expect(s.discuss!.order.length).toBe(9);
+    // Unrated questions (median 0) come first, then by ascending median
+    const firstId = s.discuss!.order[0];
+    // ownership has median 3, value has median 5 — unrated ones come before both
+    expect(firstId).not.toBe('ownership');
+    expect(firstId).not.toBe('value');
+  });
+
+  it('AddDiscussNote attaches to question IDs in check mode', () => {
+    new StartDiscuss(repo).execute();
+    new AddDiscussNote(repo, ids).execute('ownership', 'actions', 'Clarify roles');
+    const notes = repo.load().discussNotes;
+    expect(notes).toHaveLength(1);
+    expect(notes[0].parentCardId).toBe('ownership');
+    expect(notes[0].lane).toBe('actions');
   });
 });

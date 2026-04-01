@@ -16,6 +16,8 @@ import {
   startReview,
   assignActionOwner,
   startClose,
+  startSurvey,
+  submitSurveyResponse,
 } from '../../src/domain/retro/Retro';
 
 let counter = 0;
@@ -61,5 +63,40 @@ describe('ReturnToDashboard', () => {
     const repo = new InMemoryTeamRepository();
     new ReturnToDashboard(repo, ids, clock).execute();
     expect(repo.loadHistory().completed).toHaveLength(0);
+  });
+
+  it('archives a closed check with question-based action items', () => {
+    let s = createRetro({
+      type: 'check',
+      name: 'Health Check',
+      date: '2026-04-01',
+      context: '',
+      templateId: 'health-check',
+    });
+    s = addParticipant(s, 'p1', 'Alice');
+    s = startIcebreaker(s, picker);
+    s = startSurvey(s);
+    s = submitSurveyResponse(s, 'p1', 'ownership', 2, '', ids);
+    s = startDiscuss(s);
+    s = addDiscussNote(s, 'ownership', 'actions', 'Clarify ownership', ids);
+    s = startReview(s);
+    s = assignActionOwner(
+      s,
+      s.discussNotes.find((n) => n.lane === 'actions')!.id,
+      'p1',
+    );
+    s = startClose(s);
+
+    const repo = new InMemoryTeamRepository();
+    repo.saveActiveRetro(s);
+    new ReturnToDashboard(repo, ids, clock).execute();
+
+    expect(repo.loadActiveRetro()).toBeNull();
+    const history = repo.loadHistory();
+    expect(history.completed).toHaveLength(1);
+    expect(history.completed[0].actionItems).toHaveLength(1);
+    expect(history.completed[0].actionItems[0].text).toBe('Clarify ownership');
+    expect(history.completed[0].actionItems[0].parentText).toBe('Ownership');
+    expect(history.completed[0].actionItems[0].ownerName).toBe('Alice');
   });
 });

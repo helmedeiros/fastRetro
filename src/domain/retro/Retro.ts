@@ -679,8 +679,13 @@ export function addDiscussNote(
   }
   const cardExists = state.cards.some((c) => c.id === parentCardId);
   const groupExists = state.groups.some((g) => g.id === parentCardId);
-  if (!cardExists && !groupExists) {
-    throw new Error(`Votable with id "${parentCardId}" not found`);
+  const questionExists =
+    state.meta.type === 'check' &&
+    getCheckTemplate(state.meta.templateId).questions.some(
+      (q) => q.id === parentCardId,
+    );
+  if (!cardExists && !groupExists && !questionExists) {
+    throw new Error(`Discuss item with id "${parentCardId}" not found`);
   }
   const note = createDiscussNote(ids.next(), parentCardId, lane, text);
   return { ...state, discussNotes: [...state.discussNotes, note] };
