@@ -30,6 +30,8 @@ import { MoveCard } from '../../application/usecases/MoveCard';
 import { ExportRetro } from '../../application/usecases/ExportRetro';
 import { AddIcebreakerParticipant } from '../../application/usecases/AddIcebreakerParticipant';
 import { RemoveIcebreakerParticipant } from '../../application/usecases/RemoveIcebreakerParticipant';
+import { StartSurvey } from '../../application/usecases/StartSurvey';
+import { SubmitSurveyResponse } from '../../application/usecases/SubmitSurveyResponse';
 import type { Downloader } from '../../domain/ports/Downloader';
 import type {
   DiscussLane,
@@ -50,6 +52,9 @@ import type { Group } from '../../domain/retro/Group';
 import type { Participant } from '../../domain/retro/Participant';
 import type { RetroStage, RetroMeta, RetroState } from '../../domain/retro/Retro';
 import { jumpToDiscussItem as jumpToDiscussItemDomain } from '../../domain/retro/Retro';
+import type { SurveyResponse } from '../../domain/retro/SurveyResponse';
+import type { DiscussItem } from '../../domain/retro/DiscussItem';
+import { getDiscussItems } from '../../domain/retro/DiscussItem';
 import type { IcebreakerState } from '../../domain/retro/stages/Icebreaker';
 import type { Timer } from '../../domain/retro/Timer';
 import type { Vote } from '../../domain/retro/Vote';
@@ -67,6 +72,8 @@ export interface UseRetro {
   discuss: DiscussState | null;
   discussNotes: readonly DiscussNote[];
   actionItems: readonly ActionItem[];
+  surveyResponses: readonly SurveyResponse[];
+  discussItems: readonly DiscussItem[];
   closeSummary: CloseSummary;
   addParticipant: (name: string) => void;
   removeParticipant: (id: string) => void;
@@ -95,6 +102,8 @@ export interface UseRetro {
   removeDiscussNote: (noteId: string) => void;
   startReview: () => void;
   assignActionOwner: (noteId: string, participantId: string | null) => void;
+  startSurvey: () => void;
+  submitSurveyResponse: (participantId: string, questionId: string, rating: number, comment: string) => void;
   startClose: () => void;
   exportJson: () => void;
   refresh: () => void;
@@ -140,6 +149,8 @@ export function useRetro(
       startReview: new StartReview(repository),
       assignActionOwner: new AssignActionOwner(repository),
       startClose: new StartClose(repository),
+      startSurvey: new StartSurvey(repository),
+      submitSurveyResponse: new SubmitSurveyResponse(repository, idGenerator),
       addIcebreakerParticipant: new AddIcebreakerParticipant(repository, idGenerator, picker),
       removeIcebreakerParticipant: new RemoveIcebreakerParticipant(repository),
       exportRetro:
@@ -340,6 +351,19 @@ export function useRetro(
     [services, refresh],
   );
 
+  const startSurvey = useCallback(() => {
+    services.startSurvey.execute();
+    refresh();
+  }, [services, refresh]);
+
+  const submitSurveyResponseCb = useCallback(
+    (participantId: string, questionId: string, rating: number, comment: string) => {
+      services.submitSurveyResponse.execute(participantId, questionId, rating, comment);
+      refresh();
+    },
+    [services, refresh],
+  );
+
   const startReview = useCallback(() => {
     services.startReview.execute();
     refresh();
@@ -392,6 +416,8 @@ export function useRetro(
     voteBudget: state.voteBudget,
     discuss: state.discuss,
     discussNotes: state.discussNotes,
+    surveyResponses: state.surveyResponses,
+    discussItems: getDiscussItems(state),
     actionItems: getActionItems(state),
     closeSummary: getCloseSummary(state),
     addParticipant,
@@ -419,6 +445,8 @@ export function useRetro(
     jumpToDiscussItem,
     addDiscussNote,
     removeDiscussNote,
+    startSurvey,
+    submitSurveyResponse: submitSurveyResponseCb,
     startReview,
     assignActionOwner,
     startClose,

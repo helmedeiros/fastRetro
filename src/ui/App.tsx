@@ -285,7 +285,7 @@ function TeamApp({
     if (state !== null) {
       syncBroadcast(state);
     }
-  }, [retro.stage, retro.cards, retro.votes, retro.groups, retro.discussNotes, retro.participants, syncBroadcast, syncRole, teamRepository]);
+  }, [retro.stage, retro.cards, retro.votes, retro.groups, retro.discussNotes, retro.participants, retro.surveyResponses, syncBroadcast, syncRole, teamRepository]);
 
   // Sync: receive remote state and apply it
   useEffect(() => {
@@ -428,7 +428,7 @@ function TeamApp({
       brainstorm: retro.startBrainstorm,
       group: retro.startGroup,
       vote: retro.startVote,
-      survey: undefined,
+      survey: retro.startSurvey,
       discuss: retro.startDiscuss,
       review: retro.startReview,
       close: retro.startClose,
