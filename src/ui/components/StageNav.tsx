@@ -1,32 +1,38 @@
-import type { RetroStage } from '../../domain/retro/Retro';
+import type { RetroStage, RetroType } from '../../domain/retro/Retro';
+import { stagesForType } from '../../domain/retro/StageFlow';
 
-const STAGES: { key: RetroStage; label: string }[] = [
-  { key: 'icebreaker', label: 'Icebreaker' },
-  { key: 'brainstorm', label: 'Brainstorm' },
-  { key: 'group', label: 'Group' },
-  { key: 'vote', label: 'Vote' },
-  { key: 'discuss', label: 'Discuss' },
-  { key: 'review', label: 'Review' },
-  { key: 'close', label: 'Close' },
-];
+const STAGE_LABELS: Readonly<Record<RetroStage, string>> = {
+  setup: 'Setup',
+  icebreaker: 'Icebreaker',
+  brainstorm: 'Brainstorm',
+  group: 'Group',
+  vote: 'Vote',
+  survey: 'Survey',
+  discuss: 'Discuss',
+  review: 'Review',
+  close: 'Close',
+};
 
 export interface StageNavProps {
   currentStage: RetroStage;
+  retroType?: RetroType;
   onNavigate?: (stage: RetroStage) => void;
 }
 
-export function StageNav({ currentStage, onNavigate }: StageNavProps): JSX.Element {
+export function StageNav({ currentStage, retroType = 'retro', onNavigate }: StageNavProps): JSX.Element {
+  const stages = stagesForType(retroType);
+
   return (
     <nav className="stage-nav" aria-label="Retro stages">
-      {STAGES.map((s) => (
+      {stages.map((s) => (
         <button
-          key={s.key}
+          key={s}
           type="button"
-          className={`stage-nav-item${s.key === currentStage ? ' active' : ''}`}
-          aria-current={s.key === currentStage ? 'step' : undefined}
-          onClick={(): void => { onNavigate?.(s.key); }}
+          className={`stage-nav-item${s === currentStage ? ' active' : ''}`}
+          aria-current={s === currentStage ? 'step' : undefined}
+          onClick={(): void => { onNavigate?.(s); }}
         >
-          {s.label.toUpperCase()}
+          {STAGE_LABELS[s].toUpperCase()}
         </button>
       ))}
     </nav>

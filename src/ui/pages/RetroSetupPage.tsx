@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import type { RetroMeta } from '../../domain/retro/Retro';
+import type { RetroMeta, RetroType } from '../../domain/retro/Retro';
 import { TEMPLATES, DEFAULT_TEMPLATE_ID } from '../../domain/retro/FacilitationTemplate';
+import { CHECK_TEMPLATES, DEFAULT_CHECK_TEMPLATE_ID } from '../../domain/retro/CheckTemplate';
 
 export interface RetroSetupPageProps {
   onStart: (meta: RetroMeta) => void;
@@ -14,16 +15,38 @@ export function RetroSetupPage({
   onStart,
   onCancel,
 }: RetroSetupPageProps): JSX.Element {
+  const [sessionType, setSessionType] = useState<RetroType>('retro');
   const [name, setName] = useState('');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [context, setContext] = useState(DEFAULT_CONTEXT);
-  const [templateId, setTemplateId] = useState(DEFAULT_TEMPLATE_ID);
+  const [retroTemplateId, setRetroTemplateId] = useState(DEFAULT_TEMPLATE_ID);
+  const [checkTemplateId, setCheckTemplateId] = useState(DEFAULT_CHECK_TEMPLATE_ID);
 
+  const templateId = sessionType === 'check' ? checkTemplateId : retroTemplateId;
   const canStart = name.trim().length > 0;
 
   return (
     <section aria-label="Retro Setup" className="retro-setup">
-      <h2>New Retrospective</h2>
+      <h2>New Session</h2>
+
+      <div className="session-type-selector" role="radiogroup" aria-label="Session type">
+        <button
+          type="button"
+          className={`session-type-btn${sessionType === 'retro' ? ' active' : ''}`}
+          aria-pressed={sessionType === 'retro'}
+          onClick={(): void => { setSessionType('retro'); }}
+        >
+          Retrospective
+        </button>
+        <button
+          type="button"
+          className={`session-type-btn${sessionType === 'check' ? ' active' : ''}`}
+          aria-pressed={sessionType === 'check'}
+          onClick={(): void => { setSessionType('check'); }}
+        >
+          Check
+        </button>
+      </div>
 
       <div className="retro-setup-row">
         <div className="retro-setup-name">
@@ -33,7 +56,7 @@ export function RetroSetupPage({
             type="text"
             value={name}
             onChange={(e): void => { setName(e.target.value); }}
-            placeholder="e.g. Sprint 14 Retro"
+            placeholder={sessionType === 'check' ? 'e.g. Q2 Health Check' : 'e.g. Sprint 14 Retro'}
           />
         </div>
         <div className="retro-setup-date">
@@ -54,34 +77,56 @@ export function RetroSetupPage({
           rows={4}
           value={context}
           onChange={(e): void => { setContext(e.target.value); }}
-          placeholder="Set the stage for this retrospective..."
+          placeholder="Set the stage for this session..."
         />
       </div>
 
-      <fieldset className="template-selector">
-        <legend>Facilitation Design</legend>
-        <div className="template-grid">
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`template-card${t.id === templateId ? ' template-selected' : ''}`}
-              onClick={(): void => { setTemplateId(t.id); }}
-              aria-pressed={t.id === templateId}
-            >
-              <span className="template-name">{t.name}</span>
-              <span className="template-columns">
-                {t.columns.map((c, i) => (
-                  <span key={c.id}>
-                    {i > 0 && ' \u00B7 '}
-                    <span style={{ color: c.color }}>{c.title}</span>
-                  </span>
-                ))}
-              </span>
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      {sessionType === 'retro' ? (
+        <fieldset className="template-selector">
+          <legend>Facilitation Design</legend>
+          <div className="template-grid">
+            {TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`template-card${t.id === retroTemplateId ? ' template-selected' : ''}`}
+                onClick={(): void => { setRetroTemplateId(t.id); }}
+                aria-pressed={t.id === retroTemplateId}
+              >
+                <span className="template-name">{t.name}</span>
+                <span className="template-columns">
+                  {t.columns.map((c, i) => (
+                    <span key={c.id}>
+                      {i > 0 && ' \u00B7 '}
+                      <span style={{ color: c.color }}>{c.title}</span>
+                    </span>
+                  ))}
+                </span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      ) : (
+        <fieldset className="template-selector">
+          <legend>Check Template</legend>
+          <div className="template-grid">
+            {CHECK_TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`template-card${t.id === checkTemplateId ? ' template-selected' : ''}`}
+                onClick={(): void => { setCheckTemplateId(t.id); }}
+                aria-pressed={t.id === checkTemplateId}
+              >
+                <span className="template-name">{t.name}</span>
+                <span className="template-columns">
+                  {t.questions.length} questions
+                </span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       <div className="retro-setup-actions">
         <button type="button" onClick={onCancel}>
@@ -93,7 +138,7 @@ export function RetroSetupPage({
           disabled={!canStart}
           onClick={(): void => {
             onStart({
-              type: 'retro',
+              type: sessionType,
               name: name.trim(),
               date,
               context: context.trim(),
@@ -101,7 +146,7 @@ export function RetroSetupPage({
             });
           }}
         >
-          Start Retrospective
+          {sessionType === 'check' ? 'Start Check' : 'Start Retrospective'}
         </button>
       </div>
     </section>

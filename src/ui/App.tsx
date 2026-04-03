@@ -485,7 +485,7 @@ function TeamApp({
     return (
       <main className="container">
         {logo}
-        <StageNav currentStage="close" onNavigate={navigateStage} />
+        <StageNav currentStage="close" retroType={retro.meta.type} onNavigate={navigateStage} />
         <SideMenu participants={retro.participants} currentParticipantId={identity.participantId} sync={roomSync} />
         <ClosePage
           summary={retro.closeSummary}
@@ -518,7 +518,7 @@ function TeamApp({
     return (
       <main className="container">
         {logo}
-        <StageNav currentStage={retroStage} onNavigate={navigateStage} />
+        <StageNav currentStage={retroStage} retroType={retro.meta.type} onNavigate={navigateStage} />
         <SideMenu participants={retro.participants} currentParticipantId={identity.participantId} sync={roomSync} />
         {roomSync.role !== 'none' && identity.participantId === null && retro.participants.length > 0 && (
           <JoinModal
