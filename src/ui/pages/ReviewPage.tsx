@@ -3,7 +3,7 @@ import type { Card } from '../../domain/retro/Card';
 import type { Group } from '../../domain/retro/Group';
 import type { Timer } from '../../domain/retro/Timer';
 import type { Participant } from '../../domain/retro/Participant';
-import type { ActionItem } from '../../domain/retro/Retro';
+import type { ActionItem, RetroType } from '../../domain/retro/Retro';
 import type { Agreement } from '../../domain/team/Team';
 import type { FlatActionItem } from '../../domain/team/RetroHistory';
 import { getTemplate } from '../../domain/retro/FacilitationTemplate';
@@ -17,6 +17,7 @@ export interface ReviewPageProps {
   cards?: readonly Card[];
   groups?: readonly Group[];
   templateId?: string;
+  retroType?: RetroType;
   existingActionItems?: readonly FlatActionItem[];
   agreements?: readonly Agreement[];
   members?: readonly { id: string; name: string }[];
@@ -39,6 +40,7 @@ export function ReviewPage({
   cards = [],
   groups = [],
   templateId,
+  retroType = 'retro',
   existingActionItems = [],
   agreements = [],
   members = [],
@@ -212,7 +214,7 @@ export function ReviewPage({
         </ul>
       </section>
 
-      {cards.length > 0 && (() => {
+      {retroType !== 'check' && cards.length > 0 && (() => {
         const template = getTemplate(templateId ?? 'start-stop');
         return (
           <section className="review-section review-board">

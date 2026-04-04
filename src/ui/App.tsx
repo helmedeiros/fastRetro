@@ -22,7 +22,9 @@ import { VotePage } from './pages/VotePage';
 import { DiscussPage } from './pages/DiscussPage';
 import { ReviewPage } from './pages/ReviewPage';
 import { ClosePage } from './pages/ClosePage';
+import { SurveyPage } from './pages/SurveyPage';
 import { StageNav } from './components/StageNav';
+import { getCheckTemplate } from '../domain/retro/CheckTemplate';
 import { SideMenu } from './components/SideMenu';
 import { JoinModal } from './components/JoinModal';
 import { useRoomSync } from './hooks/useRoomSync';
@@ -607,6 +609,19 @@ function TeamApp({
             onSetVoteBudget={retro.setVoteBudget}
             onCastVote={retro.castVote}
           />
+        ) : retro.stage === 'survey' && retro.timer !== null ? (
+          <SurveyPage
+            timer={retro.timer}
+            checkTemplate={getCheckTemplate(retro.meta.templateId)}
+            currentParticipantId={identity.participantId}
+            surveyResponses={retro.surveyResponses}
+            participants={retro.participants}
+            onSubmitResponse={retro.submitSurveyResponse}
+            onStartTimer={retro.startTimer}
+            onPauseTimer={retro.pauseTimer}
+            onResumeTimer={retro.resumeTimer}
+            onResetTimer={retro.resetTimer}
+          />
         ) : retro.stage === 'discuss' &&
           retro.timer !== null &&
           retro.discuss !== null ? (
@@ -616,6 +631,8 @@ function TeamApp({
             groups={retro.groups}
             votes={retro.votes}
             templateId={retro.meta.templateId}
+            retroType={retro.meta.type}
+            discussItems={retro.discussItems}
             discuss={retro.discuss}
             notes={retro.discussNotes}
             onStartTimer={retro.startTimer}
@@ -637,6 +654,7 @@ function TeamApp({
             cards={retro.cards}
             groups={retro.groups}
             templateId={retro.meta.templateId}
+            retroType={retro.meta.type}
             existingActionItems={dashboard.allActionItems}
             agreements={dashboard.team.agreements}
             members={dashboard.team.members}

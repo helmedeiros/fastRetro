@@ -4,8 +4,9 @@ import { MAX_CARD_LENGTH } from '../../domain/retro/Card';
 import type { Group } from '../../domain/retro/Group';
 import type { Timer } from '../../domain/retro/Timer';
 import type { Vote } from '../../domain/retro/Vote';
-import type { DiscussState } from '../../domain/retro/Retro';
+import type { DiscussState, RetroType } from '../../domain/retro/Retro';
 import type { DiscussLane, DiscussNote } from '../../domain/retro/DiscussNote';
+import type { DiscussItem } from '../../domain/retro/DiscussItem';
 import { getTemplate } from '../../domain/retro/FacilitationTemplate';
 import { PresentTimer } from '../components/PresentTimer';
 
@@ -15,6 +16,8 @@ export interface DiscussPageProps {
   groups?: readonly Group[];
   votes: readonly Vote[];
   templateId?: string;
+  retroType?: RetroType;
+  discussItems?: readonly DiscussItem[];
   discuss: DiscussState;
   notes: readonly DiscussNote[];
   onStartTimer: () => void;
@@ -135,6 +138,8 @@ export function DiscussPage({
   groups = [],
   votes,
   templateId,
+  retroType = 'retro',
+  discussItems,
   discuss,
   notes,
   onStartTimer,
@@ -150,14 +155,17 @@ export function DiscussPage({
 }: DiscussPageProps): JSX.Element {
   const total = discuss.order.length;
   const activeId = discuss.order[discuss.currentIndex];
-  const isFirst = discuss.currentIndex === 0 && discuss.segment === 'context';
+  const isCheck = retroType === 'check';
+  const isFirst = discuss.currentIndex === 0 && (isCheck || discuss.segment === 'context');
   const isLast = discuss.currentIndex === total - 1 && discuss.segment === 'actions';
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState('');
 
   const template = getTemplate(templateId ?? 'start-stop');
   const colorByColumnId = new Map(template.columns.map((col) => [col.id, col.color]));
-  const items = discuss.order.map((id) => resolveVotable(id, cards, groups, votes));
+  const votableItems = discuss.order.map((id) => resolveVotable(id, cards, groups, votes));
+  const discussItemById = new Map((discussItems ?? []).map((di) => [di.id, di]));
+  const items = votableItems;
   const activeItem = items[discuss.currentIndex];
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -197,17 +205,29 @@ export function DiscussPage({
         <div className="discuss-carousel-spacer" />
         {items.map((item, i) => {
           const isCurrent = i === discuss.currentIndex;
-          const colColor = colorByColumnId.get(item.columnId);
+          const di = discussItemById.get(item.id);
+          const colColor = isCheck ? undefined : colorByColumnId.get(item.columnId);
+          const displayTitle = di?.title ?? item.label;
+          const displayDescription = di?.description ?? '';
+          const displayScore = di?.scoreLabel ?? `${String(item.votes)} vote${item.votes !== 1 ? 's' : ''}`;
           return (
             <div
               key={item.id}
-              className={`discuss-carousel-card${isCurrent ? ' discuss-carousel-active' : ''}`}
+              className={`discuss-carousel-card${isCurrent ? ' discuss-carousel-active' : ''}${isCheck ? ' discuss-carousel-check' : ''}`}
               data-testid={isCurrent ? 'discuss-card-text' : undefined}
               style={colColor ? { '--col-color': colColor } as React.CSSProperties : undefined}
               onClick={(): void => { if (!isCurrent && onJumpToItem) onJumpToItem(i); }}
               role={!isCurrent ? 'button' : undefined}
             >
-              {editingId === item.id ? (
+              {isCheck && di !== undefined ? (
+                <>
+                  <div className="discuss-carousel-score">{di.score === 0 ? '—' : di.score.toFixed(1)}</div>
+                  <div className="discuss-carousel-label">{displayTitle}</div>
+                  {displayDescription && (
+                    <p className="discuss-carousel-description">{displayDescription}</p>
+                  )}
+                </>
+              ) : editingId === item.id ? (
                 <div className="discuss-carousel-edit" onClick={(e): void => { e.stopPropagation(); }}>
                   <input
                     type="text"
@@ -243,13 +263,13 @@ export function DiscussPage({
                     }
                   }}
                 >
-                  {item.label}
+                  {displayTitle}
                   {item.isGroup && onRenameGroup !== undefined && isCurrent && (
                     <span className="discuss-carousel-edit-icon">&#9998;</span>
                   )}
                 </div>
               )}
-              {item.childCards !== undefined && item.childCards.length > 0 && (
+              {!isCheck && item.childCards !== undefined && item.childCards.length > 0 && (
                 <ul className="discuss-carousel-children">
                   {item.childCards.map((c) => (
                     <li key={c.id}>{c.text}</li>
@@ -257,8 +277,8 @@ export function DiscussPage({
                 </ul>
               )}
               <div className="discuss-carousel-votes-row">
-                <span className="discuss-carousel-votes-label">Votes:</span>
-                <span className="discuss-carousel-votes">{String(item.votes)}</span>
+                <span className="discuss-carousel-votes-label">{isCheck ? 'Median:' : 'Votes:'}</span>
+                <span className="discuss-carousel-votes">{displayScore}</span>
               </div>
             </div>
           );
@@ -277,19 +297,23 @@ export function DiscussPage({
             </button>
           </div>
           <div className="discuss-timeline">
-            <Lane
-              title="Context"
-              side="left"
-              active={discuss.segment === 'context'}
-              notes={contextNotes}
-              onAdd={(text): void => { onAddNote(activeId, 'context', text); }}
-              onRemove={onRemoveNote}
-            />
-            <div className="discuss-timeline-divider" />
+            {!isCheck && (
+              <>
+                <Lane
+                  title="Context"
+                  side="left"
+                  active={discuss.segment === 'context'}
+                  notes={contextNotes}
+                  onAdd={(text): void => { onAddNote(activeId, 'context', text); }}
+                  onRemove={onRemoveNote}
+                />
+                <div className="discuss-timeline-divider" />
+              </>
+            )}
             <Lane
               title="Actions"
-              side="right"
-              active={discuss.segment === 'actions'}
+              side={isCheck ? 'left' : 'right'}
+              active={isCheck || discuss.segment === 'actions'}
               notes={actionNotes}
               onAdd={(text): void => { onAddNote(activeId, 'actions', text); }}
               onRemove={onRemoveNote}
