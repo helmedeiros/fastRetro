@@ -1,6 +1,7 @@
 import type { Card } from '../../domain/retro/Card';
 import type { Group } from '../../domain/retro/Group';
-import type { CloseSummary } from '../../domain/retro/Retro';
+import type { CloseSummary, RetroType } from '../../domain/retro/Retro';
+import type { DiscussItem } from '../../domain/retro/DiscussItem';
 import { getTemplate } from '../../domain/retro/FacilitationTemplate';
 
 export interface CloseStats {
@@ -17,6 +18,8 @@ export interface ClosePageProps {
   cards?: readonly Card[];
   groups?: readonly Group[];
   templateId?: string;
+  retroType?: RetroType;
+  discussItems?: readonly DiscussItem[];
   onExport?: () => void;
   onReturnToDashboard?: () => void;
   onBackToDashboard?: () => void;
@@ -28,17 +31,20 @@ export function ClosePage({
   cards = [],
   groups = [],
   templateId,
+  retroType = 'retro',
+  discussItems = [],
   onExport,
   onReturnToDashboard,
   onBackToDashboard,
 }: ClosePageProps): JSX.Element {
+  const isCheck = retroType === 'check';
   const template = getTemplate(templateId ?? 'start-stop');
 
   return (
     <section aria-label="Close">
-      <h2>Retro complete</h2>
+      <h2>{isCheck ? 'Check complete' : 'Retro complete'}</h2>
 
-      {stats !== undefined && (
+      {stats !== undefined && !isCheck && (
         <div className="close-stats">
           <div className="close-stat">
             <span className="close-stat-icon">{'\u2726'}</span>
@@ -63,7 +69,41 @@ export function ClosePage({
         </div>
       )}
 
-      {cards.length > 0 && (
+      {isCheck && stats !== undefined && (
+        <div className="close-stats">
+          <div className="close-stat">
+            <span className="close-stat-icon">{'\u2726'}</span>
+            <span className="close-stat-value">{String(discussItems.length)} questions rated</span>
+            <span className="close-stat-sub">by {String(stats.participants)} participants</span>
+          </div>
+          <div className="close-stat">
+            <span className="close-stat-icon">{'\u2713'}</span>
+            <span className="close-stat-value">{stats.actions > 0 ? `${String(stats.actions)} actions` : 'No new actions'}</span>
+            <span className="close-stat-sub">from this check</span>
+          </div>
+        </div>
+      )}
+
+      {isCheck && discussItems.length > 0 && (
+        <section className="close-board" aria-label="Check results">
+          <h3 className="close-board-title">Survey results</h3>
+          <div className="close-check-results">
+            {discussItems.map((item) => (
+              <div key={item.id} className="close-check-question">
+                <span className="close-check-score">
+                  {item.score === 0 ? '\u2014' : item.score.toFixed(1)}
+                </span>
+                <div className="close-check-content">
+                  <span className="close-check-title">{item.title}</span>
+                  <span className="close-check-description">{item.description}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!isCheck && cards.length > 0 && (
         <section className="close-board">
           <h3 className="close-board-title">Board overview</h3>
           <div className="columns">
@@ -113,7 +153,7 @@ export function ClosePage({
 
       {summary.allActionItems.length > 0 && (
         <section className="close-board" aria-label="Close summary">
-          <h3 className="close-board-title">Action items from this retro</h3>
+          <h3 className="close-board-title">Action items from this {isCheck ? 'check' : 'retro'}</h3>
           <ul className="close-action-list">
             {summary.allActionItems.map((a) => (
               <li key={a.note.id} data-testid={`close-action-${a.note.id}`} className="close-action-item">

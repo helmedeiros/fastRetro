@@ -501,6 +501,8 @@ function TeamApp({
           cards={retro.cards}
           groups={retro.groups}
           templateId={retro.meta.templateId}
+          retroType={retro.meta.type}
+          discussItems={retro.discussItems}
           onExport={retro.exportJson}
           onReturnToDashboard={() => {
             if (syncRole === 'guest' && remoteTeamInfoRef.current !== null && onGuestRetroComplete !== undefined) {
