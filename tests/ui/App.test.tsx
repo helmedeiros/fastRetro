@@ -88,7 +88,7 @@ describe('App', () => {
     renderApp();
     addMemberAndStartRetro();
     fireEvent.click(
-      screen.getByRole('button', { name: /continue to brainstorm/i }),
+      screen.getByRole('button', { name: /^continue$/i }),
     );
     expect(
       screen.getByRole('region', { name: /brainstorm/i }),

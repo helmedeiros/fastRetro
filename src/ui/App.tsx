@@ -561,7 +561,7 @@ function TeamApp({
             onNextParticipant={retro.advanceIcebreaker}
             onAddParticipant={retro.addIcebreakerParticipant}
             onRemoveParticipant={retro.removeIcebreakerParticipant}
-            onContinueToBrainstorm={retro.startBrainstorm}
+            onContinue={retro.meta.type === 'check' ? retro.startSurvey : retro.startBrainstorm}
           />
         ) : retro.stage === 'brainstorm' && retro.timer !== null ? (
           <BrainstormPage

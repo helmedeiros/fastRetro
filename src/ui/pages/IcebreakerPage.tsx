@@ -15,7 +15,7 @@ export interface IcebreakerPageProps {
   onNextParticipant: () => void;
   onAddParticipant?: (name: string) => void;
   onRemoveParticipant?: (id: string) => void;
-  onContinueToBrainstorm: () => void;
+  onContinue: () => void;
 }
 
 export function IcebreakerPage({
@@ -29,7 +29,7 @@ export function IcebreakerPage({
   onNextParticipant,
   onAddParticipant,
   onRemoveParticipant,
-  onContinueToBrainstorm,
+  onContinue,
 }: IcebreakerPageProps): JSX.Element {
   const [newName, setNewName] = useState('');
   const currentId = icebreaker.participantIds[icebreaker.currentIndex];
@@ -141,8 +141,8 @@ export function IcebreakerPage({
 
       <div className="icebreaker-actions">
         {atEnd && !spinning ? (
-          <button type="button" className="primary" onClick={onContinueToBrainstorm}>
-            Continue to brainstorm
+          <button type="button" className="primary" onClick={onContinue}>
+            Continue
           </button>
         ) : (
           <button

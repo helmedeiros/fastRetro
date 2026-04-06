@@ -39,7 +39,7 @@ describe('IcebreakerPage', () => {
         onResumeTimer={noop}
         onResetTimer={noop}
         onNextParticipant={noop}
-        onContinueToBrainstorm={noop}
+        onContinue={noop}
       />,
     );
     // Alice is current speaker (index 0) — shown big
@@ -63,7 +63,7 @@ describe('IcebreakerPage', () => {
         onResumeTimer={noop}
         onResetTimer={noop}
         onNextParticipant={onNext}
-        onContinueToBrainstorm={noop}
+        onContinue={noop}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /spin/i }));
@@ -71,7 +71,7 @@ describe('IcebreakerPage', () => {
     expect(onNext).toHaveBeenCalledTimes(1);
   });
 
-  it('shows Continue to brainstorm at the last participant and no remaining pills', () => {
+  it('shows Continue at the last participant and no remaining pills', () => {
     render(
       <IcebreakerPage
         timer={createTimer(10 * 60 * 1000)}
@@ -82,11 +82,11 @@ describe('IcebreakerPage', () => {
         onResumeTimer={noop}
         onResetTimer={noop}
         onNextParticipant={noop}
-        onContinueToBrainstorm={noop}
+        onContinue={noop}
       />,
     );
     expect(screen.queryByRole('button', { name: /spin/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /continue to brainstorm/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /continue/i })).toBeInTheDocument();
     expect(screen.getByTestId('icebreaker-speaker')).toHaveTextContent('Carol');
     const list = screen.getByRole('list', { name: /icebreaker rotation/i });
     expect(within(list).queryByText('Alice')).not.toBeInTheDocument();
@@ -105,13 +105,13 @@ describe('IcebreakerPage', () => {
         onResumeTimer={noop}
         onResetTimer={noop}
         onNextParticipant={noop}
-        onContinueToBrainstorm={noop}
+        onContinue={noop}
       />,
     );
     expect(screen.getByTestId('time-remaining')).toHaveTextContent('10m 00s');
   });
 
-  it('fires onContinueToBrainstorm when clicked', () => {
+  it('fires onContinue when clicked', () => {
     const onContinue = vi.fn();
     render(
       <IcebreakerPage
@@ -123,11 +123,11 @@ describe('IcebreakerPage', () => {
         onResumeTimer={noop}
         onResetTimer={noop}
         onNextParticipant={noop}
-        onContinueToBrainstorm={onContinue}
+        onContinue={onContinue}
       />,
     );
     fireEvent.click(
-      screen.getByRole('button', { name: /continue to brainstorm/i }),
+      screen.getByRole('button', { name: /continue/i }),
     );
     expect(onContinue).toHaveBeenCalledTimes(1);
   });
