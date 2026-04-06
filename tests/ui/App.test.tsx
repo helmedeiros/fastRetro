@@ -117,6 +117,41 @@ describe('App', () => {
     ).toBeInTheDocument();
   });
 
+  it('transitions through full check flow to close', () => {
+    renderApp();
+    // Add member
+    const membersSection = screen.getByRole('region', { name: /members/i });
+    const nameInput = within(membersSection).getByLabelText(/name/i);
+    fireEvent.change(nameInput, { target: { value: 'Alice' } });
+    fireEvent.click(within(membersSection).getByRole('button', { name: /^add$/i }));
+    // Click start → setup page
+    fireEvent.click(screen.getByRole('button', { name: /start retrospective/i }));
+    // Switch to Check type
+    fireEvent.click(screen.getByRole('button', { name: /^check$/i }));
+    // Fill name and start
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Q2 Health Check' } });
+    fireEvent.click(screen.getByRole('button', { name: /start check/i }));
+    // Should be in icebreaker
+    expect(screen.getByRole('region', { name: /icebreaker/i })).toBeInTheDocument();
+    // Navigate to survey
+    navigateTo('survey');
+    expect(screen.getByRole('region', { name: /survey/i })).toBeInTheDocument();
+    // Verify questions are rendered
+    expect(screen.getByText('Ownership')).toBeInTheDocument();
+    expect(screen.getByText('Value')).toBeInTheDocument();
+    // Navigate to discuss
+    navigateTo('discuss');
+    expect(screen.getByRole('region', { name: /discuss/i })).toBeInTheDocument();
+    // Navigate to review
+    navigateTo('review');
+    // Board overview should NOT be shown for checks
+    expect(screen.queryByText('Board overview')).not.toBeInTheDocument();
+    // Navigate to close
+    navigateTo('close');
+    expect(screen.getByRole('heading', { name: /check complete/i })).toBeInTheDocument();
+    expect(screen.getByText('Survey results')).toBeInTheDocument();
+  });
+
   it('transitions through full flow to close with Return to Dashboard', () => {
     renderApp();
     addMemberAndStartRetro();
