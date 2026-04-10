@@ -64,6 +64,13 @@ describe('CheckTemplate', () => {
       }
     });
 
+    it('contains the dora-metrics template', () => {
+      const dora = CHECK_TEMPLATES.find((t) => t.id === 'dora-metrics');
+      expect(dora).toBeDefined();
+      expect(dora!.name).toBe('DORA Metrics Quiz');
+      expect(dora!.questions.length).toBe(5);
+    });
+
     it('each template has a unique id', () => {
       const ids = CHECK_TEMPLATES.map((t) => t.id);
       expect(new Set(ids).size).toBe(ids.length);
@@ -105,6 +112,21 @@ describe('CheckTemplate', () => {
         ],
       };
       expect(maxLevelForQuestion(question)).toBe(7);
+    });
+  });
+
+  describe('dora-metrics template', () => {
+    it('has labeled (non-numeric) options', () => {
+      const dora = getCheckTemplate('dora-metrics');
+      const leadTime = dora.questions[0];
+      expect(leadTime.options[0].label).toBe('More than six months');
+      expect(leadTime.options[5].label).toBe('Less than one hour');
+    });
+
+    it('questions have varying option counts', () => {
+      const dora = getCheckTemplate('dora-metrics');
+      const counts = dora.questions.map((q) => q.options.length);
+      expect(counts).toEqual([6, 6, 6, 4, 5]);
     });
   });
 

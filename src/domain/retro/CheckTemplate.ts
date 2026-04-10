@@ -140,6 +140,79 @@ export const CHECK_TEMPLATES: readonly CheckTemplate[] = [
       },
     ],
   },
+  {
+    id: 'dora-metrics',
+    name: 'DORA Metrics Quiz',
+    questions: [
+      {
+        id: 'lead-time',
+        title: 'Lead Time for Changes',
+        description:
+          'For the primary application or service you work on, what is your lead time for changes (that is, how long does it take to go from code committed to code successfully running in production)?',
+        options: [
+          { value: 1, label: 'More than six months' },
+          { value: 2, label: 'One to six months' },
+          { value: 3, label: 'One week to one month' },
+          { value: 4, label: 'One day to one week' },
+          { value: 5, label: 'Less than one day' },
+          { value: 6, label: 'Less than one hour' },
+        ],
+      },
+      {
+        id: 'deploy-frequency',
+        title: 'Deploy Frequency',
+        description:
+          'For the primary application or service you work on, how often does your organization deploy code to production or release it to end users?',
+        options: [
+          { value: 1, label: 'Less than once per six months' },
+          { value: 2, label: 'Between once per month and once every six months' },
+          { value: 3, label: 'Between once per week and once per month' },
+          { value: 4, label: 'Between once per day and once per week' },
+          { value: 5, label: 'Between once per hour and once per day' },
+          { value: 6, label: 'On demand (multiple deploys per day)' },
+        ],
+      },
+      {
+        id: 'failure-recovery',
+        title: 'Failure Recovery',
+        description:
+          'For the primary application or service you work on, how long does it generally take to restore service after a change to production or release to users results in degraded service?',
+        options: [
+          { value: 1, label: 'More than six months' },
+          { value: 2, label: 'One to six months' },
+          { value: 3, label: 'One week to one month' },
+          { value: 4, label: 'One day to one week' },
+          { value: 5, label: 'Less than one day' },
+          { value: 6, label: 'Less than one hour' },
+        ],
+      },
+      {
+        id: 'change-failure-rate',
+        title: 'Change Failure Rate',
+        description:
+          'For the primary application or service you work on, what percentage of changes to production or releases to users result in degraded service and subsequently require remediation?',
+        options: [
+          { value: 1, label: '76-100%' },
+          { value: 2, label: '46-75%' },
+          { value: 3, label: '16-45%' },
+          { value: 4, label: '0-15%' },
+        ],
+      },
+      {
+        id: 'reliability',
+        title: 'Reliability',
+        description:
+          'How would you rate the reliability of the primary application or service you work on, considering its availability and performance against your targets?',
+        options: [
+          { value: 1, label: 'Very low — frequently misses targets' },
+          { value: 2, label: 'Low — occasionally misses targets' },
+          { value: 3, label: 'Medium — meets targets most of the time' },
+          { value: 4, label: 'High — consistently meets targets' },
+          { value: 5, label: 'Very high — exceeds targets' },
+        ],
+      },
+    ],
+  },
 ];
 
 export const DEFAULT_CHECK_TEMPLATE_ID = 'health-check';
