@@ -1,4 +1,4 @@
-export type AppTab = 'home' | 'retrospectives';
+export type AppTab = 'home' | 'retrospectives' | 'checks';
 
 export interface AppNavProps {
   currentTab: AppTab;
@@ -21,6 +21,13 @@ export function AppNav({ currentTab, onNavigate }: AppNavProps): JSX.Element {
         onClick={(): void => { onNavigate('retrospectives'); }}
       >
         RETROSPECTIVES
+      </button>
+      <button
+        type="button"
+        className={`app-nav-item${currentTab === 'checks' ? ' active' : ''}`}
+        onClick={(): void => { onNavigate('checks'); }}
+      >
+        CHECKS
       </button>
     </nav>
   );

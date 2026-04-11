@@ -719,6 +719,7 @@ function TeamApp({
       {logo}
       <AppNav currentTab={appTab} onNavigate={setAppTab} />
       {appTab === 'home' ? (
+        /* Home tab — Team Dashboard */
         <TeamDashboardPage
           members={dashboard.team.members}
           allActionItems={dashboard.allActionItems}
@@ -749,6 +750,7 @@ function TeamApp({
         />
       ) : (
         <RetrospectivesPage
+          filterType={appTab === 'checks' ? 'check' : 'retro'}
           activeRetro={dashboard.activeRetro}
           activeRetroStage={retroStage}
           history={dashboard.history}
