@@ -65,7 +65,7 @@ function QuestionRow({
                     checked={response?.rating === opt.value}
                     onChange={(): void => { onRate(opt.value); }}
                   />
-                  {opt.label}
+                  <span className="survey-radio-value">{opt.value}</span> {opt.label}
                 </label>
               ))}
             </div>

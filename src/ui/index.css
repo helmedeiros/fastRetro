@@ -3727,6 +3727,24 @@ section > button.primary {
   accent-color: var(--primary, #d4a84e);
 }
 
+.survey-radio-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.survey-radio-label.selected .survey-radio-value {
+  background: var(--primary, #d4a84e);
+  color: #000;
+}
+
 .survey-comment {
   flex: 1;
   min-width: 200px;
