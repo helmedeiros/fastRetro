@@ -180,6 +180,9 @@ export class LocalStorageTeamRepository implements TeamRepository {
         fakeStorage.setItem('fastretro:state:v9', c.fullStateJson);
         const stateRepo = new LocalStorageRetroRepository(fakeStorage);
         const fullState = stateRepo.load();
+        const normalizedState = fullState.meta.date
+          ? fullState
+          : { ...fullState, meta: { ...fullState.meta, date: c.completedAt.slice(0, 10) } };
         return {
           id: c.id,
           completedAt: c.completedAt,
@@ -191,7 +194,7 @@ export class LocalStorageTeamRepository implements TeamRepository {
             completedAt: a.completedAt,
             done: a.done ?? false,
           })),
-          fullState,
+          fullState: normalizedState,
         };
       });
       return { completed };
