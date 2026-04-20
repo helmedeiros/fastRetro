@@ -5,6 +5,7 @@ import { getTemplate } from '../../domain/retro/FacilitationTemplate';
 import { CHECK_TEMPLATES, getCheckTemplate } from '../../domain/retro/CheckTemplate';
 import type { CheckTemplate } from '../../domain/retro/CheckTemplate';
 import { medianForQuestion } from '../../domain/retro/DiscussItem';
+import { RadarChart } from '../components/RadarChart';
 
 export interface RetrospectivesPageProps {
   filterType: RetroType;
@@ -66,6 +67,29 @@ function CheckComparisonView({
       {sessions.length === 0 ? (
         <p className="check-empty">No completed {template.name} sessions yet.</p>
       ) : (
+        <>
+        <div className="check-radar-carousel">
+          {sessions.map((s) => {
+            const sessionName = s.fullState.meta?.name || s.id;
+            const sessionDate = s.fullState.meta?.date
+              ? new Date(s.fullState.meta.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              : '';
+            const sessionValues = template.questions.map((q) =>
+              medianForQuestion(s.fullState.surveyResponses ?? [], q.id),
+            );
+            return (
+              <RadarChart
+                key={s.id}
+                labels={template.questions.map((q) => q.title)}
+                values={sessionValues}
+                maxValue={maxLevel}
+                name={sessionName}
+                date={sessionDate}
+                onClick={(): void => { onViewCompletedRetro(s.id); }}
+              />
+            );
+          })}
+        </div>
         <div className="check-comparison-table-wrap">
           <table className="check-comparison-table">
             <thead>
@@ -129,6 +153,7 @@ function CheckComparisonView({
             </tbody>
           </table>
         </div>
+        </>
       )}
     </section>
   );

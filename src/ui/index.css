@@ -3539,6 +3539,52 @@ section > button.primary {
   color: var(--fr-text-muted);
 }
 
+/* --- Check Radar Carousel --- */
+
+.check-radar-carousel {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding: 1rem 0;
+  margin-bottom: 1rem;
+}
+
+.check-radar-card {
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.75rem;
+  transition: background 0.15s;
+  text-align: center;
+}
+
+.check-radar-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.check-radar-card:focus-visible {
+  outline: 2px solid var(--primary, #d4a84e);
+  outline-offset: 2px;
+}
+
+.check-radar-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin-top: 0.25rem;
+}
+
+.check-radar-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.check-radar-date {
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
 /* --- Check Comparison Table --- */
 
 .check-toolbar {
