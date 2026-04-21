@@ -3630,6 +3630,16 @@ section > button.primary {
   opacity: 0.5;
 }
 
+/* --- Check Column Highlight --- */
+
+.check-col-active {
+  box-shadow: inset 0 0 0 2px var(--primary, #5ec4c8);
+}
+
+th.check-col-active {
+  background: rgba(94, 196, 200, 0.1);
+}
+
 /* --- Check Comparison Table --- */
 
 .check-toolbar {

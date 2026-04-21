@@ -31,22 +31,25 @@ function RadarCarousel({
   sessions,
   template,
   maxLevel,
+  selectedIndex,
+  onChangeIndex,
   onViewSession,
 }: {
   sessions: CompletedRetro[];
   template: CheckTemplate;
   maxLevel: number;
+  selectedIndex: number;
+  onChangeIndex: (index: number) => void;
   onViewSession: (id: string) => void;
 }): JSX.Element {
-  // Start at last (most recent) session — sessions are already newest-first
-  const [index, setIndex] = useState(0);
+  const index = selectedIndex;
 
   const goLeft = useCallback(() => {
-    setIndex((i) => Math.min(i + 1, sessions.length - 1));
-  }, [sessions.length]);
+    onChangeIndex(Math.min(index + 1, sessions.length - 1));
+  }, [index, sessions.length, onChangeIndex]);
   const goRight = useCallback(() => {
-    setIndex((i) => Math.max(i - 1, 0));
-  }, []);
+    onChangeIndex(Math.max(index - 1, 0));
+  }, [index, onChangeIndex]);
 
   if (sessions.length === 0) return <></>;
 
@@ -121,6 +124,7 @@ function CheckComparisonView({
     (activeRetro.meta.templateId ?? '') === template.id;
 
   const maxLevel = Math.max(...template.questions.flatMap((q) => q.options.map((o) => o.value)));
+  const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
 
   return (
     <section aria-label="Check comparison">
@@ -141,13 +145,13 @@ function CheckComparisonView({
             <thead>
               <tr>
                 <th className="check-question-header">Question</th>
-                {sessions.map((s) => {
+                {sessions.map((s, si) => {
                   const name = s.fullState.meta?.name || s.id;
                   const date = s.fullState.meta?.date
                     ? new Date(s.fullState.meta.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                     : '';
                   return (
-                    <th key={s.id} className="check-session-header">
+                    <th key={s.id} className={`check-session-header${si === selectedSessionIndex ? ' check-col-active' : ''}`}>
                       <button
                         type="button"
                         className="check-session-link"
@@ -181,12 +185,12 @@ function CheckComparisonView({
                   <td className="check-question-cell" title={q.description}>
                     {q.title}
                   </td>
-                  {sessions.map((s) => {
+                  {sessions.map((s, si) => {
                     const median = medianForQuestion(s.fullState.surveyResponses ?? [], q.id);
                     return (
                       <td
                         key={s.id}
-                        className="check-score-cell"
+                        className={`check-score-cell${si === selectedSessionIndex ? ' check-col-active' : ''}`}
                         style={{ backgroundColor: scoreColor(median, maxLevel) }}
                       >
                         {median === 0 ? '\u2014' : median.toFixed(1)}
@@ -203,6 +207,8 @@ function CheckComparisonView({
           sessions={sessions}
           template={template}
           maxLevel={maxLevel}
+          selectedIndex={selectedSessionIndex}
+          onChangeIndex={setSelectedSessionIndex}
           onViewSession={onViewCompletedRetro}
         />
         </>
