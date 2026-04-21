@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { RetroHistoryState, CompletedRetro } from '../../domain/team/RetroHistory';
 import type { RetroState, RetroType } from '../../domain/retro/Retro';
 import { getTemplate } from '../../domain/retro/FacilitationTemplate';
@@ -25,6 +25,74 @@ function scoreColor(score: number, maxLevel: number): string {
   if (ratio >= 0.6) return 'rgba(180, 200, 80, 0.4)';
   if (ratio >= 0.4) return 'rgba(212, 168, 78, 0.4)';
   return 'rgba(224, 96, 96, 0.35)';
+}
+
+function RadarCarousel({
+  sessions,
+  template,
+  maxLevel,
+  onViewSession,
+}: {
+  sessions: CompletedRetro[];
+  template: CheckTemplate;
+  maxLevel: number;
+  onViewSession: (id: string) => void;
+}): JSX.Element {
+  // Start at last (most recent) session — sessions are already newest-first
+  const [index, setIndex] = useState(0);
+
+  const goLeft = useCallback(() => {
+    setIndex((i) => Math.min(i + 1, sessions.length - 1));
+  }, [sessions.length]);
+  const goRight = useCallback(() => {
+    setIndex((i) => Math.max(i - 1, 0));
+  }, []);
+
+  if (sessions.length === 0) return <></>;
+
+  const s = sessions[index];
+  const sessionName = s.fullState.meta?.name || s.id;
+  const sessionDate = s.fullState.meta?.date
+    ? new Date(s.fullState.meta.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : '';
+  const values = template.questions.map((q) =>
+    medianForQuestion(s.fullState.surveyResponses ?? [], q.id),
+  );
+
+  const canGoLeft = index < sessions.length - 1;
+  const canGoRight = index > 0;
+
+  return (
+    <div className="check-radar-single">
+      <button
+        type="button"
+        className={`check-radar-arrow check-radar-arrow-left${canGoLeft ? '' : ' disabled'}`}
+        onClick={goLeft}
+        disabled={!canGoLeft}
+        aria-label="Previous session"
+      >
+        &#8592;
+      </button>
+      <RadarChart
+        labels={template.questions.map((q) => q.title)}
+        values={values}
+        maxValue={maxLevel}
+        name={sessionName}
+        date={sessionDate}
+        size={340}
+        onClick={(): void => { onViewSession(s.id); }}
+      />
+      <button
+        type="button"
+        className={`check-radar-arrow check-radar-arrow-right${canGoRight ? '' : ' disabled'}`}
+        onClick={goRight}
+        disabled={!canGoRight}
+        aria-label="Next session"
+      >
+        &#8594;
+      </button>
+    </div>
+  );
 }
 
 function CheckComparisonView({
@@ -68,28 +136,12 @@ function CheckComparisonView({
         <p className="check-empty">No completed {template.name} sessions yet.</p>
       ) : (
         <>
-        <div className="check-radar-carousel">
-          {sessions.map((s) => {
-            const sessionName = s.fullState.meta?.name || s.id;
-            const sessionDate = s.fullState.meta?.date
-              ? new Date(s.fullState.meta.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-              : '';
-            const sessionValues = template.questions.map((q) =>
-              medianForQuestion(s.fullState.surveyResponses ?? [], q.id),
-            );
-            return (
-              <RadarChart
-                key={s.id}
-                labels={template.questions.map((q) => q.title)}
-                values={sessionValues}
-                maxValue={maxLevel}
-                name={sessionName}
-                date={sessionDate}
-                onClick={(): void => { onViewCompletedRetro(s.id); }}
-              />
-            );
-          })}
-        </div>
+        <RadarCarousel
+          sessions={sessions}
+          template={template}
+          maxLevel={maxLevel}
+          onViewSession={onViewCompletedRetro}
+        />
         <div className="check-comparison-table-wrap">
           <table className="check-comparison-table">
             <thead>
