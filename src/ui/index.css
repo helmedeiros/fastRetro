@@ -3545,9 +3545,13 @@ section > button.primary {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 1rem 0;
+  padding: 1.5rem 3.5rem;
   margin-bottom: 1rem;
+  position: relative;
+}
+
+.check-radar-single svg {
+  overflow: visible;
 }
 
 .check-radar-arrow {
@@ -3564,6 +3568,17 @@ section > button.primary {
   justify-content: center;
   flex-shrink: 0;
   transition: background 0.15s, opacity 0.15s;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.check-radar-arrow-left {
+  left: 0;
+}
+
+.check-radar-arrow-right {
+  right: 0;
 }
 
 .check-radar-arrow:hover:not(.disabled) {
