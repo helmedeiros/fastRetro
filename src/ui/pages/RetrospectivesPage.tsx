@@ -136,12 +136,6 @@ function CheckComparisonView({
         <p className="check-empty">No completed {template.name} sessions yet.</p>
       ) : (
         <>
-        <RadarCarousel
-          sessions={sessions}
-          template={template}
-          maxLevel={maxLevel}
-          onViewSession={onViewCompletedRetro}
-        />
         <div className="check-comparison-table-wrap">
           <table className="check-comparison-table">
             <thead>
@@ -205,6 +199,12 @@ function CheckComparisonView({
             </tbody>
           </table>
         </div>
+        <RadarCarousel
+          sessions={sessions}
+          template={template}
+          maxLevel={maxLevel}
+          onViewSession={onViewCompletedRetro}
+        />
         </>
       )}
     </section>
