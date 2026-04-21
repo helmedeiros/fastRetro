@@ -3582,6 +3582,9 @@ section > button.primary {
   padding: 0.75rem;
   transition: background 0.15s;
   text-align: center;
+  background: transparent;
+  border: none;
+  color: inherit;
 }
 
 .check-radar-card:hover {
@@ -3591,6 +3594,7 @@ section > button.primary {
 .check-radar-card:focus-visible {
   outline: 2px solid var(--primary, #d4a84e);
   outline-offset: 2px;
+  background: transparent;
 }
 
 .check-radar-label {

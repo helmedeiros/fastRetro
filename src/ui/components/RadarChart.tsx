@@ -19,8 +19,8 @@ export function RadarChart({
 }: RadarChartProps): JSX.Element {
   const cx = size / 2;
   const cy = size / 2;
-  const radius = size * 0.35;
-  const labelRadius = radius + 28;
+  const radius = size * 0.28;
+  const labelRadius = radius + 36;
   const n = labels.length;
 
   function pointOnAxis(index: number, value: number, r: number): { x: number; y: number } {
