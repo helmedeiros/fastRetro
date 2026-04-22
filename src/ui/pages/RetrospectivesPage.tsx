@@ -45,11 +45,11 @@ function RadarCarousel({
   const index = selectedIndex;
 
   const goLeft = useCallback(() => {
-    onChangeIndex(Math.min(index + 1, sessions.length - 1));
-  }, [index, sessions.length, onChangeIndex]);
-  const goRight = useCallback(() => {
     onChangeIndex(Math.max(index - 1, 0));
   }, [index, onChangeIndex]);
+  const goRight = useCallback(() => {
+    onChangeIndex(Math.min(index + 1, sessions.length - 1));
+  }, [index, sessions.length, onChangeIndex]);
 
   if (sessions.length === 0) return <></>;
 
@@ -62,8 +62,8 @@ function RadarCarousel({
     medianForQuestion(s.fullState.surveyResponses ?? [], q.id),
   );
 
-  const canGoLeft = index < sessions.length - 1;
-  const canGoRight = index > 0;
+  const canGoLeft = index > 0;
+  const canGoRight = index < sessions.length - 1;
 
   return (
     <div className="check-radar-single">
