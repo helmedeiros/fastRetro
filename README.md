@@ -88,3 +88,7 @@ src/
 4. **Discuss** (2.5 min/item) — carousel of questions by median score, add actions
 5. **Review** (5 min) — assign action item owners
 6. **Close** — survey results with medians + Export JSON
+
+## License
+
+[MIT](LICENSE)
