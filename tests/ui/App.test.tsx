@@ -17,7 +17,7 @@ const fakeClock: Clock = {
   subscribe: () => () => undefined,
 };
 
-function renderApp(teamRepo?: InMemoryTeamRepository) {
+function renderApp(teamRepo?: InMemoryTeamRepository, storage?: Storage) {
   const repo = teamRepo ?? new InMemoryTeamRepository();
   return render(
     <App
@@ -25,16 +25,31 @@ function renderApp(teamRepo?: InMemoryTeamRepository) {
       clock={fakeClock}
       picker={firstPicker}
       idGenerator={ids}
+      storage={storage}
     />,
   );
 }
 
-function addMemberAndStartRetro() {
-  // Add member on dashboard
+class InMemoryStorage implements Storage {
+  private store = new Map<string, string>();
+  get length(): number { return this.store.size; }
+  clear(): void { this.store.clear(); }
+  getItem(key: string): string | null { return this.store.get(key) ?? null; }
+  key(index: number): string | null { return [...this.store.keys()][index] ?? null; }
+  removeItem(key: string): void { this.store.delete(key); }
+  setItem(key: string, value: string): void { this.store.set(key, value); }
+}
+
+function addMember(name: string): void {
   const membersSection = screen.getByRole('region', { name: /members/i });
   const nameInput = within(membersSection).getByLabelText(/name/i);
-  fireEvent.change(nameInput, { target: { value: 'Alice' } });
+  fireEvent.change(nameInput, { target: { value: name } });
   fireEvent.click(within(membersSection).getByRole('button', { name: /^add$/i }));
+}
+
+function addMemberAndStartRetro() {
+  // Add member on dashboard
+  addMember('Alice');
   // Click start → setup page
   fireEvent.click(
     screen.getByRole('button', { name: /start retrospective/i }),
@@ -82,6 +97,71 @@ describe('App', () => {
       screen.getByRole('region', { name: /icebreaker/i }),
     ).toBeInTheDocument();
     expect(screen.getByTestId('time-remaining')).toHaveTextContent('10m 00s');
+  });
+
+  it('asks who you are when starting a local retro, and tags the pick as (me)', () => {
+    renderApp();
+    addMember('Alice');
+    addMember('Bob');
+    fireEvent.click(
+      screen.getByRole('button', { name: /start retrospective/i }),
+    );
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: 'Sprint 1 Retro' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: /start retrospective/i }),
+    );
+
+    expect(
+      screen.getByRole('heading', { name: /join retrospective/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/who are you/i)).toBeInTheDocument();
+
+    const pickList = screen.getByText(/pick your name/i).closest('div') as HTMLElement;
+    fireEvent.click(within(pickList).getByRole('button', { name: /bob/i }));
+    expect(
+      screen.queryByRole('heading', { name: /join retrospective/i }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTitle('Team'));
+    const teamPanel = screen.getByRole('heading', { name: /^team$/i }).closest('.side-menu-panel') as HTMLElement;
+    expect(teamPanel).not.toBeNull();
+    expect(within(teamPanel).getByText(/bob \(me\)/i)).toBeInTheDocument();
+  });
+
+  it('skips the who-are-you prompt when a member is already starred as (me)', () => {
+    renderApp(undefined, new InMemoryStorage());
+
+    // Team selector (storage is present, so a real team must be created first)
+    fireEvent.change(screen.getByPlaceholderText(/new team name/i), {
+      target: { value: 'QA Team' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /create team/i }));
+
+    addMember('Alice');
+    addMember('Bob');
+
+    // Star Bob as "(me)" on the dashboard, before starting the retro
+    fireEvent.click(screen.getByRole('button', { name: /set bob as me/i }));
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /start retrospective/i }),
+    );
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: 'Sprint 1 Retro' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: /start retrospective/i }),
+    );
+
+    expect(
+      screen.queryByRole('heading', { name: /join retrospective/i }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTitle('Team'));
+    const teamPanel = screen.getByRole('heading', { name: /^team$/i }).closest('.side-menu-panel') as HTMLElement;
+    expect(within(teamPanel).getByText(/bob \(me\)/i)).toBeInTheDocument();
   });
 
   it('transitions from icebreaker to brainstorm', () => {

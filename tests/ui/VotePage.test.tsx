@@ -23,9 +23,10 @@ const cards: readonly Card[] = [
 
 interface HarnessProps {
   initialBudget?: number;
+  currentParticipantId?: string | null;
 }
 
-function Harness({ initialBudget = 3 }: HarnessProps): JSX.Element {
+function Harness({ initialBudget = 3, currentParticipantId }: HarnessProps): JSX.Element {
   const [votes, setVotes] = useState<readonly Vote[]>([]);
   const [budget, setBudget] = useState<number>(initialBudget);
   const used = (pid: string): number =>
@@ -37,6 +38,7 @@ function Harness({ initialBudget = 3 }: HarnessProps): JSX.Element {
       cards={cards}
       votes={votes}
       voteBudget={budget}
+      currentParticipantId={currentParticipantId}
       onStartTimer={noop}
       onPauseTimer={noop}
       onResumeTimer={noop}
@@ -98,5 +100,17 @@ describe('VotePage', () => {
     fireEvent.click(within(voters).getByRole('button', { name: /bob/i }));
     fireEvent.click(screen.getByRole('button', { name: /vote for ship faster/i }));
     expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+2');
+  });
+
+  it('locks voter pills to self once an identity is set, so you can only vote as yourself', () => {
+    render(<Harness currentParticipantId="p-1" />);
+    const voters = screen.getByRole('group', { name: /active voter/i });
+    expect(within(voters).getByRole('button', { name: /bob/i })).toBeDisabled();
+    expect(within(voters).getByRole('button', { name: /alice/i })).not.toBeDisabled();
+
+    // Clicking the disabled pill has no effect — votes still go to yourself
+    fireEvent.click(within(voters).getByRole('button', { name: /bob/i }));
+    fireEvent.click(screen.getByRole('button', { name: /vote for ship faster/i }));
+    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+1');
   });
 });

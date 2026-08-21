@@ -371,6 +371,20 @@ function TeamApp({
     });
   }, [syncOnConnected, syncBroadcast, syncBroadcastTeamInfo, syncRole, teamRepository, teamName, dashboard.team.members, dashboard.team.agreements, identity.participantId, roomSync, registry, identity]);
 
+  // Local (non-synced) sessions: auto-claim identity from the starred "(me)"
+  // member instead of prompting, when one is set for this team.
+  useEffect(() => {
+    if (syncRole !== 'none') return;
+    if (identity.participantId !== null) return;
+    if (defaultMemberName === null) return;
+    const match = retro.participants.find(
+      (p) => p.name.toLowerCase() === defaultMemberName.toLowerCase(),
+    );
+    if (match !== undefined) {
+      identity.setParticipantId(match.id, roomSync.roomCode ?? '');
+    }
+  }, [syncRole, identity, defaultMemberName, retro.participants, roomSync.roomCode]);
+
   // Sync: when a new peer requests state, send current state and team info
   useEffect(() => {
     syncOnRequest(() => {
@@ -524,8 +538,9 @@ function TeamApp({
         {logo}
         <StageNav currentStage={retroStage} retroType={retro.meta.type} onNavigate={navigateStage} />
         <SideMenu participants={retro.participants} currentParticipantId={identity.participantId} sync={roomSync} />
-        {roomSync.role !== 'none' && identity.participantId === null && retro.participants.length > 0 && (
+        {identity.participantId === null && retro.participants.length > 0 && (
           <JoinModal
+            sessionType={retro.meta.type}
             participants={retro.participants}
             takenParticipantIds={roomSync.takenIds}
             onSelectParticipant={(pid): void => {
