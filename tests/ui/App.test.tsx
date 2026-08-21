@@ -17,7 +17,7 @@ const fakeClock: Clock = {
   subscribe: () => () => undefined,
 };
 
-function renderApp(teamRepo?: InMemoryTeamRepository) {
+function renderApp(teamRepo?: InMemoryTeamRepository, storage?: Storage) {
   const repo = teamRepo ?? new InMemoryTeamRepository();
   return render(
     <App
@@ -25,8 +25,19 @@ function renderApp(teamRepo?: InMemoryTeamRepository) {
       clock={fakeClock}
       picker={firstPicker}
       idGenerator={ids}
+      storage={storage}
     />,
   );
+}
+
+class InMemoryStorage implements Storage {
+  private store = new Map<string, string>();
+  get length(): number { return this.store.size; }
+  clear(): void { this.store.clear(); }
+  getItem(key: string): string | null { return this.store.get(key) ?? null; }
+  key(index: number): string | null { return [...this.store.keys()][index] ?? null; }
+  removeItem(key: string): void { this.store.delete(key); }
+  setItem(key: string, value: string): void { this.store.set(key, value); }
 }
 
 function addMember(name: string): void {
@@ -116,6 +127,40 @@ describe('App', () => {
     fireEvent.click(screen.getByTitle('Team'));
     const teamPanel = screen.getByRole('heading', { name: /^team$/i }).closest('.side-menu-panel') as HTMLElement;
     expect(teamPanel).not.toBeNull();
+    expect(within(teamPanel).getByText(/bob \(me\)/i)).toBeInTheDocument();
+  });
+
+  it('skips the who-are-you prompt when a member is already starred as (me)', () => {
+    renderApp(undefined, new InMemoryStorage());
+
+    // Team selector (storage is present, so a real team must be created first)
+    fireEvent.change(screen.getByPlaceholderText(/new team name/i), {
+      target: { value: 'QA Team' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /create team/i }));
+
+    addMember('Alice');
+    addMember('Bob');
+
+    // Star Bob as "(me)" on the dashboard, before starting the retro
+    fireEvent.click(screen.getByRole('button', { name: /set bob as me/i }));
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /start retrospective/i }),
+    );
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: 'Sprint 1 Retro' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: /start retrospective/i }),
+    );
+
+    expect(
+      screen.queryByRole('heading', { name: /join retrospective/i }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTitle('Team'));
+    const teamPanel = screen.getByRole('heading', { name: /^team$/i }).closest('.side-menu-panel') as HTMLElement;
     expect(within(teamPanel).getByText(/bob \(me\)/i)).toBeInTheDocument();
   });
 
