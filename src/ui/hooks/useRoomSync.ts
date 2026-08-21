@@ -83,7 +83,7 @@ export function useRoomSync(): UseRoomSync {
     sync.connect();
     setStatus('connected');
     setRoomCode(sync.roomCode);
-    setShareUrl(sync.getShareUrl());
+    sync.getShareUrl().then(setShareUrl).catch(() => {});
   }, [setupCallbacks]);
 
   const hostRoom = useCallback(() => {

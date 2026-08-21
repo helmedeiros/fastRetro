@@ -6,6 +6,24 @@ export interface SyncTeamInfo {
   agreements: Array<{ id: string; text: string }>;
 }
 
+// If origin uses localhost/127.0.0.1, replaces the host with the machine's
+// LAN IP so the URL is usable from other devices on the network.
+async function replaceLocalhostWithLAN(origin: string): Promise<string> {
+  const parsed = new URL(origin);
+  if (parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') {
+    return origin;
+  }
+  try {
+    const res = await fetch('/__api/network-info');
+    const data = (await res.json()) as { ip: string | null };
+    if (data.ip === null) return origin;
+    parsed.hostname = data.ip;
+    return parsed.origin;
+  } catch {
+    return origin;
+  }
+}
+
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const parts: string[] = [];
@@ -150,8 +168,9 @@ export class RoomSync {
     }
   }
 
-  getShareUrl(): string {
-    return `${window.location.origin}${window.location.pathname}#room=${this._roomCode}`;
+  async getShareUrl(): Promise<string> {
+    const origin = await replaceLocalhostWithLAN(window.location.origin);
+    return `${origin}${window.location.pathname}#room=${this._roomCode}`;
   }
 
   disconnect(): void {

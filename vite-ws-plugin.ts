@@ -1,5 +1,18 @@
+import { networkInterfaces } from 'os';
 import type { Plugin } from 'vite';
 import { WebSocketServer, WebSocket } from 'ws';
+
+// Mirrors fastretro-cli's detectLANIP: first non-loopback IPv4 address found.
+function detectLANIP(): string | null {
+  for (const addrs of Object.values(networkInterfaces())) {
+    for (const addr of addrs ?? []) {
+      if (addr.family === 'IPv4' && !addr.internal) {
+        return addr.address;
+      }
+    }
+  }
+  return null;
+}
 
 interface Room {
   state: string | null;
@@ -142,6 +155,13 @@ export function retroSyncPlugin(): Plugin {
         }
         res.writeHead(405);
         res.end();
+      });
+
+      // REST endpoint to expose the machine's LAN IP, so clients that loaded
+      // the app via localhost can build a share URL other devices can reach.
+      server.middlewares.use('/__api/network-info', (req, res) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ip: detectLANIP() }));
       });
     },
   };

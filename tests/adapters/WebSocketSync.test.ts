@@ -48,9 +48,9 @@ describe('WebSocket Sync - Regression cases', () => {
   });
 
   describe('Share URL', () => {
-    it('includes room code in share URL', () => {
+    it('includes room code in share URL', async () => {
       const sync = new RoomSync('MY-ROOM-123');
-      const url = sync.getShareUrl();
+      const url = await sync.getShareUrl();
       expect(url).toContain('#room=MY-ROOM-123');
       expect(url).toContain(window.location.origin);
     });

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { RoomSync } from '../../src/adapters/sync/RoomSync';
 
 describe('RoomSync', () => {
@@ -45,8 +45,37 @@ describe('RoomSync', () => {
     expect(sync.roomCode).toBeTruthy();
   });
 
-  it('getShareUrl includes the room code', () => {
+  it('getShareUrl includes the room code', async () => {
     const sync = new RoomSync('XYZ-789-QWE');
-    expect(sync.getShareUrl()).toContain('#room=XYZ-789-QWE');
+    expect(await sync.getShareUrl()).toContain('#room=XYZ-789-QWE');
+  });
+
+  describe('getShareUrl LAN IP substitution', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('replaces a localhost origin with the LAN IP from the server', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        json: () => Promise.resolve({ ip: '10.192.190.148' }),
+      }));
+
+      const sync = new RoomSync('XYZ-789-QWE');
+      const url = await sync.getShareUrl();
+
+      expect(url).toContain('10.192.190.148');
+      expect(url).not.toContain('localhost');
+    });
+
+    it('falls back to the original origin when no LAN IP is available', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        json: () => Promise.resolve({ ip: null }),
+      }));
+
+      const sync = new RoomSync('XYZ-789-QWE');
+      const url = await sync.getShareUrl();
+
+      expect(url).toContain(window.location.origin);
+    });
   });
 });
