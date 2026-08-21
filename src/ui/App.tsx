@@ -524,8 +524,9 @@ function TeamApp({
         {logo}
         <StageNav currentStage={retroStage} retroType={retro.meta.type} onNavigate={navigateStage} />
         <SideMenu participants={retro.participants} currentParticipantId={identity.participantId} sync={roomSync} />
-        {roomSync.role !== 'none' && identity.participantId === null && retro.participants.length > 0 && (
+        {identity.participantId === null && retro.participants.length > 0 && (
           <JoinModal
+            sessionType={retro.meta.type}
             participants={retro.participants}
             takenParticipantIds={roomSync.takenIds}
             onSelectParticipant={(pid): void => {
@@ -600,6 +601,7 @@ function TeamApp({
             participants={retro.participants}
             templateId={retro.meta.templateId}
             currentParticipantId={identity.participantId}
+            lockVoterSelection={roomSync.role !== 'none'}
             cards={retro.cards}
             groups={retro.groups}
             votes={retro.votes}

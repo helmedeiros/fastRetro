@@ -4,6 +4,7 @@ import type { Participant } from '../../domain/retro/Participant';
 export interface JoinModalProps {
   participants: readonly Participant[];
   takenParticipantIds?: ReadonlySet<string>;
+  sessionType?: 'retro' | 'check';
   onSelectParticipant: (participantId: string) => void;
   onAddParticipant: (name: string) => void;
 }
@@ -27,14 +28,15 @@ function initials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function JoinModal({ participants, takenParticipantIds, onSelectParticipant, onAddParticipant }: JoinModalProps): JSX.Element {
+export function JoinModal({ participants, takenParticipantIds, sessionType, onSelectParticipant, onAddParticipant }: JoinModalProps): JSX.Element {
   const taken = takenParticipantIds ?? new Set<string>();
   const [newName, setNewName] = useState('');
+  const title = sessionType === 'check' ? 'Join Check' : 'Join Retrospective';
 
   return (
     <div className="join-modal-overlay">
       <div className="join-modal">
-        <h2 className="join-modal-title">Join Retrospective</h2>
+        <h2 className="join-modal-title">{title}</h2>
         <p className="join-modal-desc">Who are you?</p>
 
         {participants.length > 0 && (

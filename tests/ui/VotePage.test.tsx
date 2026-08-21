@@ -23,9 +23,11 @@ const cards: readonly Card[] = [
 
 interface HarnessProps {
   initialBudget?: number;
+  currentParticipantId?: string | null;
+  lockVoterSelection?: boolean;
 }
 
-function Harness({ initialBudget = 3 }: HarnessProps): JSX.Element {
+function Harness({ initialBudget = 3, currentParticipantId, lockVoterSelection }: HarnessProps): JSX.Element {
   const [votes, setVotes] = useState<readonly Vote[]>([]);
   const [budget, setBudget] = useState<number>(initialBudget);
   const used = (pid: string): number =>
@@ -37,6 +39,8 @@ function Harness({ initialBudget = 3 }: HarnessProps): JSX.Element {
       cards={cards}
       votes={votes}
       voteBudget={budget}
+      currentParticipantId={currentParticipantId}
+      lockVoterSelection={lockVoterSelection}
       onStartTimer={noop}
       onPauseTimer={noop}
       onResumeTimer={noop}
@@ -98,5 +102,22 @@ describe('VotePage', () => {
     fireEvent.click(within(voters).getByRole('button', { name: /bob/i }));
     fireEvent.click(screen.getByRole('button', { name: /vote for ship faster/i }));
     expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+2');
+  });
+
+  it('leaves voter pills unlocked for other participants when lockVoterSelection is false (local pass-the-device use)', () => {
+    render(<Harness currentParticipantId="p-1" lockVoterSelection={false} />);
+    const voters = screen.getByRole('group', { name: /active voter/i });
+    const bobPill = within(voters).getByRole('button', { name: /bob/i });
+    expect(bobPill).not.toBeDisabled();
+    fireEvent.click(bobPill);
+    fireEvent.click(screen.getByRole('button', { name: /vote for ship faster/i }));
+    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+1');
+  });
+
+  it('locks voter pills to self when lockVoterSelection is true (real multi-device sync)', () => {
+    render(<Harness currentParticipantId="p-1" lockVoterSelection={true} />);
+    const voters = screen.getByRole('group', { name: /active voter/i });
+    expect(within(voters).getByRole('button', { name: /bob/i })).toBeDisabled();
+    expect(within(voters).getByRole('button', { name: /alice/i })).not.toBeDisabled();
   });
 });
