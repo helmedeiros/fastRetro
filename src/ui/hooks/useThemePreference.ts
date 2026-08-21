@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useLayoutEffect } from 'react';
 
 const STORAGE_KEY = 'fastretro:theme';
 
@@ -29,7 +29,10 @@ function persistTheme(theme: Theme): void {
 export function useThemePreference(): UseThemePreference {
   const [theme, setTheme] = useState<Theme>(loadTheme);
 
-  useEffect(() => {
+  // Layout effect (not a plain effect) so the attribute is set before the
+  // browser paints — otherwise a returning light-theme user would see a
+  // flash of the dark theme (index.html's static default) on every load.
+  useLayoutEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 

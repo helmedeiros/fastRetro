@@ -1,8 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useThemePreference } from '../../src/ui/hooks/useThemePreference';
 
 describe('useThemePreference hook', () => {
+  afterEach(() => {
+    // Guarded: some environments don't provide a working localStorage.
+    try { localStorage.removeItem('fastretro:theme'); } catch { /* unavailable */ }
+    document.documentElement.removeAttribute('data-theme');
+  });
+
   it('defaults to dark theme', () => {
     const { result } = renderHook(() => useThemePreference());
     expect(result.current.theme).toBe('dark');

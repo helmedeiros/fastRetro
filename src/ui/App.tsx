@@ -30,6 +30,7 @@ import { JoinModal } from './components/JoinModal';
 import { useRoomSync } from './hooks/useRoomSync';
 import { useIdentity } from './hooks/useIdentity';
 import { useThemePreference, type Theme } from './hooks/useThemePreference';
+import { ThemeToggleButton } from './components/ThemeToggleButton';
 import { RoomSync } from '../adapters/sync/RoomSync';
 import type { SyncTeamInfo } from '../adapters/sync/RoomSync';
 import { TeamRegistry } from '../adapters/storage/TeamRegistry';
@@ -178,15 +179,7 @@ export function App({
         <h1>
           <span className="logo-btn">fastRetro</span>
         </h1>
-        <button
-          type="button"
-          className="theme-toggle-btn"
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-          title="Toggle theme"
-        >
-          {theme === 'dark' ? '☀' : '☽'}
-        </button>
+        <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
       </div>
     );
     return (
@@ -501,15 +494,7 @@ function TeamApp({
             {teamName} &#9662;
           </button>
         )}
-        <button
-          type="button"
-          className="theme-toggle-btn"
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-          title="Toggle theme"
-        >
-          {theme === 'dark' ? '☀' : '☽'}
-        </button>
+        <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
       </div>
     </div>
   );
