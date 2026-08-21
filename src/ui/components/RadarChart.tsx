@@ -34,7 +34,7 @@ export function RadarChart({
   for (let level = 1; level <= maxValue; level++) {
     const points = Array.from({ length: n }, (_, i) => pointOnAxis(i, level, radius));
     const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${String(p.x)},${String(p.y)}`).join(' ') + ' Z';
-    rings.push(<path key={`ring-${String(level)}`} d={d} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />);
+    rings.push(<path key={`ring-${String(level)}`} d={d} fill="none" stroke="var(--fr-border)" strokeWidth="1" />);
   }
 
   // Axis lines
@@ -47,7 +47,7 @@ export function RadarChart({
         y1={String(cy)}
         x2={String(outer.x)}
         y2={String(outer.y)}
-        stroke="rgba(255,255,255,0.08)"
+        stroke="var(--fr-border)"
         strokeWidth="1"
       />
     );
