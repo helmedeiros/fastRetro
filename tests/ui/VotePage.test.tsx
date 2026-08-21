@@ -24,10 +24,9 @@ const cards: readonly Card[] = [
 interface HarnessProps {
   initialBudget?: number;
   currentParticipantId?: string | null;
-  lockVoterSelection?: boolean;
 }
 
-function Harness({ initialBudget = 3, currentParticipantId, lockVoterSelection }: HarnessProps): JSX.Element {
+function Harness({ initialBudget = 3, currentParticipantId }: HarnessProps): JSX.Element {
   const [votes, setVotes] = useState<readonly Vote[]>([]);
   const [budget, setBudget] = useState<number>(initialBudget);
   const used = (pid: string): number =>
@@ -40,7 +39,6 @@ function Harness({ initialBudget = 3, currentParticipantId, lockVoterSelection }
       votes={votes}
       voteBudget={budget}
       currentParticipantId={currentParticipantId}
-      lockVoterSelection={lockVoterSelection}
       onStartTimer={noop}
       onPauseTimer={noop}
       onResumeTimer={noop}
@@ -104,20 +102,15 @@ describe('VotePage', () => {
     expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+2');
   });
 
-  it('leaves voter pills unlocked for other participants when lockVoterSelection is false (local pass-the-device use)', () => {
-    render(<Harness currentParticipantId="p-1" lockVoterSelection={false} />);
-    const voters = screen.getByRole('group', { name: /active voter/i });
-    const bobPill = within(voters).getByRole('button', { name: /bob/i });
-    expect(bobPill).not.toBeDisabled();
-    fireEvent.click(bobPill);
-    fireEvent.click(screen.getByRole('button', { name: /vote for ship faster/i }));
-    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+1');
-  });
-
-  it('locks voter pills to self when lockVoterSelection is true (real multi-device sync)', () => {
-    render(<Harness currentParticipantId="p-1" lockVoterSelection={true} />);
+  it('locks voter pills to self once an identity is set, so you can only vote as yourself', () => {
+    render(<Harness currentParticipantId="p-1" />);
     const voters = screen.getByRole('group', { name: /active voter/i });
     expect(within(voters).getByRole('button', { name: /bob/i })).toBeDisabled();
     expect(within(voters).getByRole('button', { name: /alice/i })).not.toBeDisabled();
+
+    // Clicking the disabled pill has no effect — votes still go to yourself
+    fireEvent.click(within(voters).getByRole('button', { name: /bob/i }));
+    fireEvent.click(screen.getByRole('button', { name: /vote for ship faster/i }));
+    expect(screen.getByTestId('vote-count-c-1')).toHaveTextContent('+1');
   });
 });

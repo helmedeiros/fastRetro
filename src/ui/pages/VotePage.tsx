@@ -20,7 +20,6 @@ export interface VotePageProps {
   onResumeTimer: () => void;
   onResetTimer: () => void;
   currentParticipantId?: string | null;
-  lockVoterSelection?: boolean;
   onSetVoteBudget: (budget: number) => void;
   onCastVote: (participantId: string, cardId: string) => void;
 }
@@ -162,10 +161,9 @@ export function VotePage({
   onCastVote,
   templateId,
   currentParticipantId,
-  lockVoterSelection,
 }: VotePageProps): JSX.Element {
   const template = getTemplate(templateId ?? 'start-stop');
-  const lockedToSelf = (lockVoterSelection ?? false) && currentParticipantId !== undefined && currentParticipantId !== null;
+  const lockedToSelf = currentParticipantId !== undefined && currentParticipantId !== null;
   const [activeId, setActiveId] = useState<string | null>(
     currentParticipantId ?? participants[0]?.id ?? null,
   );

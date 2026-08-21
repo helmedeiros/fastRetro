@@ -615,7 +615,6 @@ function TeamApp({
             participants={retro.participants}
             templateId={retro.meta.templateId}
             currentParticipantId={identity.participantId}
-            lockVoterSelection={roomSync.role !== 'none'}
             cards={retro.cards}
             groups={retro.groups}
             votes={retro.votes}
