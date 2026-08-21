@@ -29,6 +29,8 @@ import { SideMenu } from './components/SideMenu';
 import { JoinModal } from './components/JoinModal';
 import { useRoomSync } from './hooks/useRoomSync';
 import { useIdentity } from './hooks/useIdentity';
+import { useThemePreference, type Theme } from './hooks/useThemePreference';
+import { ThemeToggleButton } from './components/ThemeToggleButton';
 import { RoomSync } from '../adapters/sync/RoomSync';
 import type { SyncTeamInfo } from '../adapters/sync/RoomSync';
 import { TeamRegistry } from '../adapters/storage/TeamRegistry';
@@ -110,6 +112,8 @@ export function App({
     [idGenerator],
   );
 
+  const { theme, toggleTheme } = useThemePreference();
+
   // Guest retro complete: resolve/create team, merge data, save history, switch
   const onGuestRetroComplete = useCallback((info: SyncTeamInfo) => {
     if (registry === null || safeStorage === null) return;
@@ -171,9 +175,12 @@ export function App({
   // Team selector — must be BEFORE the inner app
   if (selectedTeamId === null && registry !== null) {
     const teamSelectorLogo = (
-      <h1>
-        <span className="logo-btn">fastRetro</span>
-      </h1>
+      <div className="app-header">
+        <h1>
+          <span className="logo-btn">fastRetro</span>
+        </h1>
+        <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
+      </div>
     );
     return (
       <main className="container">
@@ -217,6 +224,8 @@ export function App({
         registry.setSelectedTeamId(null);
       } : undefined}
       onGuestRetroComplete={onGuestRetroComplete}
+      theme={theme}
+      toggleTheme={toggleTheme}
     />
   );
 }
@@ -231,6 +240,8 @@ function TeamApp({
   registry,
   onSwitchTeam,
   onGuestRetroComplete,
+  theme,
+  toggleTheme,
 }: {
   teamRepository: TeamRepository;
   clock: Clock;
@@ -241,6 +252,8 @@ function TeamApp({
   registry?: TeamRegistry | null;
   onSwitchTeam?: () => void;
   onGuestRetroComplete?: (info: SyncTeamInfo) => void;
+  theme: Theme;
+  toggleTheme: () => void;
 }): JSX.Element {
   const bridge = useMemo(
     () => new ActiveRetroRepositoryBridge(teamRepository),
@@ -471,15 +484,18 @@ function TeamApp({
           fastRetro
         </button>
       </h1>
-      {teamName !== undefined && onSwitchTeam !== undefined && (
-        <button
-          type="button"
-          className="team-switch-btn"
-          onClick={onSwitchTeam}
-        >
-          {teamName} &#9662;
-        </button>
-      )}
+      <div className="app-header-actions">
+        {teamName !== undefined && onSwitchTeam !== undefined && (
+          <button
+            type="button"
+            className="team-switch-btn"
+            onClick={onSwitchTeam}
+          >
+            {teamName} &#9662;
+          </button>
+        )}
+        <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
+      </div>
     </div>
   );
 

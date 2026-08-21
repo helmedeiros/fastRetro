@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, within } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { App } from '../../src/ui/App';
 import { InMemoryTeamRepository } from '../../src/adapters/storage/InMemoryTeamRepository';
 import type { Picker } from '../../src/domain/ports/Picker';
@@ -69,11 +69,24 @@ function navigateTo(stage: string): void {
 }
 
 describe('App', () => {
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-theme');
+  });
+
   it('renders the fastRetro heading', () => {
     renderApp();
     expect(
       screen.getByRole('heading', { name: /fastRetro/i }),
     ).toBeInTheDocument();
+  });
+
+  it('toggles the theme attribute when the theme button is clicked', () => {
+    renderApp();
+    const toggle = screen.getByRole('button', { name: /toggle theme/i });
+    fireEvent.click(toggle);
+    expect(document.documentElement.dataset.theme).toBe('light');
+    fireEvent.click(toggle);
+    expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
   it('lands on the Team Dashboard', () => {
